@@ -1,3 +1,20 @@
+<?php
+/************************************
+*									*
+* SMAR								*
+* by								*
+* Raffael Wojtas					*
+* Stephan Giesau					*
+* Sebastian Kowalski				*
+*									*
+* index.php							*
+*									*
+************************************/
+
+$topinclude = 1;
+require_once('_functions/_functions.php');
+require_once('inc_session_check.php');
+?>
 <!doctype html>
 <html lang="de">
 <head>
