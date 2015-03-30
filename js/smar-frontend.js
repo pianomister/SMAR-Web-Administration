@@ -11,9 +11,13 @@ window.onpopstate = function(event) {
 	}
 }
 
-function loadPage(url) {
+function loadPage(url, loadFull) {
+	
+	loadFull = loadFull || false;
 
+	var $content = $('#smar-content');
 	var $contentInner = $('#smar-content-inner');
+	var $targetContainer = loadFull ? $content : $contentInner;
 	var $loadOverlay = $('#smar-loading');
 	var new_url = url;
 	
@@ -23,27 +27,27 @@ function loadPage(url) {
 		
 		history.pushState({page:url}, document.title, new_url);
 		
-		$contentInner.fadeOut(200, function() {
-
-			$contentInner.hide().empty();
-			window.scrollTo(0,0);
-
-			$loadOverlay.fadeIn(200, function() {
-				$contentInner.load(url, function(data, textStatus, jqXHR) {
+		$loadOverlay.fadeIn(100, function() {
+			$targetContainer.fadeOut(100, function() {
+				
+				$targetContainer.hide().empty();
+				window.scrollTo(0,0);
+				
+				$targetContainer.load(url, function(data, textStatus, jqXHR) {
 
 					if(textStatus == 'error') {
-						$contentInner.html("<h1>Fehler</h1><p>Die Seite konnte nicht geladen werden (Fehler bei DurchfÃ¼hrung des AJAX-Requests).</p>");
-						$loadOverlay.fadeOut(200, function() {
-							$contentInner.fadeIn(200, function() {
-								document.title = 'Fehler - ' + pageTitle;
+						$targetContainer.html("<h1>Error</h1><p>The page could not be loaded (error during execution of AJAX request).</p>");
+						$loadOverlay.fadeOut(100, function() {
+							$targetContainer.fadeIn(100, function() {
+								document.title = 'Error - ' + pageTitle;
 							});
 						});
 					} else {
-						$contentInner.waitForImages(function() {
+						$targetContainer.waitForImages(function() {
 							$loadOverlay.fadeOut(200, function() {
-								$contentInner.fadeIn(200, function() {
+								$targetContainer.fadeIn(200, function() {
 									var newTitle = '';
-									newTitle = $('#smar-content-inner').find('h1').first().text();
+									newTitle = $targetContainer.find('h1').first().text();
 									document.title = newTitle + ' - ' + pageTitle;
 								});
 							});
@@ -76,7 +80,7 @@ $('nav#nav-main a').on('click', function(e) {
 		$('nav#nav-main a.smar-active').removeClass('smar-active');
 		$target.addClass('smar-active');
 		
-		loadPage(newTarget);	
+		loadPage(newTarget, true);	
 	}
 });
 
