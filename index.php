@@ -66,7 +66,8 @@ define( 'SMAR_CURRENT_DIR', currentDir() );
 					$page .= '?';
 				$page .= 'smar_include=true&smar_nav=true';
 
-				if(file_exists(SMAR_CURRENT_DIR.$page))
+				$page_exploded = explode("?", $page);
+				if(file_exists($page_exploded[0]))
 					echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.$page);
 				else
 					echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.'error.php?target='.urlencode($page));
