@@ -32,19 +32,45 @@ require_once('inc_session_check.php');
 				<li><a href="#"><i class="nav-icon nav-icon-shelf"></i><span>Shelves &amp; Sections</span></a></li>
 				<li><a href="#" class="smar-active"><i class="nav-icon nav-icon-list"></i><span>Orders</span></a></li>
 				<li><a href="http://example.com/"><i class="nav-icon nav-icon-map"></i><span>Market Map</span></a></li>
-				<li><a href="users.html"><i class="nav-icon nav-icon-user"></i><span>User Management</span></a></li>
-				<li><a href="#"><i class="nav-icon nav-icon-cog"></i><span>Settings</span></a></li>
+				<li><a href="users.php"><i class="nav-icon nav-icon-user"></i><span>User Management</span></a></li>
+				<li><a href="TEMPLATE.php"><i class="nav-icon nav-icon-cog"></i><span>Settings</span></a></li>
 			</ul>
 		</nav>
 		<section id="smar-content">
 			<?php
+
+function siteURL()
+{
+	$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+	$domainName = $_SERVER['HTTP_HOST'];
+	return $protocol.$domainName;
+}
+define( 'SMAR_SITE_URL', siteURL() );
+
+
+function currentDir() {
+	$folders = explode('/', $_SERVER['REQUEST_URI']);
+	unset($folders[count($folders)-1]);
+	return implode('/', $folders).'/';
+}
+define( 'SMAR_CURRENT_DIR', currentDir() );
+
+
 			if(isset($_GET['page']) && !empty($_GET['page'])) {
 				
 				$page = urldecode($_GET['page']);
-				if(strpos(' '.$page, '?'))
-					$page .= '';
-			
-				echo file_get_contents($page);
+
+				if( strpos($page, '?') )
+					$page .= '&';
+				else
+					$page .= '?';
+				$page .= 'smar_include=true&smar_nav=true';
+
+				if(file_exists(SMAR_CURRENT_DIR.$page))
+					echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.$page);
+				else
+					echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.'error.php?target='.urlencode($page));
+				
 			} else {
 				?>
 				<h1>Welcome</h1>

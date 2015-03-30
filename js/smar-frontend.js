@@ -7,7 +7,7 @@ var pageTitle = 'SMAR Web Administration';
 // for navigating back, track the onpopstate event
 window.onpopstate = function(event) {
 	if(event.state.page) {
-		loadPage(event.state.page);
+		loadPage(event.state.page, true);
 	}
 }
 
@@ -18,14 +18,27 @@ function loadPage(url, loadFull) {
 	var $content = $('#smar-content');
 	var $contentInner = $('#smar-content-inner');
 	var $targetContainer = loadFull ? $content : $contentInner;
-	var $loadOverlay = $('#smar-loading');
-	var new_url = url;
+	var $loadOverlay = $('#smar-loading');	
 	
 	if(url.substr(0,4) == 'http') {
 		window.location.href = url;
 	} else {
 		
-		history.pushState({page:url}, document.title, new_url);
+		// create parameters for include
+		var new_url = url;
+		
+		if(new_url.indexOf('?') == -1) {
+			new_url += '?';
+		} else {
+			new_url += '&';
+		}
+		new_url += 'smar_include=true';
+
+		if(loadFull) {
+			new_url += '&smar_nav=true';
+		}
+		
+		history.pushState({page:url}, document.title, url);
 		
 		$loadOverlay.fadeIn(100, function() {
 			$targetContainer.fadeOut(100, function() {
@@ -33,7 +46,7 @@ function loadPage(url, loadFull) {
 				$targetContainer.hide().empty();
 				window.scrollTo(0,0);
 				
-				$targetContainer.load(url, function(data, textStatus, jqXHR) {
+				$targetContainer.load(new_url, function(data, textStatus, jqXHR) {
 
 					if(textStatus == 'error') {
 						$targetContainer.html("<h1>Error</h1><p>The page could not be loaded (error during execution of AJAX request).</p>");
@@ -49,6 +62,9 @@ function loadPage(url, loadFull) {
 									var newTitle = '';
 									newTitle = $targetContainer.find('h1').first().text();
 									document.title = newTitle + ' - ' + pageTitle;
+									
+									if(loadFull)
+										subNavHandler();
 								});
 							});
 						});
@@ -85,23 +101,25 @@ $('nav#nav-main a').on('click', function(e) {
 });
 
 // handler for page navigation
-$('nav#nav-page a').on('click', function(e) {
+function subNavHandler() {
+	$('nav#nav-page a').on('click', function(e) {
 
-	e.preventDefault();
-	$target = $(e.delegateTarget);
+		e.preventDefault();
+		$target = $(e.delegateTarget);
 
-	// only change page if not current page is selected
-	if( !$target.hasClass('smar-active') ) {
-	
-		var newTarget = $target.attr('href');
-	
-		// toggle active status
-		$('nav#nav-page a.smar-active').removeClass('smar-active');
-		$target.addClass('smar-active');
-		
-		loadPage(newTarget);
-	}
-});
+		// only change page if not current page is selected
+		if( !$target.hasClass('smar-active') ) {
+
+			var newTarget = $target.attr('href');
+
+			// toggle active status
+			$('nav#nav-page a.smar-active').removeClass('smar-active');
+			$target.addClass('smar-active');
+
+			loadPage(newTarget);
+		}
+	});
+}
 
 
 

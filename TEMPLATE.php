@@ -19,7 +19,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	<nav id="nav-page">
 		<ul>
 			<li><a href="<?php echo $self; ?>" <?php echo ($subpage == '') ? 'class="smar-active"' : ''; ?>>First page</a></li>
-			<li><a href="<?php echo $self.'?subpage=new'; ?>" <?php echo ($subpage == 'new') ? 'class="smar-active"' : ''; ?>>Test</a></li>
+			<li><a href="<?php echo $self.'?subpage=test'; ?>" <?php echo ($subpage == 'test') ? 'class="smar-active"' : ''; ?>>Test</a></li>
 		</ul>
 	</nav>
 	<?php
@@ -32,14 +32,14 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	// page content
 	switch($subpage) {
 		
-		case 'new':
+		case 'test':
 			?>
-			<h1>Add new user</h1>
+			<h1>Test</h1>
 			<?php
 			break;
 		default:
 			?>
-			<h1>User Management</h1>
+			<h1>First page</h1>
 			<?php
 	}
 	?>
