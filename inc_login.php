@@ -23,7 +23,7 @@
 		}
 
 		//Abfrage der Logindaten
-		$result = $SMAR_DB->dbquery("SELECT * FROM smar_user WHERE name = '".$SMAR_DB->real_escape_string($user)."'");
+		$result = $SMAR_DB->dbquery("SELECT * FROM smar_user WHERE username = '".$SMAR_DB->real_escape_string($user)."'");
 		$row = $result->fetch_array();
 
 		//Prüfen, ob Felder leer
@@ -34,13 +34,17 @@
 		} else {
 			$passwort = hash("sha256", $passwort.$row['salt']);
 
-			if(($user == $row['name']) && ($passwort == $row['password'])) {
+			if(($user == $row['username']) && ($passwort == $row['password'])) {
 
 				session_start();
 				$sID = session_id();
 
 				$_SESSION['loginID']		= $row['user_id'];
-				$_SESSION['loginUsername']	= $row['name'];
+				$_SESSION['loginUsername']	= $row['username'];
+				$_SESSION['loginSurname']	= $row['surname'];
+				$_SESSION['loginLastname']	= $row['lastname'];
+				$_SESSION['loginPnr']		= $row['pnr'];
+				$_SESSION['loginRole']		= $row['role_web'];
 				$_SESSION['loginTime']		= time();
 				$_SESSION['loginLastActivity']		= time();
 

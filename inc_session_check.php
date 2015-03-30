@@ -23,10 +23,10 @@ else
 		$SMAR_DB = new SMAR_MysqlConnect();
 	}
     //Abfrage der Logindaten
-	$result = $SMAR_DB->dbquery("SELECT * FROM smar_user WHERE name = '".$SMAR_DB->real_escape_string($_SESSION['loginUsername'])."'");
+	$result = $SMAR_DB->dbquery("SELECT * FROM smar_user WHERE username = '".$SMAR_DB->real_escape_string($_SESSION['loginUsername'])."'");
 	$row = $result->fetch_array();
 
-    if(($_SESSION['loginID'] != $row['user_id']) OR ($_SESSION['loginUsername'] != $row['name']))
+    if(($_SESSION['loginID'] != $row['user_id']) OR ($_SESSION['loginUsername'] != $row['username']))
     {
   	    $_SESSION['login'] = 0;
 		session_destroy();
