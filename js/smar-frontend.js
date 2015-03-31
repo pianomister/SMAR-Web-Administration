@@ -7,13 +7,20 @@ var pageTitle = 'SMAR Web Administration';
 // for navigating back, track the onpopstate event
 window.onpopstate = function(event) {
 	if(event.state.page) {
-		loadPage(event.state.page, true);
+		loadPage(event.state.page, true, false, true);
+		console.log(event.state.navId);
+		if(event.state.navId)
+			setMainNav(event.state.navId);
+	} else {
+		// TODO: load first url
 	}
 }
 
-function loadPage(url, loadFull) {
+function loadPage(url, loadFull, navMainId, skipHistory) {
 	
 	loadFull = loadFull || false;
+	navMainId = navMainId || false;
+	skipHistory = skipHistory || false;
 
 	var $content = $('#smar-content');
 	var $contentInner = $('#smar-content-inner');
@@ -38,7 +45,8 @@ function loadPage(url, loadFull) {
 			new_url += '&smar_nav=true';
 		}
 		
-		history.pushState({page:url}, document.title, url);
+		if(!skipHistory)
+			history.pushState({page:url,navId:navMainId}, document.title, url);
 		
 		$loadOverlay.fadeIn(100, function() {
 			$targetContainer.fadeOut(100, function() {
@@ -76,6 +84,15 @@ function loadPage(url, loadFull) {
 }
 
 
+function setMainNav(target) {
+	
+	$target = $('#'+target);
+	
+	$('nav#nav-main a.smar-active').removeClass('smar-active');
+	$target.addClass('smar-active');
+}
+
+
 
 ////////////////////////////////////
 // EVENT HANDLER                  //
@@ -93,10 +110,9 @@ $('nav#nav-main a').on('click', function(e) {
 		var newTarget = $target.attr('href');
 	
 		// toggle active status
-		$('nav#nav-main a.smar-active').removeClass('smar-active');
-		$target.addClass('smar-active');
+		setMainNav($target.attr('id'));
 		
-		loadPage(newTarget, true);	
+		loadPage(newTarget, true, $target.attr('id'));	
 	}
 });
 
@@ -116,10 +132,11 @@ function subNavHandler() {
 			$('nav#nav-page a.smar-active').removeClass('smar-active');
 			$target.addClass('smar-active');
 
-			loadPage(newTarget);
+			loadPage(newTarget, false, $('nav#nav-main a.smar-active').attr('id'));
 		}
 	});
 }
+subNavHandler();
 
 
 
