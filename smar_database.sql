@@ -274,14 +274,18 @@ CREATE TABLE IF NOT EXISTS `smar_unit` (
 
 CREATE TABLE IF NOT EXISTS `smar_user` (
   `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `is_admin` tinyint(1) NOT NULL DEFAULT '0',
+  `pnr` varchar(10) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `surname` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `lastname` varchar(30) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `username` varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `role_web` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `role_device` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `password` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `salt` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `created` datetime NOT NULL,
   `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),
-  UNIQUE KEY `name` (`name`)
+  UNIQUE KEY `name` (`username`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
 
 --
