@@ -29,7 +29,7 @@ require_once('inc_session_check.php');
 		<nav id="nav-main">
 			<ul>
 				<li id="smar-logo"></li>
-				<li><a id="nav-main-1" href=""><i class="nav-icon nav-icon-cart"></i><span>Products &amp; Units</span></a></li>
+				<li><a id="nav-main-1" href="products.php"><i class="nav-icon nav-icon-cart"></i><span>Products &amp; Units</span></a></li>
 				<li><a id="nav-main-2" href=""><i class="nav-icon nav-icon-shelf"></i><span>Shelves &amp; Sections</span></a></li>
 				<li><a id="nav-main-3" href=""><i class="nav-icon nav-icon-list"></i><span>Orders</span></a></li>
 				<li><a id="nav-main-4" href=""><i class="nav-icon nav-icon-map"></i><span>Market Map</span></a></li>
