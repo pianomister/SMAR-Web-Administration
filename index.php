@@ -1,14 +1,14 @@
 <?php
 /************************************
-*									*
-* SMAR								*
-* by								*
-* Raffael Wojtas					*
-* Stephan Giesau					*
-* Sebastian Kowalski				*
-*									*
-* index.php							*
-*									*
+*                                   *
+* SMAR                              *
+* by                                *
+* Raffael Wojtas                    *
+* Stephan Giesau                    *
+* Sebastian Kowalski                *
+*                                   *
+* index.php                         *
+*                                   *
 ************************************/
 
 $topinclude = 1;
@@ -20,6 +20,7 @@ require_once('inc_session_check.php');
 <head>
 	<meta charset="utf-8">
 	<title>SMAR Web Administration</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
 	<link href="smar.css" rel="stylesheet">
 </head>
@@ -28,12 +29,12 @@ require_once('inc_session_check.php');
 		<nav id="nav-main">
 			<ul>
 				<li id="smar-logo"></li>
-				<li><a href="#"><i class="nav-icon nav-icon-cart"></i><span>Products &amp; Units</span></a></li>
-				<li><a href="#"><i class="nav-icon nav-icon-shelf"></i><span>Shelves &amp; Sections</span></a></li>
-				<li><a href="#" class="smar-active"><i class="nav-icon nav-icon-list"></i><span>Orders</span></a></li>
-				<li><a href="http://example.com/"><i class="nav-icon nav-icon-map"></i><span>Market Map</span></a></li>
-				<li><a href="users.php"><i class="nav-icon nav-icon-user"></i><span>User Management</span></a></li>
-				<li><a href="TEMPLATE.php"><i class="nav-icon nav-icon-cog"></i><span>Settings</span></a></li>
+				<li><a id="nav-main-1" href=""><i class="nav-icon nav-icon-cart"></i><span>Products &amp; Units</span></a></li>
+				<li><a id="nav-main-2" href=""><i class="nav-icon nav-icon-shelf"></i><span>Shelves &amp; Sections</span></a></li>
+				<li><a id="nav-main-3" href=""><i class="nav-icon nav-icon-list"></i><span>Orders</span></a></li>
+				<li><a id="nav-main-4" href=""><i class="nav-icon nav-icon-map"></i><span>Market Map</span></a></li>
+				<li><a id="nav-main-5" href="users.php"><i class="nav-icon nav-icon-user"></i><span>User Management</span></a></li>
+				<li><a id="nav-main-6" href="TEMPLATE.php"><i class="nav-icon nav-icon-cog"></i><span>Settings</span></a></li>
 			</ul>
 		</nav>
 		<section id="smar-content">

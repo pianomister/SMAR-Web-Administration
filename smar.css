@@ -133,6 +133,8 @@ table tbody tr:nth-child(2n) {
 }
 
 .swap-order {
+	display: -webkit-flex;
+	-webkit-flex-direction: column-reverse;
 	display: flex;
 	flex-direction: column-reverse;
 	margin: 1rem 0 .5rem;
@@ -149,9 +151,12 @@ input:focus + label {
 }
 input {
 	font: 400 1rem 'Roboto';
+	-webkit-appearance: none !important;
+	border-radius: 0;
 }
 input:not([type="submit"]), .input {
 	display: block;
+	box-sizing: border-box;
 	width: 100%;
 	max-width: 500px;
 	padding: .5em 0;
@@ -239,6 +244,9 @@ input[type="submit"].raised:hover, button.raised:hover {
  */
 
 #smar-login {
+	display: -webkit-flex;
+	-webkit-align-items: center;
+	-webkit-justify-content: space-around;
 	display: flex;
 	align-items: center;
 	justify-content: space-around;
@@ -268,11 +276,14 @@ input[type="submit"].raised:hover, button.raised:hover {
 }
 
 #smar-wrapper {
+	display: -webkit-flex;
+	-webkit-align-items: stretch;
+	-webkit-align-content: flex-start;
 	display: flex;
-	width: 100vw;
-	height: 100vh;
 	align-items: stretch;
 	align-content: flex-start;
+	width: 100vw;
+	height: 100vh;
 }
 
 #smar-content {
@@ -291,6 +302,8 @@ nav#nav-main {
 	z-index: 8;
 }
 nav#nav-main ul {
+	display: -webkit-flex;
+	-webkit-flex-flow: column;
 	display: flex;
 	flex-flow: column;
 	margin: 0;
@@ -302,6 +315,10 @@ nav#nav-main ul li {
 	height: 8rem;
 }
 nav#nav-main ul li a {
+	display: -webkit-flex;
+	-webkit-flex-flow: column;
+	-webkit-align-items: center;
+	-webkit-justify-content: center;
 	display: flex;
 	flex-flow: column;
 	align-items: center;
@@ -356,6 +373,8 @@ nav#nav-main ul li a span, .subtitle {
 
 
 nav#nav-page ul {
+	display: -webkit-flex;
+	-webkit-flex-flow: row wrap;
 	display: flex;
 	flex-flow: row wrap;
 	padding: 0;
@@ -432,6 +451,7 @@ nav#nav-page ul li a:hover {
 
 @media screen and (max-width: 50rem), screen and (max-height:56rem) {
 	#smar-wrapper {
+		-webkit-flex-flow: column;
 		flex-flow: column;
 	}
 	nav#nav-main {
@@ -440,6 +460,7 @@ nav#nav-page ul li a:hover {
 		min-height: 4rem;
 	}
 	nav#nav-main ul {
+		-webkit-flex-flow: row;
 		flex-flow: row;
 		height: 100%;
 	}
@@ -470,6 +491,7 @@ nav#nav-page ul li a:hover {
 		width: 7rem;
 	}
 	nav#nav-main ul li a {
+		-webkit-justify-content: flex-start;
 		justify-content: flex-start;
 		padding-top: 1.5rem;
 		box-sizing: border-box;
