@@ -1,14 +1,14 @@
 <?php
 /************************************
-*									*
-* SMAR								*
-* by								*
-* Raffael Wojtas					*
-* Stephan Giesau					*
-* Sebastian Kowalski				*
-*									*
-* login.php							*
-*									*
+*                                   *
+* SMAR                              *
+* by                                *
+* Raffael Wojtas                    *
+* Stephan Giesau                    *
+* Sebastian Kowalski                *
+*                                   *
+* login.php                         *
+*                                   *
 ************************************/
 
 require_once('_functions/_functions.php');
@@ -26,6 +26,7 @@ if(isset($_GET['action']))
 <head>
 	<meta charset="utf-8">
 	<title>SMAR Web Administration</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="http://fonts.googleapis.com/css?family=Roboto:400,300,700" rel="stylesheet" type="text/css">
 	<link href="smar.css" rel="stylesheet">
 </head>

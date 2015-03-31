@@ -7,7 +7,7 @@
 * Stephan Giesau                    *
 * Sebastian Kowalski                *
 *                                   *
-*                                   *
+*  products.php                     *
 *                                   *
 ************************************/
 
@@ -30,8 +30,10 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	?>
 	<nav id="nav-page">
 		<ul>
-			<li><a href="<?php echo $self; ?>" <?php echo ($subpage == '') ? 'class="smar-active"' : ''; ?>>First page</a></li>
-			<li><a href="<?php echo $self.'?subpage=test'; ?>" <?php echo ($subpage == 'test') ? 'class="smar-active"' : ''; ?>>Test</a></li>
+			<li><a href="<?php echo $self; ?>" <?php echo ($subpage == '') ? 'class="smar-active"' : ''; ?>>Products</a></li>
+			<li><a href="<?php echo $self.'?subpage=newproduct'; ?>" <?php echo ($subpage == 'newproduct') ? 'class="smar-active"' : ''; ?>>Add product</a></li>
+			<li><a href="<?php echo $self.'?subpage=units'; ?>" <?php echo ($subpage == 'units') ? 'class="smar-active"' : ''; ?>>Units</a></li>
+			<li><a href="<?php echo $self.'?subpage=newunit'; ?>" <?php echo ($subpage == 'newunit') ? 'class="smar-active"' : ''; ?>>Add unit</a></li>
 		</ul>
 	</nav>
 	<?php
@@ -44,14 +46,24 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	// page content
 	switch($subpage) {
 		
-		case 'test':
+		case 'unit':
 			?>
-			<h1>Test</h1>
+			<h1>Units</h1>
+			<?php
+			break;
+		case 'newunit':
+			?>
+			<h1>Add unit</h1>
+			<?php
+			break;
+		case 'newproduct':
+			?>
+			<h1>Add product</h1>
 			<?php
 			break;
 		default:
 			?>
-			<h1>First page</h1>
+			<h1>Products</h1>
 			<?php
 	}
 	?>

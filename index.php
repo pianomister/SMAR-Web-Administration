@@ -1,14 +1,14 @@
 <?php
 /************************************
-*									*
-* SMAR								*
-* by								*
-* Raffael Wojtas					*
-* Stephan Giesau					*
-* Sebastian Kowalski				*
-*									*
-* index.php							*
-*									*
+*                                   *
+* SMAR                              *
+* by                                *
+* Raffael Wojtas                    *
+* Stephan Giesau                    *
+* Sebastian Kowalski                *
+*                                   *
+* index.php                         *
+*                                   *
 ************************************/
 
 $topinclude = 1;
@@ -20,6 +20,7 @@ require_once('inc_session_check.php');
 <head>
 	<meta charset="utf-8">
 	<title>SMAR Web Administration</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
 	<link href="smar.css" rel="stylesheet">
 </head>
