@@ -1,29 +1,30 @@
 <?php
 /************************************
-*									*
-* SMAR								*
-* by								*
-* Raffael Wojtas					*
-* Stephan Giesau					*
-* Sebastian Kowalski				*
-*									*
-* inc_session_check.php				*
-*									*
+*                                   *
+* SMAR                              *
+* by                                *
+* Raffael Wojtas                    *
+* Stephan Giesau                    *
+* Sebastian Kowalski                *
+*                                   *
+* inc_session_check.php             *
+*                                   *
 ************************************/
 
 session_start();
-if($_SESSION['login'] == 0)
+if(!isset($_SESSION['login']) || $_SESSION['login'] == 0)
 {
 	session_destroy();
 	smar_handle_logout('login');
 }
 else
-{	require_once('_functions/_functions.php');
+{
+	require_once('_functions/_functions.php');
 	if(!(isset($SMAR_DB))) {
 		$SMAR_DB = new SMAR_MysqlConnect();
 	}
     //Abfrage der Logindaten
-	$result = $SMAR_DB->dbquery("SELECT * FROM smar_user WHERE username = '".$SMAR_DB->real_escape_string($_SESSION['loginUsername'])."'");
+	$result = $SMAR_DB->dbquery("SELECT user_id,username FROM smar_user WHERE username = '".$SMAR_DB->real_escape_string($_SESSION['loginUsername'])."'");
 	$row = $result->fetch_array();
 
     if(($_SESSION['loginID'] != $row['user_id']) OR ($_SESSION['loginUsername'] != $row['username']))
@@ -35,12 +36,12 @@ else
 
 	if (time() - $_SESSION['loginLastActivity'] > 720)
   	{
-  	    $_SESSION['login'] = 0;
-		session_destroy();
-		smar_handle_logout('timeout');
+			$_SESSION['login'] = 0;
+			session_destroy();
+			smar_handle_logout('timeout');
   	} else {
-		//Zeit für neuen Klick setzen
-		$_SESSION['loginLastActivity']		= time();
+			// update time for new click
+			$_SESSION['loginLastActivity'] = time();
 	}
 }
 
@@ -61,11 +62,10 @@ if(!isset($topinclude)) {
 function smar_handle_logout($type) {
 	//Topinclude in Funktion zugänglich machen
 	global $topinclude;
-	$topinclude = 1; // DEBUG
 	
 	//JS-Code zum Anzeigen der Timeout-Box auf der Seite
-	$ajaxTimeout =	'<script>document.getElementById("overlay").style.display = "block";'.
-					'document.getElementById("timeout-box").style.display = "block";</script>';
+	$ajaxTimeout =	'<script>document.onready = function() {document.getElementById("smar-overlay").style.display = "block";'.
+					'document.getElementById("smar-overlay-timeout").style.display = "block";}</script>';
 
 	//Je nach Fehler anders reagieren
 	switch($type) {

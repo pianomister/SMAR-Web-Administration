@@ -16,21 +16,14 @@ require_once('inc_login.php');
 
 if(isset($_GET['action']))
 	if($_GET['action'] == 'logout')
-		$SMAR_MESSAGES['success'][] = "Sie wurden ausgeloggt.";
+		$SMAR_MESSAGES['success'][] = "You have been logged out.";
 	else if($_GET['action'] == 'timeout')
-		$SMAR_MESSAGES['warning'][] = "Ihre Sitzung ist abgelaufen, bitte erneut einloggen.";
+		$SMAR_MESSAGES['warning'][] = "Your session was timed out, please login again.";
 	else if($_GET['action'] == 'sessionFehler')
-		$SMAR_MESSAGES['error'][] = "In Ihrer Sitzung waren widersprüchliche Daten gespeichert. Bitte erneut einloggen.";
+		$SMAR_MESSAGES['error'][] = "Your session data was corrupt. Please login again.";
+	
+include('inc_header.php');
 ?>
-<!doctype html>
-<html lang="de">
-<head>
-	<meta charset="utf-8">
-	<title>SMAR Web Administration</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link href="http://fonts.googleapis.com/css?family=Roboto:400,300,700" rel="stylesheet" type="text/css">
-	<link href="css/smar.css" rel="stylesheet">
-</head>
 <body>
 	<?php /*Print messages*/ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); } ?>
 	<form id="login-form" name="login" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">

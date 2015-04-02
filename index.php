@@ -14,17 +14,9 @@
 $topinclude = 1;
 require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
+
+include('inc_header.php')
 ?>
-<!doctype html>
-<html lang="de">
-<head>
-	<meta charset="utf-8">
-	<title>SMAR Web Administration</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-	<link href="css/materialdesignicons.min.css" rel="stylesheet">
-	<link href="css/smar.css" rel="stylesheet">
-</head>
 <body>
 	<div id="smar-wrapper">
 		<nav id="nav-main">
@@ -83,7 +75,7 @@ define( 'SMAR_CURRENT_DIR', currentDir() );
 			?>
 		</section>
 	</div>
-	<div id="smar-loading"><div><img src="img/ajax-loader.gif"></div></div>
+	<div id="smar-overlay"><div id="smar-overlay-loader"><img src="img/ajax-loader.gif"></div><div id="smar-overlay-timeout">Your session has timed out.<br>Please login again.<br><button onclick="document.location.href='login.php';" class="raised">Login</button></div></div>
 	<script src="js/jquery.min.js"></script>
 	<script src="js/plugins.js"></script>
 	<script src="js/smar-frontend.js"></script>

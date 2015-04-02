@@ -22,7 +22,12 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 	$url = $self;
 	$url .= (strlen($_SERVER['QUERY_STRING']) != 0) ? '?'.$_SERVER['QUERY_STRING'] : '';
 	header( 'location: index.php?page='.urlencode($url) );
+} else {
+	$topinclude = 0;
 }
+
+require_once('_functions/_functions.php');
+require_once('inc_session_check.php');
 
 // include subnav if requested
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
@@ -41,6 +46,41 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 ?>
 <div id="smar-content-inner">
 	<?php
+
+	// form was sent
+	if(isset($_POST['send_newproduct'])) {
+
+		if(isset($_POST['add-product-name']) && !empty($_POST['add-product-name']) &&
+			 isset($_POST['add-product-number']) && !empty($_POST['add-product-number']) &&
+			 isset($_POST['add-product-price']) && !empty($_POST['add-product-price']) &&
+			 isset($_POST['add-product-barcode']) && !empty($_POST['add-product-barcode'])
+			) {
+
+			$addName = strip_tags($_POST['add-product-name']);
+			$addNumber = strip_tags($_POST['add-product-number']);
+			$addPrice = doubleval(strip_tags($_POST['add-product-price']));
+			$addBarcode = intval(strip_tags($_POST['add-product-barcode']));
+			$addImage = isset($_POST['add-product-image']) ? $_POST['add-product-image'] : NULL;
+
+			// init database
+			if(!(isset($SMAR_DB))) {
+				$SMAR_DB = new SMAR_MysqlConnect();
+			}
+
+			// get shelf data
+			$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product
+																		(name, article_nr, price, barcode, image, created) VALUES
+																		('".$SMAR_DB->real_escape_string($addName)."', '".$SMAR_DB->real_escape_string($addNumber)."', '".$SMAR_DB->real_escape_string($addPrice)."', '".$SMAR_DB->real_escape_string($addBarcode)."', '".$SMAR_DB->real_escape_string($addImage)."', NOW())");
+			if($result === TRUE) {
+				$SMAR_MESSAGES['success'][] = 'Product "'.$addName.'" was successfully created.';
+			} else {
+				$SMAR_MESSAGES['error'][] = 'Inserting the product "'.$addName.'" into database failed.';
+			}
+		} else {
+			$SMAR_MESSAGES['error'][] = 'Please fill in all required fields.';
+		}
+	}
+
 	// print messages
 	if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 
@@ -65,6 +105,29 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 		case 'newproduct':
 			?>
 			<h1>Add product</h1>
+			<form method="post" action="<?php echo $self; ?>?subpage=newproduct">
+				<div class="form-box swap-order">
+					<input id="add-product-name" type="text" name="add-product-name" placeholder="Title or short description" />
+					<label for="add-product-name">Product name</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="add-product-number" type="text" name="add-product-number" placeholder="May contain non-numerical characters" />
+					<label for="add-product-number">Article number</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="add-product-price" type="text" name="add-product-price" placeholder="0.00" />
+					<label for="add-product-price">Price</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="add-product-barcode" type="text" name="add-product-barcode" placeholder="0123456789" />
+					<label for="add-product-barcode">Barcode</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="add-product-image" type="text" name="add-product-image" placeholder="http://" />
+					<label for="add-product-image">Image URL (optional)</label>
+				</div>
+				<input type="submit" value="Add product" name="send_newproduct" class="raised" />
+			</form>
 			<?php
 			break;
 		case 'editproduct':
@@ -86,34 +149,31 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 				</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>42</td>
-						<td>3423564</td>
-						<td>Duschgel ACME Men Sports</td>
-						<td>1.69</td>
-						<td>
-						<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-							<path fill="#000000" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
-						</svg>
-						<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-							<path fill="#000000" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
-						</svg>
-						</td>
-					</tr>
-					<tr>
-						<td>481</td>
-						<td>2497564</td>
-						<td>LekkaLekka Crunchy Bio-Chips</td>
-						<td>2.99</td>
-						<td>
-						<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-							<path fill="#000000" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
-						</svg>
-						<svg style="width:24px;height:24px" viewBox="0 0 24 24">
-							<path fill="#000000" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
-						</svg>
-						</td>
-					</tr>
+					<?php
+					// init database
+					if(!(isset($SMAR_DB))) {
+						$SMAR_DB = new SMAR_MysqlConnect();
+					}
+
+					// get products
+					$result = $SMAR_DB->dbquery("SELECT product_id, article_nr, name, price FROM ".SMAR_MYSQL_PREFIX."_product LIMIT 100");
+					if($result->num_rows > 0) {
+						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+							echo '<tr>
+								<td>'.$row['product_id'].'</td>
+								<td>'.$row['article_nr'].'</td>
+								<td>'.$row['name'].'</td>
+								<td>'.$row['price'].'</td>
+								<td>
+									<a href="'.$self.'?subpage=editproduct&id='.$row['product_id'].'" title="Edit"><i class="mdi mdi-pencil"></i></a>
+									<a href="'.$self.'?subpage=deleteproduct&id='.$row['product_id'].'" title="Delete"><i class="mdi mdi-delete"></i></a>
+								</td>
+							</tr>';
+						}
+					} else {
+						echo '<tr><td colspan="5">No products found</td></tr>';
+					}
+					?>
 				</tbody>
 			</table>
 			<?php

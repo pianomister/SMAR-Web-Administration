@@ -22,7 +22,13 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 	$url = $self;
 	$url .= (strlen($_SERVER['QUERY_STRING']) != 0) ? '?'.$_SERVER['QUERY_STRING'] : '';
 	header( 'location: index.php?page='.urlencode($url) );
+} else {
+	$topinclude = 0;
 }
+
+require_once('_functions/_functions.php');
+require_once('inc_session_check.php');
+
 
 // include subnav if requested
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {

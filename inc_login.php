@@ -7,7 +7,7 @@
 * Stephan Giesau                    *
 * Sebastian Kowalski                *
 *                                   *
-* login.php                         *
+* inc_login.php                     *
 *                                   *
 ************************************/
 
@@ -29,7 +29,7 @@
 		//Prüfen, ob Felder leer
     if(($user == "") || ($_POST['loginPassword'] == "")) {
 
-			$SMAR_MESSAGES['error'][] = "Bitte jedes Eingabefeld ausfüllen.";
+			$SMAR_MESSAGES['error'][] = "Please fill in all fields.";
 
 		} else {
 			$passwort = hash("sha256", $passwort.$row['salt']);
@@ -53,7 +53,7 @@
 				header("location: index.php");
 
 			} else {
-				$SMAR_MESSAGES['error'][] = "Die Logindaten waren nicht korrekt.";
+				$SMAR_MESSAGES['error'][] = "Your login data was incorrect.";
 			}
 		}
 	}

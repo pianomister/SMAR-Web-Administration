@@ -11,9 +11,6 @@
 *									*
 ************************************/
 
-require_once('_functions/_functions.php');
-require_once('inc_session_check.php');
-
 // extract file name
 $self = explode('/', $_SERVER['SCRIPT_NAME']);
 $self = $self[count($self)-1];
@@ -25,7 +22,12 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 	$url = $self;
 	$url .= (strlen($_SERVER['QUERY_STRING']) != 0) ? '?'.$_SERVER['QUERY_STRING'] : '';
 	header( 'location: index.php?page='.urlencode($url) );
+} else {
+	$topinclude = 0;
 }
+
+require_once('_functions/_functions.php');
+require_once('inc_session_check.php');
 
 // include subnav if requested
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
@@ -124,7 +126,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					echo "<td>".$row['created']."</td>";
 					?>
 					<td>
-						<a href="#"><i class="mdi mdi-dots-horizontal"></i></a> <a href="#"><i class="mdi mdi-pencil"></i></a> <a href="#"><i class="mdi mdi-delete"></i></a>
+						<a href="#" title="Change password"><i class="mdi mdi-key-variant"></i></a> <a href="#" title="Edit"><i class="mdi mdi-pencil"></i></a> <a href="#" title="Delete"><i class="mdi mdi-delete"></i></a>
 					</td></tr>
 					<?php
 				}

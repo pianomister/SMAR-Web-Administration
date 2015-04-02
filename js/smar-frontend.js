@@ -73,6 +73,7 @@ function loadPage(url, loadFull, navMainId, skipHistory) {
 									
 									if(loadFull)
 										subNavHandler();
+									linkHandler();
 								});
 							});
 						});
@@ -123,21 +124,30 @@ function subNavHandler() {
 		e.preventDefault();
 		$target = $(e.delegateTarget);
 
-		// only change page if not current page is selected
-		if( !$target.hasClass('smar-active') ) {
+		var newTarget = $target.attr('href');
 
-			var newTarget = $target.attr('href');
+		// toggle active status
+		$('nav#nav-page a.smar-active').removeClass('smar-active');
+		$target.addClass('smar-active');
 
-			// toggle active status
-			$('nav#nav-page a.smar-active').removeClass('smar-active');
-			$target.addClass('smar-active');
-
-			loadPage(newTarget, false, $('nav#nav-main a.smar-active').attr('id'));
-		}
+		loadPage(newTarget, false, $('nav#nav-main a.smar-active').attr('id'));
 	});
 }
 subNavHandler();
 
+// handler for AJAX links in page content
+function linkHandler() {
+	$('.ajax').on('click', function(e) {
+		e.preventDefault();
+		$target = $(e.delegateTarget);
+
+		var newTarget = $target.attr('href');
+		var loadFull = $target.hasClass('ajax-full');
+		
+		loadPage(newTarget, loadFull, $('nav#nav-main a.smar-active').attr('id'));
+	});
+}
+linkHandler();
 
 
 ////////////////////////////////////
