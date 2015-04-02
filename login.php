@@ -13,6 +13,7 @@
 
 require_once('_functions/_functions.php');
 require_once('inc_login.php');
+
 if(isset($_GET['action']))
 	if($_GET['action'] == 'logout')
 		$SMAR_MESSAGES['success'][] = "Sie wurden ausgeloggt.";
@@ -28,7 +29,7 @@ if(isset($_GET['action']))
 	<title>SMAR Web Administration</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="http://fonts.googleapis.com/css?family=Roboto:400,300,700" rel="stylesheet" type="text/css">
-	<link href="smar.css" rel="stylesheet">
+	<link href="css/smar.css" rel="stylesheet">
 </head>
 <body>
 	<?php /*Print messages*/ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); } ?>

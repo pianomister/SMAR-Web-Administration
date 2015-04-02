@@ -4,18 +4,19 @@
 	<meta charset="utf-8">
 	<title>SMAR Web Administration</title>
 	<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-	<link href="smar.css" rel="stylesheet">
+	<link href="css/materialdesignicons.min.css" rel="stylesheet">
+	<link href="css/smar.css" rel="stylesheet">
 </head>
 <body>
 	<div id="smar-wrapper">
 		<nav id="nav-main">
 			<ul>
 				<li id="smar-logo"></li>
-				<li><a href="#"><i class="nav-icon nav-icon-cart"></i><span>Products &amp; Units</span></a></li>
+				<li><a href="products.php"><i class="nav-icon nav-icon-cart"></i><span>Products &amp; Units</span></a></li>
 				<li><a href="#"><i class="nav-icon nav-icon-shelf"></i><span>Shelves &amp; Sections</span></a></li>
 				<li><a href="#" class="smar-active"><i class="nav-icon nav-icon-list"></i><span>Orders</span></a></li>
-				<li><a href="http://example.com/"><i class="nav-icon nav-icon-map"></i><span>Market Map</span></a></li>
-				<li><a href="login.html"><i class="nav-icon nav-icon-user"></i><span>User Management</span></a></li>
+				<li><a href="#"><i class="nav-icon nav-icon-map"></i><span>Market Map</span></a></li>
+				<li><a href="users.php"><i class="nav-icon nav-icon-user"></i><span>User Management</span></a></li>
 				<li><a href="#"><i class="nav-icon nav-icon-cog"></i><span>Settings</span></a></li>
 			</ul>
 		</nav>
@@ -57,6 +58,32 @@
 				<div class="form-box">
 					<span class="label">Dummy Form Placeholder</span>
 					<span class="input">Dummy form content</span>
+				</div>
+				<div class="form-box swap-order">
+					<select size="1" name="role_web" id="role_web">
+					  <option value="0">No Rights</option>
+					  <option value="1">Read only</option>
+					  <option value="2">Products &amp; Units</option>
+					  <option value="3">Products, Units, Shelves, Sections</option>
+					  <option value="4">Edit all</option>
+					  <option value="8">Manager</option>
+					  <option value="9">Administrator</option>
+					</select>
+					<label for="test3">Passwort</label>
+				</div>
+				<div class="form-box">
+					<span class="input">Select one option</span>
+					<input type="radio" name="radio" id="radio1">
+					<label for="radio1">Option 1</label>
+					<input type="radio" name="radio" id="radio2">
+					<label for="radio2">Option 2</label>
+				</div>
+				<div class="form-box">
+					<span class="input">Select multiple options</span>
+					<input type="checkbox" name="check1" id="check1">
+					<label for="check1">Option 1</label>
+					<input type="checkbox" name="check2" id="check2">
+					<label for="check2">Option 2</label>
 				</div>
 				<input type="submit" value="Standard" />
 				<button class="raised">Raised</button>

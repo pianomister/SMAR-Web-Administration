@@ -22,7 +22,8 @@ require_once('inc_session_check.php');
 	<title>SMAR Web Administration</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-	<link href="smar.css" rel="stylesheet">
+	<link href="css/materialdesignicons.min.css" rel="stylesheet">
+	<link href="css/smar.css" rel="stylesheet">
 </head>
 <body>
 	<div id="smar-wrapper">
@@ -38,7 +39,7 @@ require_once('inc_session_check.php');
 			</ul>
 		</nav>
 		<section id="smar-content">
-			<?php
+		<?php
 
 function siteURL()
 {
@@ -82,7 +83,7 @@ define( 'SMAR_CURRENT_DIR', currentDir() );
 			?>
 		</section>
 	</div>
-	<div id="smar-loading">Loading ...</div>
+	<div id="smar-loading"><div><img src="img/ajax-loader.gif"></div></div>
 	<script src="js/jquery.min.js"></script>
 	<script src="js/plugins.js"></script>
 	<script src="js/smar-frontend.js"></script>

@@ -1,14 +1,14 @@
 <?php
 /************************************
-*									*
-* SMAR								*
-* by								*
-* Raffael Wojtas					*
-* Stephan Giesau					*
-* Sebastian Kowalski				*
-*									*
-* inc_login.php						*
-*									*
+*                                   *
+* SMAR                              *
+* by                                *
+* Raffael Wojtas                    *
+* Stephan Giesau                    *
+* Sebastian Kowalski                *
+*                                   *
+* login.php                         *
+*                                   *
 ************************************/
 
 	if(isset($_POST['sendLogin']))
@@ -23,11 +23,11 @@
 		}
 
 		//Abfrage der Logindaten
-		$result = $SMAR_DB->dbquery("SELECT * FROM smar_user WHERE username = '".$SMAR_DB->real_escape_string($user)."'");
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($user)."'");
 		$row = $result->fetch_array();
 
 		//Prüfen, ob Felder leer
-        if(($user == "") || ($_POST['loginPassword'] == "")) {
+    if(($user == "") || ($_POST['loginPassword'] == "")) {
 
 			$SMAR_MESSAGES['error'][] = "Bitte jedes Eingabefeld ausfüllen.";
 

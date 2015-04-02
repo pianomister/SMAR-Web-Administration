@@ -41,12 +41,13 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 ?>
 <div id="smar-content-inner">
 	<?php
-	// TODO: print messages
+	// print messages
+	if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 
 	// page content
 	switch($subpage) {
 		
-		case 'unit':
+		case 'units':
 			?>
 			<h1>Units</h1>
 			<?php

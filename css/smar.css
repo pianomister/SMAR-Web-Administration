@@ -142,19 +142,26 @@ table tbody tr:nth-child(2n) {
 
 label, .label {
 	display: block;
+	width: 100%;
+	max-width: 500px;
 	font-size: .9rem;
 	color: #222;
 	transition: color .4s ease-out 0s;
 }
-input:focus + label {
+input:focus + label,
+select:focus + label,
+textarea:focus + label {
 	color: #16A082;
 }
-input {
+input, select, textarea {
 	font: 400 1rem 'Roboto';
-	-webkit-appearance: none !important;
-	border-radius: 0;
+	-webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  border-radius: 0;
 }
-input:not([type="submit"]), .input {
+input:not([type="submit"]), .input, select, textarea {
 	display: block;
 	box-sizing: border-box;
 	width: 100%;
@@ -168,13 +175,93 @@ input:not([type="submit"]), .input {
 	background-color: transparent;
 	transition: border-color .4s ease-out 0s;
 }
+select {
+	padding-left: 0;
+	text-indent: -2px;
+	cursor: pointer;
+	background: url("../img/icon-arrow.svg") right center no-repeat;
+	background-position: right 5px center;
+	background-size: 24px auto;
+}
+option {
+	background-color: #16A082;
+	border: 0 none;
+	color: #fff;
+}
+textarea {
+	resize: vertical;
+}
 .input {
 	border: 0;
 }
-input:not([type="submit"]):focus {
+input:not([type="submit"]):focus,
+select:focus, textarea:focus {
 	margin-bottom: 7px;
 	border-bottom: 2px solid #16A082;
 }
+
+
+input[type="checkbox"],
+input[type="radio"] {
+  width: auto;
+  float: left;
+  margin-right: .75em;
+  background: transparent;
+  border: none;
+}
+input[type="checkbox"]:checked,
+input[type="checkbox"]:not(checked),
+input[type="radio"]:checked,
+input[type="radio"]:not(checked) {
+  background: transparent;
+  position: relative;
+  visibility: hidden;
+  margin: 0;
+  padding: 0;
+}
+input[type="checkbox"] + label,
+input[type="radio"] + label {
+  cursor: pointer;
+	line-height: 24px;
+}
+input[type="checkbox"] + label:hover,
+input[type="radio"] + label:hover {
+  color: #16A082;
+}
+input[type="checkbox"]:checked + label::before, 
+input[type="checkbox"]:not(checked) + label::before,
+input[type="radio"]:checked + label::before,
+input[type="radio"]:not(checked) + label::before {
+  content: ' ';
+	position: relative;
+  top: -1px;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-right: .6em;
+	vertical-align: middle;
+	background: url("../img/icon-checkbox.svg") center no-repeat;
+	background-size: 20px auto;
+	opacity: .5;
+	transition: opacity .2s ease-out 0s;
+}
+input[type="radio"]:checked + label::before,
+input[type="radio"]:not(checked) + label::before {
+  background-image: url("../img/icon-radio.svg");
+}
+input[type="checkbox"]:hover + label::before,
+input[type="radio"]:hover + label::before {
+  opacity: .8;
+}
+input[type="checkbox"]:checked + label::before {
+  background-image: url("../img/icon-checkbox-checked.svg");
+}
+input[type="radio"]:checked + label::before {
+	background-image: url("../img/icon-radio-checked.svg");
+}
+
+
+
 input[type="submit"], button {
 	min-width: 5.5rem;
 	height: 2.25rem;
@@ -216,14 +303,17 @@ input[type="submit"].raised:hover, button.raised:hover {
 
 
 .dark-ui label, .dark-ui .label,
-.dark-ui input:not([type="submit"]), .dark-ui .input {
+.dark-ui input:not([type="submit"]), .dark-ui .input,
+.dark-ui select, .dark-ui textarea {
 	color: #FFF;
 	border-color: #FFF;
 }
 .dark-ui input:not([type="submit"]):focus {
 	border-color: #1FDEB4;
 }
-.dark-ui input:not([type="submit"]):focus + label {
+.dark-ui input:not([type="submit"]):focus + label,
+.dark-ui select:focus + label,
+.dark-ui textarea:focus + label {
 	color: #1FDEB4;
 }
 .dark-ui input[type="submit"]:not(.flat), .dark-ui button:not(.flat) {
@@ -262,7 +352,7 @@ input[type="submit"].raised:hover, button.raised:hover {
 }
 
 #smar-logo {
-	background: url("img/SMAR_logo_white.svg") center no-repeat;
+	background: url("../img/SMAR_logo_white.svg") center no-repeat;
 	background-size: 66% auto;
 	border: 1px solid #107861;
 	border-width: 0 0 1px;
@@ -270,7 +360,7 @@ input[type="submit"].raised:hover, button.raised:hover {
 #smar-login #smar-logo {
 	width: 100%;
 	height: 6rem;
-	background: url("img/SMAR_logo_white.svg") center no-repeat;
+	background: url("../img/SMAR_logo_white.svg") center no-repeat;
 	background-size: 50% auto;
 	border: 0;
 }
@@ -353,22 +443,22 @@ nav#nav-main ul li a span, .subtitle {
 	background-size: contain;
 }
 .nav-icon-cart {
-	background: url("img/icon-cart.svg") center no-repeat;
+	background: url("../img/icon-cart.svg") center no-repeat;
 }
 .nav-icon-cog {
-	background: url("img/icon-cog.svg") center no-repeat;
+	background: url("../img/icon-cog.svg") center no-repeat;
 }
 .nav-icon-list {
-	background: url("img/icon-list.svg") center no-repeat;
+	background: url("../img/icon-list.svg") center no-repeat;
 }
 .nav-icon-map {
-	background: url("img/icon-map.svg") center no-repeat;
+	background: url("../img/icon-map.svg") center no-repeat;
 }
 .nav-icon-shelf {
-	background: url("img/icon-shelf.svg") center no-repeat;
+	background: url("../img/icon-shelf.svg") center no-repeat;
 }
 .nav-icon-user {
-	background: url("img/icon-user.svg") center no-repeat;
+	background: url("../img/icon-user.svg") center no-repeat;
 }
 
 
@@ -423,6 +513,58 @@ nav#nav-page ul li a:hover {
 	color: #FFF;
 	background-color: rgba(236,236,236,.8);
 	z-index: 7;
+}
+#smar-loading div {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-justify-content: space-around;
+	justify-content: space-around;
+	-webkit-align-items: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+}
+
+
+.bg-icon, table a > .mdi {
+	margin: 0 .1em;
+	padding: .1em;
+	background-color: #16a082;
+	color: #fff;
+	font-size: 1.3em;
+}
+
+
+.color-red {
+	color: #F44336;
+}
+.color-green {
+	color: #4CAF50;
+}
+.color-gray {
+	color: #9E9E9E;
+}
+.color-white {
+	color: #fff;
+}
+.color-black {
+	color: #222;
+}
+
+.bg-red {
+	background-color: #F44336;
+}
+.bg-green {
+	background-color: #4CAF50;
+}
+.bg-gray {
+	background-color: #9E9E9E;
+}
+.bg-white {
+	background-color: #fff;
+}
+.bg-black {
+	background-color: #222;
 }
 
 

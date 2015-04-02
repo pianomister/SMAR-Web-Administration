@@ -43,7 +43,8 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 ?>
 <div id="smar-content-inner">
 	<?php
-	// TODO: print messages
+	// print messages
+	if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 
 	// page content
 	switch($subpage) {
@@ -123,7 +124,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					echo "<td>".$row['created']."</td>";
 					?>
 					<td>
-						<a href="#">Change Password</a>, <a href="#">Edit</a>, <a href="#">Delete</a>
+						<a href="#"><i class="mdi mdi-dots-horizontal"></i></a> <a href="#"><i class="mdi mdi-pencil"></i></a> <a href="#"><i class="mdi mdi-delete"></i></a>
 					</td></tr>
 					<?php
 				}

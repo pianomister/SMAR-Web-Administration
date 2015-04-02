@@ -14,7 +14,7 @@
 // Diese Datei beinhaltet Funktionen, die Modulübergreifend benutzt werden
 
 // error_reporting(NULL);
-error_reporting(E_ALL); // ... wir sind ja am programmieren :-)
+error_reporting(E_ALL); // ... wir sind ja am programmieren :-) TODO
 
 // Lade Konfiguration
 require_once('_config.php');
@@ -27,7 +27,7 @@ class SMAR_MysqlConnect extends mysqli
     {
 		parent::__construct(SMAR_MYSQL_SERVER,SMAR_MYSQL_USER,SMAR_MYSQL_PW,SMAR_MYSQL_DB);
 		if($this->connect_error) {
-			echo "Keine Verbindung konnte hergestellt werden";
+			echo "MySQL connection could not be created";
 			return false;
 		}
     }
@@ -35,11 +35,11 @@ class SMAR_MysqlConnect extends mysqli
     function dbquery($sql)
     {
 		if(!($erg = $this->query($sql))) {
-			echo "Fehler bei der Abfrage, hier ist das Statement: ".$sql." --- Fehlernummer ".$this->errno." ::: ".$this->error;
+			echo "Error with SQL request, the statement: ".$sql." --- Fehlernummer ".$this->errno." ::: ".$this->error;
 			return false;
 			#die('Query Error (' . $this->errno . ') '.$sql. $this->error);
 		}
-        return $erg;
+			return $erg;
     }
 }
 
@@ -60,22 +60,22 @@ function smar_print_messages($messages)
 function smar_post_status($status) {
 	switch($status) {
 		case '0':
-			echo('<img src="img/icons/help.png" width="16" alt="">');
+			echo('<i class="mdi mdi-help-circle bg-icon bg-gray color-white"></i>');
 			break;
 		case '1':
 		case 'success':
-			echo('<img src="img/icons/accept.png" width="16" alt="">');
+			echo('<i class="mdi mdi-check bg-icon bg-green color-white"></i>');
 			break;
 		case '2':
 		case 'warning':
-			echo('<img src="img/icons/error.png" width="16" alt="">');
+			echo('<i class="mdi mdi-close bg-icon bg-red color-white"></i>');
 			break;		
 		case '3':
 		case 'error':
-			echo('<img src="img/icons/cross.png" width="16" alt="">');
+			echo('<i class="mdi mdi-close bg-icon bg-red color-white"></i>');
 			break;	
 		default:
-			echo('<img src="img/icons/help.png" width="16" alt="">');
+			echo('<i class="mdi mdi-help-circle bg-icon bg-gray color-white"></i>');
 			break;
 	}
 }
@@ -113,13 +113,13 @@ function smar_parse_role_web($role_web) {
 function smar_parse_role_device($role_web) {
 	switch($role_web) {
 		case '0':
-			return '<svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="#FF0000" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>';
+			return '<i class="mdi mdi-close bg-icon bg-red color-white"></i>';
 			break;
 		case '1':
-			return '<svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="#00FF00" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>';
+			return '<i class="mdi mdi-check bg-icon bg-green color-white"></i>';
 			break;
 		default:
-			return '<svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="#FF0000" d="M10,19H13V22H10V19M12,2A6,6 0 0,1 18,8C17.67,9.33 17.33,10.67 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C14.33,10 14.67,9 15,8A3,3 0 0,0 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z" /></svg>';
+			return '<i class="mdi mdi-help-circle bg-icon bg-gray color-white"></i>';
 	}
 }
 ?>
