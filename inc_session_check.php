@@ -62,10 +62,10 @@ if(!isset($topinclude)) {
 function smar_handle_logout($type) {
 	//Topinclude in Funktion zugänglich machen
 	global $topinclude;
+	$topinclude = 1; // DEBUG TODO
 	
 	//JS-Code zum Anzeigen der Timeout-Box auf der Seite
-	$ajaxTimeout =	'<script>document.onready = function() {document.getElementById("smar-overlay").style.display = "block";'.
-					'document.getElementById("smar-overlay-timeout").style.display = "block";}</script>';
+	$ajaxTimeout =	'<script>document.onready = function() {document.getElementById("smar-timeout").style.display = "block";}</script>';
 
 	//Je nach Fehler anders reagieren
 	switch($type) {

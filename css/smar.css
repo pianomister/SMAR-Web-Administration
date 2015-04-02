@@ -499,7 +499,7 @@ nav#nav-page ul li a:hover {
 	color: #16A082;
 }
 
-#smar-overlay {
+.smar-overlay {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -510,11 +510,10 @@ nav#nav-page ul li a:hover {
 	height: 100vh;
 	margin: 0;
 	padding: 0;
-	color: #FFF;
 	background-color: rgba(236,236,236,.8);
 	z-index: 7;
 }
-#smar-overlay div {
+.smar-overlay div {
 	display: -webkit-flex;
 	display: flex;
 	-webkit-justify-content: space-around;
@@ -524,9 +523,7 @@ nav#nav-page ul li a:hover {
 	width: 100%;
 	height: 100%;
 }
-#smar-overlay-timeout {
-	display: none;
-}
+
 
 
 .bg-icon, table a > .mdi {

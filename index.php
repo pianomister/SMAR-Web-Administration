@@ -33,23 +33,6 @@ include('inc_header.php')
 		<section id="smar-content">
 		<?php
 
-function siteURL()
-{
-	$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-	$domainName = $_SERVER['HTTP_HOST'];
-	return $protocol.$domainName;
-}
-define( 'SMAR_SITE_URL', siteURL() );
-
-
-function currentDir() {
-	$folders = explode('/', $_SERVER['REQUEST_URI']);
-	unset($folders[count($folders)-1]);
-	return implode('/', $folders).'/';
-}
-define( 'SMAR_CURRENT_DIR', currentDir() );
-
-
 			if(isset($_GET['page']) && !empty($_GET['page'])) {
 				
 				$page = urldecode($_GET['page']);
@@ -75,7 +58,8 @@ define( 'SMAR_CURRENT_DIR', currentDir() );
 			?>
 		</section>
 	</div>
-	<div id="smar-overlay"><div id="smar-overlay-loader"><img src="img/ajax-loader.gif"></div><div id="smar-overlay-timeout">Your session has timed out.<br>Please login again.<br><button onclick="document.location.href='login.php';" class="raised">Login</button></div></div>
+	<div id="smar-loading" class="smar-overlay"><div><img src="img/ajax-loader.gif"></div></div>
+	<div id="smar-timeout" class="smar-overlay"><div><span>Your session has timed out.<br>Please login again.<br><button onclick="document.location.href='login.php';" class="raised">Login</button></span></div></div>
 	<script src="js/jquery.min.js"></script>
 	<script src="js/plugins.js"></script>
 	<script src="js/smar-frontend.js"></script>

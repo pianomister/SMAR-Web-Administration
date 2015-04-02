@@ -11,6 +11,8 @@
 *                                   *
 ************************************/
 
+require_once('_functions/_functions.php');
+
 // extract file name
 $self = explode('/', $_SERVER['SCRIPT_NAME']);
 $self = $self[count($self)-1];
@@ -21,12 +23,45 @@ $subpage = isset($_GET['subpage']) ? $_GET['subpage'] : '';
 if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 	$url = $self;
 	$url .= (strlen($_SERVER['QUERY_STRING']) != 0) ? '?'.$_SERVER['QUERY_STRING'] : '';
-	header( 'location: index.php?page='.urlencode($url) );
+	
+	// check if POST parameters must be passed
+	if(empty($_POST))
+		header( 'location: index.php?page='.urlencode($url) );
+	else {
+	/*	$data = http_build_query($_POST);
+
+		
+		function do_post_request($url, $data, $optional_headers = null)
+{
+     $params = array('http' => array(
+                  'method' => 'POST',
+                  'content' => $data
+               ));
+     if ($optional_headers !== null) {
+        $params['http']['header'] = $optional_headers;
+     }
+     $ctx = stream_context_create($params);
+     $fp = @fopen($url, 'rb', false, $ctx);
+     if (!$fp) {
+        throw new Exception("Problem with $url, $php_errormsg");
+     }
+     $response = @stream_get_contents($fp);
+     if ($response === false) {
+        throw new Exception("Problem reading data from $url, $php_errormsg");
+     }
+     return $response;
+}
+
+		
+echo do_post_request(SMAR_SITE_URL.SMAR_CURRENT_DIR.$url, $data);
+ */
+ 
+	}
+	
 } else {
 	$topinclude = 0;
 }
 
-require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
 
 // include subnav if requested

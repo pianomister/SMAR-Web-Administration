@@ -56,6 +56,23 @@ function smar_print_messages($messages)
 	}
 }
 
+// get current tld
+function smar_site_url()
+{
+	$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+	$domainName = $_SERVER['HTTP_HOST'];
+	return $protocol.$domainName;
+}
+define( 'SMAR_SITE_URL', smar_site_url() );
+
+// get current directory
+function smar_current_dir() {
+	$folders = explode('/', $_SERVER['REQUEST_URI']);
+	unset($folders[count($folders)-1]);
+	return implode('/', $folders).'/';
+}
+define( 'SMAR_CURRENT_DIR', smar_current_dir() );
+
 // status to icon
 function smar_post_status($status) {
 	switch($status) {
