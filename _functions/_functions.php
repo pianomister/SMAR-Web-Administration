@@ -1,14 +1,14 @@
 <?php
 /************************************
-*									*
-* SMAR								*
-* by								*
-* Raffael Wojtas					*
-* Stephan Giesau					*
-* Sebastian Kowalski				*
-*									*
-* _functions.php					*
-*									*
+*                                   *
+* SMAR                              *
+* by                                *
+* Raffael Wojtas                    *
+* Stephan Giesau                    *
+* Sebastian Kowalski                *
+*                                   *
+* _functions.php                    *
+*                                   *
 ************************************/
 
 // Diese Datei beinhaltet Funktionen, die Modulübergreifend benutzt werden
@@ -19,29 +19,30 @@ error_reporting(E_ALL); // ... wir sind ja am programmieren :-) TODO
 // Lade Konfiguration
 require_once('_config.php');
 
-// Klasse für die MySQLi-Operationen
+// class for MySQLi operations
 class SMAR_MysqlConnect extends mysqli
 {	
 
     function SMAR_MysqlConnect()
-    {
-		parent::__construct(SMAR_MYSQL_SERVER,SMAR_MYSQL_USER,SMAR_MYSQL_PW,SMAR_MYSQL_DB);
-		if($this->connect_error) {
-			echo "MySQL connection could not be created";
-			return false;
-		}
+		{
+			parent::__construct(SMAR_MYSQL_SERVER,SMAR_MYSQL_USER,SMAR_MYSQL_PW,SMAR_MYSQL_DB);
+			if($this->connect_error) {
+				echo "MySQL connection could not be created";
+				return false;
+			}
     }
  
     function dbquery($sql)
     {
-		if(!($erg = $this->query($sql))) {
-			echo "Error with SQL request, the statement: ".$sql." --- Fehlernummer ".$this->errno." ::: ".$this->error;
-			return false;
-			#die('Query Error (' . $this->errno . ') '.$sql. $this->error);
-		}
+			if(!($erg = $this->query($sql))) {
+				echo "Error with SQL request, the statement: ".$sql." --- Fehlernummer ".$this->errno." ::: ".$this->error;
+				return false;
+				#die('Query Error (' . $this->errno . ') '.$sql. $this->error);
+			}
 			return $erg;
     }
 }
+
 
 // Print messages
 // Types: success (green), warning (yellow), error (red)
@@ -56,6 +57,7 @@ function smar_print_messages($messages)
 	}
 }
 
+
 // get current tld
 function smar_site_url()
 {
@@ -65,6 +67,7 @@ function smar_site_url()
 }
 define( 'SMAR_SITE_URL', smar_site_url() );
 
+
 // get current directory
 function smar_current_dir() {
 	$folders = explode('/', $_SERVER['REQUEST_URI']);
@@ -72,6 +75,7 @@ function smar_current_dir() {
 	return implode('/', $folders).'/';
 }
 define( 'SMAR_CURRENT_DIR', smar_current_dir() );
+
 
 // status to icon
 function smar_post_status($status) {
@@ -96,6 +100,7 @@ function smar_post_status($status) {
 			break;
 	}
 }
+
 
 // parse role status
 function smar_parse_role_web($role_web) {
@@ -126,6 +131,7 @@ function smar_parse_role_web($role_web) {
 	}
 }
 
+
 // parse role status
 function smar_parse_role_device($role_web) {
 	switch($role_web) {
@@ -138,5 +144,24 @@ function smar_parse_role_device($role_web) {
 		default:
 			return '<i class="mdi mdi-help-circle bg-icon bg-gray color-white"></i>';
 	}
+}
+
+
+// get query string params from query string
+function smar_get_query_array($string) {
+	
+	if(strpos(' '.$string, '?') > 1)
+		$string = explode('?', $string)[1];
+	
+	$params = explode('&', $string);
+	
+	$return = array();
+	foreach($params as $param) {
+		$parts = explode('=', $param);
+		if(count($parts) == 2)
+			$return[$parts[0]] = $parts[1];
+	}
+	
+	return $return;
 }
 ?>

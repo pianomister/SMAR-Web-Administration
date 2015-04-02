@@ -1,14 +1,14 @@
 <?php
 /************************************
-*									*
-* SMAR								*
-* by								*
-* Raffael Wojtas					*
-* Stephan Giesau					*
-* Sebastian Kowalski				*
-*									*
-* _config.php						*
-*									*
+*                                   *
+* SMAR                              *
+* by                                *
+* Raffael Wojtas                    *
+* Stephan Giesau                    *
+* Sebastian Kowalski                *
+*                                   *
+* _config.php                       *
+*                                   *
 ************************************/
 
 // Diese Datei beinhaltet Variablen, die Modulübergreifend benutzt werden - geladen wird die Datei über die _functions.php

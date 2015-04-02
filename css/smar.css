@@ -377,8 +377,9 @@ input[type="submit"].raised:hover, button.raised:hover {
 }
 
 #smar-content {
-	overflow: auto;
+	width: 100%;
 	padding: 2rem;
+	overflow: auto;
 }
 
 nav#nav-main {
@@ -469,6 +470,7 @@ nav#nav-page ul {
 	flex-flow: row wrap;
 	padding: 0;
 	margin: 0;
+	border-bottom: 1px solid #BFBFBF;
 	list-style: none;
 }
 nav#nav-page ul li {
@@ -532,6 +534,7 @@ nav#nav-page ul li a:hover {
 	background-color: #16a082;
 	color: #fff;
 	font-size: 1.3em;
+	border-radius: .1em;
 }
 
 
@@ -573,7 +576,7 @@ nav#nav-page ul li a:hover {
  * @section media queries
  */
 
-@media(max-height:800px) {
+@media(max-height: 700px) {
 	nav#nav-main {
 		width: 6rem;
 		min-width: 6rem;
@@ -591,7 +594,7 @@ nav#nav-page ul li a:hover {
 	}
 }
 
-@media screen and (max-width: 50rem), screen and (max-height:56rem) {
+@media screen and (max-width: 50rem), screen and (max-height: 40rem) {
 	#smar-wrapper {
 		-webkit-flex-flow: column;
 		flex-flow: column;
@@ -621,10 +624,13 @@ nav#nav-page ul li a:hover {
 		width: 30%;
 		height: 30%;
 		background-size: contain;
-	}	
+	}
+	nav#nav-page ul {
+		border-bottom-width: 0;
+	}
 }
 
-@media screen and (min-width: 50rem) and (max-height: 56rem) {
+@media screen and (min-width: 50rem) and (max-height: 40rem) {
 	nav#nav-main {
 		height: 6rem;
 		min-height: 6rem;
@@ -640,5 +646,8 @@ nav#nav-page ul li a:hover {
 	}
 	nav#nav-main ul li a span {
 		display: block;
+	}
+	nav#nav-page ul {
+		border-bottom-width: 1px;
 	}
 }

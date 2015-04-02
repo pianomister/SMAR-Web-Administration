@@ -23,11 +23,11 @@ include('inc_header.php')
 			<ul>
 				<li id="smar-logo"></li>
 				<li><a id="nav-main-1" href="products.php"><i class="nav-icon nav-icon-cart"></i><span>Products &amp; Units</span></a></li>
-				<li><a id="nav-main-2" href=""><i class="nav-icon nav-icon-shelf"></i><span>Shelves &amp; Sections</span></a></li>
+				<!--<li><a id="nav-main-2" href=""><i class="nav-icon nav-icon-shelf"></i><span>Shelves &amp; Sections</span></a></li>
 				<li><a id="nav-main-3" href=""><i class="nav-icon nav-icon-list"></i><span>Orders</span></a></li>
-				<li><a id="nav-main-4" href=""><i class="nav-icon nav-icon-map"></i><span>Market Map</span></a></li>
+				<li><a id="nav-main-4" href=""><i class="nav-icon nav-icon-map"></i><span>Market Map</span></a></li>-->
 				<li><a id="nav-main-5" href="users.php"><i class="nav-icon nav-icon-user"></i><span>User Management</span></a></li>
-				<li><a id="nav-main-6" href="TEMPLATE.php"><i class="nav-icon nav-icon-cog"></i><span>Settings</span></a></li>
+				<!--<li><a id="nav-main-6" href="TEMPLATE.php"><i class="nav-icon nav-icon-cog"></i><span>Settings</span></a></li>-->
 			</ul>
 		</nav>
 		<section id="smar-content">
@@ -36,16 +36,17 @@ include('inc_header.php')
 			if(isset($_GET['page']) && !empty($_GET['page'])) {
 				
 				$page = urldecode($_GET['page']);
-
-				if( strpos($page, '?') )
-					$page .= '&';
-				else
-					$page .= '?';
-				$page .= 'smar_include=true&smar_nav=true';
-
-				$page_exploded = explode("?", $page);
+				$page_exploded = explode('?', $page);
+	
+				// add GET params from page redirect to $_GET
+				$params = smar_get_query_array($page);
+				$params['smar_include'] = true;
+				$params['smar_nav'] = true;
+				foreach($params as $k => $v)
+					$_GET[$k] = $v;
+	
 				if(file_exists($page_exploded[0]))
-					echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.$page);
+					include $page_exploded[0];
 				else
 					echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.'error.php?target='.urlencode($page));
 				
