@@ -52,7 +52,7 @@ function smar_print_messages($messages)
 		foreach($type_array as $type => $content) {
 			echo '<div class="messages messages-'.$mes_type.'">';
 			echo smar_post_status($mes_type);
-			echo '&nbsp;&nbsp;'.$content.' <br>('.date('d.m.Y H:i:s').')</div>';
+			echo '<span>'.$content.' <br>('.date('d.m.Y H:i:s').')</span></div>';
 		}
 	}
 }
@@ -89,7 +89,7 @@ function smar_post_status($status) {
 			break;
 		case '2':
 		case 'warning':
-			echo('<i class="mdi mdi-close bg-icon bg-red color-white"></i>');
+			echo('<i class="mdi mdi-alert bg-icon bg-orange color-white"></i>');
 			break;		
 		case '3':
 		case 'error':

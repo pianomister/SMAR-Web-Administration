@@ -25,11 +25,11 @@ if(isset($_GET['action']))
 include('inc_header.php');
 ?>
 <body>
-	<?php /*Print messages*/ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); } ?>
 	<form id="login-form" name="login" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 	<div id="smar-login">
 		<div id="smar-login-box" class="dark-ui">
 			<div id="smar-logo"></div>
+			<?php /*Print messages*/ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); } ?>
 			<div class="form-box swap-order">
 				<input type="text" name="loginUsername" id="loginUsername" placeholder="Username" />
 				<label for="loginUsername">Username</label>

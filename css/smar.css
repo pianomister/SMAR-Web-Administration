@@ -538,30 +538,48 @@ nav#nav-page ul li a:hover {
 }
 
 
+.messages {
+	display: -webkit-flex;
+	display: flex;
+	margin: 1em 0;
+	padding: 1em;
+	border: 1px solid #ececec;
+	font-size: .9em;
+}
+.messages span {
+	padding-left: 1em;
+}
+
 .color-red {
 	color: #F44336;
 }
 .color-green {
 	color: #4CAF50;
 }
+.color-orange {
+	color: #FF9800;
+}
 .color-gray {
 	color: #9E9E9E;
 }
-.color-white {
+.color-white, .messages {
 	color: #fff;
 }
 .color-black {
 	color: #222;
 }
 
-.bg-red {
+.bg-gray, .messages {
+	background-color: #9E9E9E;
+}
+.bg-red, .messages-error {
 	background-color: #F44336;
 }
-.bg-green {
+.bg-green, .messages-success {
 	background-color: #4CAF50;
 }
-.bg-gray {
-	background-color: #9E9E9E;
+.bg-orange, .messages-warning {
+	background-color: #FF9800;
 }
 .bg-white {
 	background-color: #fff;

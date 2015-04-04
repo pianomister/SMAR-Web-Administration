@@ -47,40 +47,6 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 <div id="smar-content-inner">
 	<?php
 
-	// form was sent
-	if(isset($_POST['send_newproduct'])) {
-
-		if(isset($_POST['add-product-name']) && !empty($_POST['add-product-name']) &&
-			 isset($_POST['add-product-number']) && !empty($_POST['add-product-number']) &&
-			 isset($_POST['add-product-price']) && !empty($_POST['add-product-price']) &&
-			 isset($_POST['add-product-barcode']) && !empty($_POST['add-product-barcode'])
-			) {
-
-			$addName = strip_tags($_POST['add-product-name']);
-			$addNumber = strip_tags($_POST['add-product-number']);
-			$addPrice = doubleval(strip_tags($_POST['add-product-price']));
-			$addBarcode = intval(strip_tags($_POST['add-product-barcode']));
-			$addImage = isset($_POST['add-product-image']) ? $_POST['add-product-image'] : NULL;
-
-			// init database
-			if(!(isset($SMAR_DB))) {
-				$SMAR_DB = new SMAR_MysqlConnect();
-			}
-
-			// get shelf data
-			$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product
-																		(name, article_nr, price, barcode, image, created) VALUES
-																		('".$SMAR_DB->real_escape_string($addName)."', '".$SMAR_DB->real_escape_string($addNumber)."', '".$SMAR_DB->real_escape_string($addPrice)."', '".$SMAR_DB->real_escape_string($addBarcode)."', '".$SMAR_DB->real_escape_string($addImage)."', NOW())");
-			if($result === TRUE) {
-				$SMAR_MESSAGES['success'][] = 'Product "'.$addName.'" was successfully created.';
-			} else {
-				$SMAR_MESSAGES['error'][] = 'Inserting the product "'.$addName.'" into database failed.';
-			}
-		} else {
-			$SMAR_MESSAGES['error'][] = 'Please fill in all required fields.';
-		}
-	}
-
 	// print messages
 	if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 
@@ -103,8 +69,46 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			<?php
 			break;
 		case 'newproduct':
+		
+			// form was sent
+			if(isset($_POST['send_newproduct'])) {
+
+				if(isset($_POST['add-product-name']) && !empty($_POST['add-product-name']) &&
+					 isset($_POST['add-product-number']) && !empty($_POST['add-product-number']) &&
+					 isset($_POST['add-product-price']) && !empty($_POST['add-product-price']) &&
+					 isset($_POST['add-product-barcode']) && !empty($_POST['add-product-barcode'])
+					) {
+
+					$addName = strip_tags($_POST['add-product-name']);
+					$addNumber = strip_tags($_POST['add-product-number']);
+					$addPrice = doubleval(strip_tags($_POST['add-product-price']));
+					$addBarcode = intval(strip_tags($_POST['add-product-barcode']));
+					$addImage = isset($_POST['add-product-image']) ? $_POST['add-product-image'] : NULL;
+
+					// init database
+					if(!(isset($SMAR_DB))) {
+						$SMAR_DB = new SMAR_MysqlConnect();
+					}
+
+					// get shelf data
+					$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product
+																				(name, article_nr, price, barcode, image, created) VALUES
+																				('".$SMAR_DB->real_escape_string($addName)."', '".$SMAR_DB->real_escape_string($addNumber)."', '".$SMAR_DB->real_escape_string($addPrice)."', '".$SMAR_DB->real_escape_string($addBarcode)."', '".$SMAR_DB->real_escape_string($addImage)."', NOW())");
+					if($result === TRUE) {
+						$SMAR_MESSAGES['success'][] = 'Product "'.$addName.'" was successfully created.';
+					} else {
+						$SMAR_MESSAGES['error'][] = 'Inserting the product "'.$addName.'" into database failed.';
+					}
+				} else {
+					$SMAR_MESSAGES['error'][] = 'Please fill in all required fields.';
+				}
+			}
 			?>
 			<h1>Add product</h1>
+			<?php
+			// print messages
+			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			?>
 			<form id="form-add-product" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage=newproduct'); ?>">
 				<div class="form-box swap-order">
 					<input id="add-product-name" type="text" name="add-product-name" placeholder="Title or short description" value="<?php if(isset($_POST['add-product-name'])) echo smar_form_input($_POST['add-product-name']); ?>" />
