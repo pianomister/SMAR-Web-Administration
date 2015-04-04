@@ -1,3 +1,4 @@
+
 ////////////////////////////////////
 // NAVIGATION FUNCTIONALITY       //
 ////////////////////////////////////
@@ -25,7 +26,7 @@ function loadPage(url, loadFull, navMainId, skipHistory) {
 	var $content = $('#smar-content');
 	var $contentInner = $('#smar-content-inner');
 	var $targetContainer = loadFull ? $content : $contentInner;
-	var $loadOverlay = $('#smar-loading');	
+	var $loadOverlay = $('#smar-loading');
 	
 	if(url.substr(0,4) == 'http') {
 		window.location.href = url;
@@ -84,10 +85,9 @@ function loadPage(url, loadFull, navMainId, skipHistory) {
 	}
 }
 
-
 function setMainNav(target) {
 	
-	$target = $('#'+target);
+	var $target = $('#'+target);
 	
 	$('nav#nav-main a.smar-active').removeClass('smar-active');
 	$target.addClass('smar-active');
@@ -100,22 +100,25 @@ function setMainNav(target) {
 ////////////////////////////////////
 
 // handler for main navigation
-$('nav#nav-main a').on('click', function(e) {
+function mainNavHandler() {
+	$('nav#nav-main a').on('click', function(e) {
 
-	e.preventDefault();
-	$target = $(e.delegateTarget);
+		e.preventDefault();
+		$target = $(e.delegateTarget);
 
-	// only change page if not current page is selected
-	if( !$target.hasClass('smar-active') ) {
-	
-		var newTarget = $target.attr('href');
-	
-		// toggle active status
-		setMainNav($target.attr('id'));
-		
-		loadPage(newTarget, true, $target.attr('id'));	
-	}
-});
+		// only change page if not current page is selected
+		if( !$target.hasClass('smar-active') ) {
+
+			var newTarget = $target.attr('href');
+
+			// toggle active status
+			setMainNav($target.attr('id'));
+
+			loadPage(newTarget, true, $target.attr('id'));	
+		}
+	});
+}
+
 
 // handler for page navigation
 function subNavHandler() {
@@ -133,7 +136,7 @@ function subNavHandler() {
 		loadPage(newTarget, false, $('nav#nav-main a.smar-active').attr('id'));
 	});
 }
-subNavHandler();
+
 
 // handler for AJAX links in page content
 function linkHandler() {
@@ -147,11 +150,57 @@ function linkHandler() {
 		loadPage(newTarget, loadFull, $('nav#nav-main a.smar-active').attr('id'));
 	});
 }
-linkHandler();
+
+
+// handler for forms with POST request type
+function setFormHandler(cssSelector) {
+	
+	$( cssSelector ).on( 'submit', function( event ) {
+		
+		var $loadOverlay = $('#smar-loading');
+		var $targetContainer = $('#smar-content-inner');
+		
+		event.preventDefault();
+		$target = $( this );
+		formData = $target.serialize() + '&' + $target.find('input[type="submit"]').attr('name') + '=' + $target.find('input[type="submit"]').attr('value');
+
+		$loadOverlay.fadeIn(100, function() {
+			$targetContainer.fadeOut(100, function() {
+
+				postUrl = decodeURIComponent( $target.attr('action').replace('&','?').split('page=')[1] ) + '&smar_include=true';
+				$targetContainer.hide().empty();
+				window.scrollTo(0,0);
+
+				$.post(
+					postUrl,
+					formData,
+					function (data) {
+						$loadOverlay.fadeOut(100, function() {
+							$targetContainer.html( data );
+							$targetContainer.fadeIn(100, function() {
+								linkHandler();
+							});
+						});
+					}
+				).fail(function(e) {
+					console.error(e);
+				});
+			});
+		});
+	});
+}
 
 
 ////////////////////////////////////
 // STARTUP                        //
 ////////////////////////////////////
 
-history.pushState({page:window.location.href}, document.title, window.location.href);
+$(document).ready(function() {
+	
+	history.pushState({page:window.location.href}, document.title, window.location.href);
+
+	mainNavHandler();
+	subNavHandler();
+	linkHandler();
+
+});

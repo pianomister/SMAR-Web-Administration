@@ -164,4 +164,10 @@ function smar_get_query_array($string) {
 	
 	return $return;
 }
+
+
+// save output of input field values
+function smar_form_input($inputtext) {
+	return str_replace('"',"'",strip_tags($inputtext));
+}
 ?>

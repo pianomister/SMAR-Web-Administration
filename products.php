@@ -105,29 +105,33 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 		case 'newproduct':
 			?>
 			<h1>Add product</h1>
-			<form method="post" action="index.php?page=<?php echo urlencode($self.'?subpage=newproduct'); ?>">
+			<form id="form-add-product" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage=newproduct'); ?>">
 				<div class="form-box swap-order">
-					<input id="add-product-name" type="text" name="add-product-name" placeholder="Title or short description" />
+					<input id="add-product-name" type="text" name="add-product-name" placeholder="Title or short description" value="<?php if(isset($_POST['add-product-name'])) echo smar_form_input($_POST['add-product-name']); ?>" />
 					<label for="add-product-name">Product name</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="add-product-number" type="text" name="add-product-number" placeholder="May contain non-numerical characters" />
+					<input id="add-product-number" type="text" name="add-product-number" placeholder="May contain non-numerical characters" value="<?php if(isset($_POST['add-product-number'])) echo smar_form_input($_POST['add-product-number']); ?>" />
 					<label for="add-product-number">Article number</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="add-product-price" type="text" name="add-product-price" placeholder="0.00" />
+					<input id="add-product-price" type="text" name="add-product-price" placeholder="0.00" value="<?php if(isset($_POST['add-product-price'])) echo smar_form_input($_POST['add-product-price']); ?>" />
 					<label for="add-product-price">Price</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="add-product-barcode" type="text" name="add-product-barcode" placeholder="0123456789" />
+					<input id="add-product-barcode" type="text" name="add-product-barcode" placeholder="0123456789" value="<?php if(isset($_POST['add-product-barcode'])) echo smar_form_input($_POST['add-product-barcode']); ?>" />
 					<label for="add-product-barcode">Barcode</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="add-product-image" type="text" name="add-product-image" placeholder="http://" />
+					<input id="add-product-image" type="text" name="add-product-image" placeholder="http://" value="<?php if(isset($_POST['add-product-image'])) echo smar_form_input($_POST['add-product-image']); ?>" />
 					<label for="add-product-image">Image URL (optional)</label>
 				</div>
 				<input type="submit" value="Add product" name="send_newproduct" class="raised" />
 			</form>
+			<!--AJAX Request-->
+			<script>
+			setFormHandler('#form-add-product');
+			</script>
 			<?php
 			break;
 		case 'editproduct':

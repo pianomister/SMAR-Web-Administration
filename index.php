@@ -61,8 +61,5 @@ include('inc_header.php')
 	</div>
 	<div id="smar-loading" class="smar-overlay"><div><img src="img/ajax-loader.gif"></div></div>
 	<div id="smar-timeout" class="smar-overlay"><div><span>Your session has timed out.<br>Please login again.<br><button onclick="document.location.href='login.php';" class="raised">Login</button></span></div></div>
-	<script src="js/jquery.min.js"></script>
-	<script src="js/plugins.js"></script>
-	<script src="js/smar-frontend.js"></script>
 </body>
 </html>
