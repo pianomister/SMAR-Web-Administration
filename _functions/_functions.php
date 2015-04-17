@@ -170,4 +170,40 @@ function smar_get_query_array($string) {
 function smar_form_input($inputtext) {
 	return str_replace('"',"'",strip_tags($inputtext));
 }
+
+
+// create pagination
+function smar_pagination($url, $num_items, $items_per_page, $current_page, $param_name = 'limit') {
+	
+	$html = '';
+	$last_page = ceil($num_items / $items_per_page) - 1;
+	
+	if($num_items > 0 && $last_page != 0) {
+		
+		if($current_page != 0)
+			$html .= '<a href="'.$url.'&'.$param_name.'='.($current_page-1).'" class="ajax" title="Page back"><i class="mdi mdi-arrow-left bg-icon bg-gray"></i></a>';
+		
+		if($current_page > 1)
+			$html .= '<a href="'.$url.'&'.$param_name.'=0" class="ajax text-icon bg-gray">1</a>';
+		
+		if($current_page > 2)
+			$html .= '...';
+		
+		for($i = $current_page-1; $i <= $current_page+1; $i++) {
+			if($i >= 0 && $i <= $last_page)
+				$html .= '<a href="'.$url.'&'.$param_name.'='.$i.'" class="ajax text-icon bg-gray">'.($i+1).'</a>';
+		}
+		
+		if($current_page < $last_page-2)
+			$html .= '...';
+
+		if($current_page < $last_page-1)
+			$html .= '<a href="'.$url.'&'.$param_name.'='.$last_page.'" class="ajax text-icon bg-gray">'.($last_page+1).'</a>';
+		
+		if($current_page != $last_page)
+			$html .= '<a href="'.$url.'&'.$param_name.'='.($current_page+1).'" class="ajax" title="Page forward"><i class="mdi mdi-arrow-right bg-icon bg-gray"></i></a>';		
+	}
+	
+	return $html;
+}
 ?>

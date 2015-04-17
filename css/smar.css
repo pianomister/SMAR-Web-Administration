@@ -48,6 +48,7 @@ html, body {
 a {
 	color: #16A082;
 	text-decoration: none;
+	outline: 0;
 	transition: color .4s ease-out 0s;
 }
 a:hover {
@@ -208,6 +209,7 @@ input[type="radio"] {
   margin-right: .75em;
   background: transparent;
   border: none;
+	margin: 0;
 }
 input[type="checkbox"]:checked,
 input[type="checkbox"]:not(checked),
@@ -216,7 +218,7 @@ input[type="radio"]:not(checked) {
   background: transparent;
   position: relative;
   visibility: hidden;
-  margin: 0;
+  margin: 0 !important;
   padding: 0;
 }
 input[type="checkbox"] + label,
@@ -377,6 +379,7 @@ input[type="submit"].raised:hover, button.raised:hover, input[type="reset"].rais
 }
 
 #smar-content {
+	box-sizing: border-box;
 	width: 100%;
 	padding: 2rem;
 	overflow: auto;
@@ -528,13 +531,42 @@ nav#nav-page ul li a:hover {
 
 
 
-.bg-icon, table a > .mdi {
+.bg-icon, a .bg-icon, .text-icon, table a > .mdi {
 	margin: 0 .1em;
 	padding: .1em;
 	background-color: #16a082;
 	color: #fff;
 	font-size: 1.3em;
 	border-radius: .1em;
+	transition: background-color .4s ease-out 0s;
+}
+.text-icon {
+	display: inline-block;
+	width: 1.3em;
+	height: 1.3em;
+	line-height: 1.3em;
+	margin: 0 .13em;
+	padding: .13em;
+	border-radius: .13em;
+	vertical-align: top;
+	text-align: center;
+	font-size: 1em;
+}
+table a:hover > .mdi, a:hover .bg-icon, a.text-icon:hover {
+	background-color: #107861;
+	color: #fff;
+	text-decoration: none;
+}
+
+
+
+.flex {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-justify-content: space-between;
+	justify-content: space-between;
+	-webkit-align-items: center;
+	align-items: center;
 }
 
 

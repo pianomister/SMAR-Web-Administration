@@ -145,7 +145,29 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			break;
 		default:
 			?>
-			<h1>Products</h1>
+			<div class="flex">
+				<h1>Products</h1>
+				<div>
+					<?php
+					// init database
+					if(!(isset($SMAR_DB))) {
+						$SMAR_DB = new SMAR_MysqlConnect();
+					}
+		
+					// pagination
+					$items_per_page = 20;	
+					$current_page = 0;
+					if(isset($_GET['limit']) && !empty($_GET['limit']))
+						$current_page = intval($_GET['limit']);
+					$limit = $items_per_page * $current_page;
+
+					$result = $SMAR_DB->dbquery("SELECT count(*) as items FROM ".SMAR_MYSQL_PREFIX."_product");
+					$num_items = $result->fetch_array(MYSQLI_ASSOC)['items'];
+
+					echo smar_pagination($self.'?page=products.php', $num_items, $items_per_page, $current_page);
+					?>
+				</div>
+			</div>
 			<table>
 				<thead>
 				<tr>
@@ -158,13 +180,8 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 				</thead>
 				<tbody>
 					<?php
-					// init database
-					if(!(isset($SMAR_DB))) {
-						$SMAR_DB = new SMAR_MysqlConnect();
-					}
-
-					// get products
-					$result = $SMAR_DB->dbquery("SELECT product_id, article_nr, name, price FROM ".SMAR_MYSQL_PREFIX."_product LIMIT 100");
+					// get product
+					$result = $SMAR_DB->dbquery("SELECT product_id, article_nr, name, price FROM ".SMAR_MYSQL_PREFIX."_product LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
 					if($result->num_rows > 0) {
 						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 							echo '<tr>
