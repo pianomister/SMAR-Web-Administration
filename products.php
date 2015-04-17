@@ -39,6 +39,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			<li><a href="<?php echo $self.'?subpage=addproduct'; ?>" <?php echo ($subpage == 'addproduct') ? 'class="smar-active"' : ''; ?>>Add product</a></li>
 			<li><a href="<?php echo $self.'?subpage=units'; ?>" <?php echo ($subpage == 'units') ? 'class="smar-active"' : ''; ?>>Units</a></li>
 			<li><a href="<?php echo $self.'?subpage=addunit'; ?>" <?php echo ($subpage == 'addunit') ? 'class="smar-active"' : ''; ?>>Add unit</a></li>
+			<li><a href="<?php echo $self.'?subpage=mapping'; ?>" <?php echo ($subpage == 'mapping') ? 'class="smar-active"' : ''; ?>>Mappings</a></li>
 		</ul>
 	</nav>
 	<?php

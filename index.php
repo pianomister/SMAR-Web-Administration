@@ -21,7 +21,7 @@ include('inc_header.php')
 	<div id="smar-wrapper">
 		<nav id="nav-main">
 			<ul>
-				<li id="smar-logo"></li>
+				<li><a id="smar-logo" href="start.php"></a></li>
 				<li><a id="nav-main-1" href="products.php"><i class="nav-icon nav-icon-cart"></i><span>Products &amp; Units</span></a></li>
 				<!--<li><a id="nav-main-2" href=""><i class="nav-icon nav-icon-shelf"></i><span>Shelves &amp; Sections</span></a></li>
 				<li><a id="nav-main-3" href=""><i class="nav-icon nav-icon-list"></i><span>Orders</span></a></li>
@@ -33,7 +33,7 @@ include('inc_header.php')
 		<section id="smar-content">
 		<?php
 
-			if(isset($_GET['page']) && !empty($_GET['page'])) {
+			if(isset($_GET['page']) && !empty($_GET['page']) && $_GET['page'] != 'start.php') {
 				
 				$page = urldecode($_GET['page']);
 				$page_exploded = explode('?', $page);
@@ -51,10 +51,11 @@ include('inc_header.php')
 					echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.'error.php?target='.urlencode($page));
 				
 			} else {
-				?>
-				<h1>Welcome</h1>
-				<p>Choose an action to start.</p>
-				<?php
+				$params['smar_include'] = true;
+				$params['smar_nav'] = true;
+				foreach($params as $k => $v)
+					$_GET[$k] = $v;
+				include 'start.php';
 			}
 			?>
 		</section>
