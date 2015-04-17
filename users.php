@@ -52,28 +52,81 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	switch($subpage) {
 		
 		case 'new':
+			// form was sent
+			if(isset($_POST['send_newuser'])) {
+
+				if(isset($_POST['add-user-pnr']) && !empty($_POST['add-user-pnr']) &&
+					 isset($_POST['add-user-name']) && !empty($_POST['add-user-name']) &&
+					 isset($_POST['add-user-username']) && !empty($_POST['add-user-username']) &&
+					 isset($_POST['add-user-password']) && !empty($_POST['add-user-password'])
+					) {
+						if(strlen($_POST['add-user-password']) > 5) { 
+
+							$addPnr = strip_tags($_POST['add-user-pnr']);
+							$addName = explode(" ", strip_tags($_POST['add-user-name']));
+							$addSurname = "";
+							for($i = 0; $i < count($addName)-1; $i++) {
+								if($i != 0) $addSurname = $addSurname." ";
+								$addSurname = $addSurname.$addName[$i];
+							}
+							$addLastname = $addName[count($addName)-1];
+							$addUsername = strip_tags($_POST['add-user-username']);
+							$addSalt = hash("sha256", substr($addUsername,0,2).time().substr($addLastname,0,2));
+							$addPassword = hash("sha256", strip_tags($_POST['add-user-password']).$addSalt);
+							$addRoleWeb = intval(strip_tags($_POST['add-user-role_web']));
+							if(isset($_POST['add-user-role_device'])) {
+								$addRoleDevice = 1;
+							} else {
+								$addRoleDevice = 0;
+							}
+
+							// init database
+							if(!(isset($SMAR_DB))) {
+								$SMAR_DB = new SMAR_MysqlConnect();
+							}
+
+							// get shelf data
+							$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_user
+																						(pnr, surname, lastname, username, role_web, role_device, password, salt, created) VALUES
+																						('".$SMAR_DB->real_escape_string($addPnr)."', '".$SMAR_DB->real_escape_string($addSurname)."', '".$SMAR_DB->real_escape_string($addLastname)."', '".$SMAR_DB->real_escape_string($addUsername)."', '".$SMAR_DB->real_escape_string($addRoleWeb)."', '".$SMAR_DB->real_escape_string($addRoleDevice)."', '".$SMAR_DB->real_escape_string($addPassword)."', '".$SMAR_DB->real_escape_string($addSalt)."', NOW())");
+							if($result === TRUE) {
+								$SMAR_MESSAGES['success'][] = 'User "'.$addUsername.'" was successfully created.';
+							} else {
+								$SMAR_MESSAGES['error'][] = 'Inserting the user "'.$addUsername.'" into database failed.';
+							}
+						} else {
+							$SMAR_MESSAGES['error'][] = 'Password must be at least 6 characters long.';
+						}
+				} else {
+					$SMAR_MESSAGES['error'][] = 'Please fill in all required fields.';
+				}
+			}
 			?>
 			<h1>Add new user</h1>
+			<?php
+			// print messages
+			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			?>
 			<p>* All form fields are required.</p>
-			<form>
+			<form id="form-add-user" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage=new'); ?>">
 				<div class="form-box swap-order">
-					<input id="name" name="name" placeholder="abc123456" />
-					<label for="name">Personnell Number</label>
+					<input id="add-user-pnr" type="text" name="add-user-pnr" placeholder="abc123456" />
+					<label for="add-user-pnr">Personnell Number</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="name" name="name" placeholder="Surname Lastname" />
-					<label for="name">Name</label>
+					<input id="add-user-name" type="text" name="add-user-name" placeholder="Surname Lastname" />
+					<label for="add-user-name">Name</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="username" name="username" placeholder="Username" />
-					<label for="username">Username</label>
+					<input id="add-user-username" type="text" name="add-user-username" placeholder="Username" />
+					<label for="add-user-username">Username</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="password" type="password" name="password" placeholder="mind. 16 Zeichen" />
-					<label for="password">Password</label>
+					<input id="add-user-password" type="password" name="add-user-password" placeholder="at least 6 characters" />
+					<label for="add-user-password">Password</label>
 				</div>
 				<div class="form-box swap-order">
-					<select id="role_web" name="role_web" size="1">
+					<select id="add-user-role_web" name="add-user-role_web" size="1">
 					  <option value="0">No Rights</option>
 					  <option value="1">Read only</option>
 					  <option value="2">Products & Units</option>
@@ -82,14 +135,19 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					  <option value="8">Manager</option>
 					  <option value="9">Administrator</option>
 					</select>
-					<label for="role_web">Role @ Web Administration</label>
+					<label for="add-user-role_web">Role @ Web Administration</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="role_device" type="checkbox" name="role_device"/>
-					<label for="role_device">Role @ Device</label>
+					<input id="add-user-role_device" type="checkbox" name="add-user-role_device"/>
+					<label for="add-user-role_device">Role @ Device</label>
 				</div>
-				<input type="submit" value="Add user" />
+				<input type="submit" value="Add user" name="send_newuser" class="raised" />
+				<input type="reset" value="Clear form" />
 			</form>
+			<!--AJAX Request-->
+			<script>
+			setFormHandler('#form-add-user');
+			</script>
 			<?php
 			break;
 		case 'edit':
