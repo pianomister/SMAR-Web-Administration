@@ -53,21 +53,227 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	// page content
 	switch($subpage) {
 		
-		case 'units':
+		case 'mapping':
 			?>
-			<h1>Units</h1>
+			<h1>Unit mappings</h1>
 			<?php
 			break;
-		case 'addunit':
+		case 'units':
 			?>
-			<h1>Add unit</h1>
+			<div class="flex">
+				<h1>Units</h1>
+				<div>
+					<?php
+					// init database
+					if(!(isset($SMAR_DB))) {
+						$SMAR_DB = new SMAR_MysqlConnect();
+					}
+
+					// pagination
+					$items_per_page = 20;	
+					$current_page = 0;
+					if(isset($_GET['limit']) && !empty($_GET['limit']))
+						$current_page = intval($_GET['limit']);
+					$limit = $items_per_page * $current_page;
+
+					$result = $SMAR_DB->dbquery("SELECT count(*) as items FROM ".SMAR_MYSQL_PREFIX."_unit");
+					$num_items = $result->fetch_array(MYSQLI_ASSOC)['items'];
+
+					echo smar_pagination($self.'?page=products.php&subpage=units', $num_items, $items_per_page, $current_page);
+					?>
+				</div>
+			</div>
+			<table>
+				<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Capacity</th>
+					<th>Actions</th>
+				</tr>
+				</thead>
+				<tbody>
+					<?php
+					// get unit
+					$result = $SMAR_DB->dbquery("SELECT p.unit_id, p.name, p.capacity
+																				FROM ".SMAR_MYSQL_PREFIX."_unit p
+																				ORDER BY unit_id
+																				LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
+					if($result->num_rows > 0) {
+						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+							echo '<tr>
+								<td>'.$row['unit_id'].'</td>
+								<td>'.$row['name'].'</td>
+								<td>'.$row['capacity'].'</td>
+								<td>
+									<a href="'.$self.'?subpage=editunit&id='.$row['unit_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
+									<a href="'.$self.'?subpage=mapping&id='.$row['unit_id'].'" title="Show connected products" class="ajax"><i class="mdi mdi-cart"></i></a>
+									<!--<a href="'.$self.'?subpage=deleteunit&id='.$row['unit_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
+								</td>
+							</tr>';
+						}
+					} else {
+						echo '<tr><td colspan="5">No units found</td></tr>';
+					}
+					?>
+				</tbody>
+			</table>
 			<?php
 			break;
 		case 'editunit':
+		
+			// set action type
+			$page_action = 'edit';
+		
+			if(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
+				
+				$formID = intval($_REQUEST['id']);
+				
+				// edit form was sent
+				if(isset($_POST['send_editunit'])) {
+
+					if(isset($_POST['form-unit-name']) &&
+						 isset($_POST['form-unit-capacity'])
+						) {
+
+						$formName = strip_tags($_POST['form-unit-name']);
+						$formCapacity = intval(strip_tags($_POST['form-unit-capacity']));
+						
+						if(!empty($_POST['form-unit-name']) &&
+							 !empty($_POST['form-unit-capacity'])
+							) {
+
+							// init database
+							if(!(isset($SMAR_DB))) {
+								$SMAR_DB = new SMAR_MysqlConnect();
+							}
+
+							// get shelf data
+							$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_unit SET
+																						name = '".$SMAR_DB->real_escape_string($formName)."',
+																						capacity = '".$SMAR_DB->real_escape_string($formCapacity)."'
+																						WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."'");
+							if($result === TRUE) {
+								$SMAR_MESSAGES['success'][] = 'Changes for "'.$formName.'" were successfully saved.';
+							} else {
+								$SMAR_MESSAGES['error'][] = 'Inserting the changes for product "'.$formName.'" into database failed.';
+							}
+						} else {
+							$SMAR_MESSAGES['error'][] = 'Please fill in all required fields.';
+						}
+				  }
+			
+				// get initial contents
+				} else {
+					
+					// init database
+					if(!(isset($SMAR_DB))) {
+						$SMAR_DB = new SMAR_MysqlConnect();
+					}
+					
+					$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_unit WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."' LIMIT 1");
+					if($result->num_rows == 1) {
+						$row = $result->fetch_array(MYSQLI_ASSOC);
+						
+						$formName = $row['name'];
+						$formCapacity = $row['capacity'];
+						$formCreated = $row['created'];
+						$formLastupdate = $row['lastupdate'];
+						
+					} else {
+						$SMAR_MESSAGES['error'][] = 'No item was found for given ID '.smar_save_input($formID).'.';
+					}
+				}
+				
+			} else {
+				$SMAR_MESSAGES['error'][] = 'No item ID was provided in URL parameters.';
+			}
+			
 			?>
 			<h1>Edit unit</h1>
 			<?php
+		case 'addunit':
+		
+			// set action type
+			if(!isset($page_action))
+				$page_action = 'add';
+		
+			// form was sent
+			if($page_action == 'add' && isset($_POST['send_addunit'])) {
+
+				if(isset($_POST['form-unit-name']) &&
+					 isset($_POST['form-unit-capacity'])
+					) {
+
+						$formName = strip_tags($_POST['form-unit-name']);
+						$formCapacity = intval(strip_tags($_POST['form-unit-capacity']));
+						
+						if(!empty($_POST['form-unit-name']) &&
+							 !empty($_POST['form-unit-capacity'])
+							) {
+
+						// init database
+						if(!(isset($SMAR_DB))) {
+							$SMAR_DB = new SMAR_MysqlConnect();
+						}
+
+						// get shelf data
+						$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_unit
+																					(name, capacity, created) VALUES
+																					('".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formCapacity)."', NOW())");
+						if($result === TRUE) {
+							$SMAR_MESSAGES['success'][] = 'Unit "'.$formName.'" was successfully created.';
+						} else {
+							$SMAR_MESSAGES['error'][] = 'Inserting the unit "'.$formName.'" into database failed.';
+						}
+					} else {
+						$SMAR_MESSAGES['error'][] = 'Please fill in all required fields.';
+					}
+				}
+			}
+		
+			if($page_action == 'add')
+				echo '<h1>Add unit</h1>';
+
+			// print messages
+			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			?>
+			<form id="form-unit" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage='.$page_action.'unit'); ?>">
+				<div class="form-box swap-order">
+					<input id="form-unit-name" type="text" name="form-unit-name" placeholder="Title or short description" value="<?php if(isset($formName)) echo smar_form_input($formName); ?>" />
+					<label for="form-unit-name">Unit name</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-unit-capacity" type="text" name="form-unit-capacity" placeholder="0" value="<?php if(isset($formCapacity)) echo smar_form_input($formCapacity); ?>" />
+					<label for="form-unit-capacity">Capacity</label>
+				</div>
+				<?php
+				if($page_action == 'add') {
+					echo '<input type="submit" value="Add unit" name="send_addunit" class="raised" />';
+				} else {
+					echo '<input type="hidden" value="'.$formID.'" name="id" />';
+					?>
+					<div class="form-box">
+						<span class="label">Date created</label>
+						<span class="input"><?php echo isset($formCreated) ? smar_form_input($formCreated) : '&mdash;'; ?></label>
+					</div>
+					<div class="form-box">
+							<span class="label">Last update</label>
+							<span class="input"><?php echo isset($formLastupdate) ? smar_form_input($formLastupdate) : '&mdash;'; ?></label>
+					</div>
+					<input type="submit" value="Save changes" name="send_editunit" class="raised" />
+					<?php
+				}
+				?>
+				<input type="reset" value="Reset form" name="reset" />
+			</form>
+			<!--AJAX Request-->
+			<script>
+			setFormHandler('#form-unit');
+			</script>
+			<?php
 			break;
+
 		case 'editproduct':
 		
 			// set action type
@@ -247,6 +453,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					<?php
 				}
 				?>
+				<input type="reset" value="Reset form" name="reset" />
 			</form>
 			<!--AJAX Request-->
 			<script>
@@ -292,7 +499,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 				<tbody>
 					<?php
 					// get product
-					$result = $SMAR_DB->dbquery("SELECT product_id, article_nr, name, price FROM ".SMAR_MYSQL_PREFIX."_product LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
+					$result = $SMAR_DB->dbquery("SELECT product_id, article_nr, name, price FROM ".SMAR_MYSQL_PREFIX."_product ORDER BY product_id LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
 					if($result->num_rows > 0) {
 						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 							echo '<tr>
