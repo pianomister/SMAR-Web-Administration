@@ -162,27 +162,40 @@ function setFormHandler(cssSelector) {
 		
 		event.preventDefault();
 		$target = $( this );
-		formData = $target.serialize() + '&' + $target.find('input[type="submit"]').attr('name') + '=' + $target.find('input[type="submit"]').attr('value');
-
+		var methodType = $target.attr('method').toUpperCase();
+		var formData = $target.serialize();
+		
+		var $formSubmit = $target.find('input[type="submit"]');
+		if($formSubmit.attr('name') != 'undefined') {
+			formData += '&' + $formSubmit.attr('name') + '=' + $formSubmit.attr('value');
+		}
+		
 		$loadOverlay.fadeIn(100, function() {
 			$targetContainer.fadeOut(100, function() {
-
-				postUrl = decodeURIComponent( $target.attr('action').replace('&','?').split('page=')[1] ) + '&smar_include=true';
+				console.log($target.attr('action').split('page=')[1] + methodType);//TODO
+				
+				postUrl = decodeURIComponent( $target.attr('action').split('page=')[1] );
+				
+				if(methodType == "POST")
+					postUrl += '&smar_include=true';
+				else if(methodType == "GET")
+					formData += '&smar_include=true';
+				
 				$targetContainer.hide().empty();
 				window.scrollTo(0,0);
 
-				$.post(
-					postUrl,
-					formData,
-					function (data) {
-						$loadOverlay.fadeOut(100, function() {
-							$targetContainer.html( data );
-							$targetContainer.fadeIn(100, function() {
-								linkHandler();
-							});
+				$.ajax({
+					method: methodType,
+					url: postUrl,
+					data: formData
+				}).done(function (data) {
+					$loadOverlay.fadeOut(100, function() {
+						$targetContainer.html( data );
+						$targetContainer.fadeIn(100, function() {
+							linkHandler();
 						});
-					}
-				).fail(function(e) {
+					});
+				}).fail(function(e) {
 					console.error(e);
 				});
 			});

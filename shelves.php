@@ -12,8 +12,9 @@
 ************************************/
 
 // extract file name
-$self = explode('/', $_SERVER['SCRIPT_NAME']);
-$self = $self[count($self)-1];
+//$self = explode('/', $_SERVER['SCRIPT_NAME']);
+//$self = (strpos($_SERVER['QUERY_STRING'], 'page=') >= 0) ? explode('?', urldecode(explode('page=', ' '.$_SERVER['QUERY_STRING'])[1]))[0] : $self[count($self)-1];
+$self = 'shelves.php';//TODO
 $subpage = isset($_GET['subpage']) ? $_GET['subpage'] : '';
 
 // check for type of call (direct/AJAX)
@@ -250,7 +251,19 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					if(!(isset($SMAR_DB))) {
 						$SMAR_DB = new SMAR_MysqlConnect();
 					}
-
+		
+					$filter = '';
+					$formFilter = '';
+					if(isset($_GET['filter']) && !empty($_GET['filter'])) {
+						$formFilter = $_GET['filter'];
+						$filter = " WHERE name LIKE '%".$SMAR_DB->real_escape_string($formFilter)."%'";
+					}
+					?>
+					<form id="form-filter" method="get" action="index.php?page=<?php echo urlencode($self); ?>">
+						<input type="hidden" name="page" value="<?php echo urlencode($self); ?>">
+						<input type="text" name="filter" placeholder="Filter by name" value="<?php if(isset($formFilter) && !empty($formFilter)) echo smar_form_input($formFilter); ?>" class="input-medium">
+					</form>
+					<?php
 					// pagination
 					$items_per_page = 20;	
 					$current_page = 0;
@@ -258,10 +271,10 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 						$current_page = intval($_GET['limit']);
 					$limit = $items_per_page * $current_page;
 
-					$result = $SMAR_DB->dbquery("SELECT count(*) as items FROM ".SMAR_MYSQL_PREFIX."_shelf");
+					$result = $SMAR_DB->dbquery("SELECT count(*) as items FROM ".SMAR_MYSQL_PREFIX."_shelf".$filter);
 					$num_items = $result->fetch_array(MYSQLI_ASSOC)['items'];
 
-					echo smar_pagination($self.'?page=shelfs.php', $num_items, $items_per_page, $current_page);
+					echo smar_pagination($self.'?page=shelves.php&filter='.$formFilter, $num_items, $items_per_page, $current_page);
 					?>
 				</div>
 			</div>
@@ -279,7 +292,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 				<tbody>
 					<?php
 					// get shelf
-					$result = $SMAR_DB->dbquery("SELECT shelf_id, name, size_x, size_y, size_z FROM ".SMAR_MYSQL_PREFIX."_shelf ORDER BY shelf_id LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
+					$result = $SMAR_DB->dbquery("SELECT shelf_id, name, size_x, size_y, size_z FROM ".SMAR_MYSQL_PREFIX."_shelf".$filter." ORDER BY shelf_id LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
 					if($result->num_rows > 0) {
 						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 							echo '<tr>
@@ -300,6 +313,10 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					?>
 				</tbody>
 			</table>
+			<!--AJAX Request-->
+			<script>
+			setFormHandler('#form-filter');
+			</script>
 			<?php
 	}
 	?>

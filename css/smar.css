@@ -195,6 +195,9 @@ textarea {
 .input {
 	border: 0;
 }
+.input-medium {
+	max-width: 200px;
+}
 input:not([type="submit"]):not([type="reset"]):focus,
 select:focus, textarea:focus {
 	margin-bottom: 7px;
@@ -568,6 +571,7 @@ table a:hover > .mdi, a:hover .bg-icon, a.text-icon:hover {
 	-webkit-align-items: center;
 	align-items: center;
 }
+
 
 
 .messages {

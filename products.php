@@ -69,9 +69,23 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					if(!(isset($SMAR_DB))) {
 						$SMAR_DB = new SMAR_MysqlConnect();
 					}
+		
+					$filter = '';
+					$formFilter = '';
+					if(isset($_GET['filter']) && !empty($_GET['filter'])) {
+						$formFilter = $_GET['filter'];
+						$filter = " WHERE name LIKE '%".$SMAR_DB->real_escape_string($formFilter)."%'";
+					}
+					?>
+					<form id="form-filter" method="get" action="index.php?page=<?php echo urlencode($self); ?>">
+						<input type="hidden" name="page" value="<?php echo urlencode($self); ?>">
+						<input type="hidden" name="subpage" value="units">
+						<input type="text" name="filter" placeholder="Filter by name" value="<?php if(isset($formFilter) && !empty($formFilter)) echo smar_form_input($formFilter); ?>" class="input-medium">
+					</form>
+					<?php
 
 					// pagination
-					$items_per_page = 20;	
+					$items_per_page = 2;	
 					$current_page = 0;
 					if(isset($_GET['limit']) && !empty($_GET['limit']))
 						$current_page = intval($_GET['limit']);
@@ -80,7 +94,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					$result = $SMAR_DB->dbquery("SELECT count(*) as items FROM ".SMAR_MYSQL_PREFIX."_unit");
 					$num_items = $result->fetch_array(MYSQLI_ASSOC)['items'];
 
-					echo smar_pagination($self.'?page=products.php&subpage=units', $num_items, $items_per_page, $current_page);
+					echo smar_pagination($self.'?page=products.php&subpage=units&filter='.$formFilter, $num_items, $items_per_page, $current_page);
 					?>
 				</div>
 			</div>
@@ -97,7 +111,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					<?php
 					// get unit
 					$result = $SMAR_DB->dbquery("SELECT p.unit_id, p.name, p.capacity
-																				FROM ".SMAR_MYSQL_PREFIX."_unit p
+																				FROM ".SMAR_MYSQL_PREFIX."_unit p".$filter."
 																				ORDER BY unit_id
 																				LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
 					if($result->num_rows > 0) {
@@ -119,6 +133,9 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					?>
 				</tbody>
 			</table>
+			<script>
+			setFormHandler('#form-filter');
+			</script>
 			<?php
 			break;
 		case 'editunit':
@@ -472,6 +489,19 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					if(!(isset($SMAR_DB))) {
 						$SMAR_DB = new SMAR_MysqlConnect();
 					}
+		
+					$filter = '';
+					$formFilter = '';
+					if(isset($_GET['filter']) && !empty($_GET['filter'])) {
+						$formFilter = $_GET['filter'];
+						$filter = " WHERE name LIKE '%".$SMAR_DB->real_escape_string($formFilter)."%'";
+					}
+					?>
+					<form id="form-filter" method="get" action="index.php?page=<?php echo urlencode($self); ?>">
+						<input type="hidden" name="page" value="<?php echo urlencode($self); ?>">
+						<input type="text" name="filter" placeholder="Filter by name" value="<?php if(isset($formFilter) && !empty($formFilter)) echo smar_form_input($formFilter); ?>" class="input-medium">
+					</form>
+					<?php
 
 					// pagination
 					$items_per_page = 20;	
@@ -483,7 +513,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					$result = $SMAR_DB->dbquery("SELECT count(*) as items FROM ".SMAR_MYSQL_PREFIX."_product");
 					$num_items = $result->fetch_array(MYSQLI_ASSOC)['items'];
 
-					echo smar_pagination($self.'?page=products.php', $num_items, $items_per_page, $current_page);
+					echo smar_pagination($self.'?page=products.php&filter='.$formFilter, $num_items, $items_per_page, $current_page);
 					?>
 				</div>
 			</div>
@@ -500,7 +530,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 				<tbody>
 					<?php
 					// get product
-					$result = $SMAR_DB->dbquery("SELECT product_id, article_nr, name, price FROM ".SMAR_MYSQL_PREFIX."_product ORDER BY product_id LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
+					$result = $SMAR_DB->dbquery("SELECT product_id, article_nr, name, price FROM ".SMAR_MYSQL_PREFIX."_product".$filter." ORDER BY product_id LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
 					if($result->num_rows > 0) {
 						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 							echo '<tr>
@@ -520,6 +550,10 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					?>
 				</tbody>
 			</table>
+			<!--AJAX Request-->
+			<script>
+			setFormHandler('#form-filter');
+			</script>
 			<?php
 	}
 	?>
