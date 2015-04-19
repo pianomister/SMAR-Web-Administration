@@ -23,8 +23,8 @@ include('inc_header.php')
 			<ul>
 				<li><a id="smar-logo" href="start.php"></a></li>
 				<li><a id="nav-main-1" href="products.php"><i class="nav-icon nav-icon-cart"></i><span>Products &amp; Units</span></a></li>
-				<!--<li><a id="nav-main-2" href=""><i class="nav-icon nav-icon-shelf"></i><span>Shelves &amp; Sections</span></a></li>
-				<li><a id="nav-main-3" href=""><i class="nav-icon nav-icon-list"></i><span>Orders</span></a></li>
+				<li><a id="nav-main-2" href="shelves.php"><i class="nav-icon nav-icon-shelf"></i><span>Shelves &amp; Sections</span></a></li>
+				<!--<li><a id="nav-main-3" href=""><i class="nav-icon nav-icon-list"></i><span>Orders</span></a></li>
 				<li><a id="nav-main-4" href=""><i class="nav-icon nav-icon-map"></i><span>Market Map</span></a></li>-->
 				<li><a id="nav-main-5" href="users.php"><i class="nav-icon nav-icon-user"></i><span>User Management</span></a></li>
 				<!--<li><a id="nav-main-6" href="TEMPLATE.php"><i class="nav-icon nav-icon-cog"></i><span>Settings</span></a></li>-->

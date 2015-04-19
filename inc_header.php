@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="favicon.ico" rel="shortcut icon">
 	
-	<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+	<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" asnyc>
 	<link href="css/materialdesignicons.min.css" rel="stylesheet">
 	<link href="css/smar.css" rel="stylesheet">
 	

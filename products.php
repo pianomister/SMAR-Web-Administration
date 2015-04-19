@@ -311,7 +311,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 								$SMAR_DB = new SMAR_MysqlConnect();
 							}
 
-							// get shelf data
+							// update
 							$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_product SET
 																						name = '".$SMAR_DB->real_escape_string($formName)."',
 																						article_nr = '".$SMAR_DB->real_escape_string($formNumber)."',
@@ -394,7 +394,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 							$SMAR_DB = new SMAR_MysqlConnect();
 						}
 
-						// get shelf data
+						// insert
 						$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product
 																					(name, article_nr, price, barcode, image, created) VALUES
 																					('".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formNumber)."', '".$SMAR_DB->real_escape_string($formPrice)."', '".$SMAR_DB->real_escape_string($formBarcode)."', '".$SMAR_DB->real_escape_string($formImage)."', NOW())");
@@ -510,7 +510,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 								<td>'.$row['price'].'</td>
 								<td>
 									<a href="'.$self.'?subpage=editproduct&id='.$row['product_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
-									<a href="'.$self.'?subpage=deleteproduct&id='.$row['product_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>
+									<!--<a href="'.$self.'?subpage=deleteproduct&id='.$row['product_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
 								</td>
 							</tr>';
 						}
