@@ -213,28 +213,91 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			</table>
 			<?php
 			break;
+		case 'changepw':
 		default:
+			if(isset($_GET['editID']) && !empty($_GET['editID'])) {
+				$userid = $_GET['editID'];
+			} else {
+				$userid = $_SESSION['loginID'];
+			}
+			
+			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE user_id = '".$SMAR_DB->real_escape_string($userid)."'");
+			if(!($row = $result->fetch_array())) {
+				$SMAR_MESSAGES['error'][] = 'User with ID '.$userid.' not known.';
+			}
+			// form was sent
+			if(isset($_POST['send_changepw'])) {
+
+				if(isset($_POST['change-user-password-old']) && !empty($_POST['change-user-password-old']) &&
+					 isset($_POST['change-user-password-new']) && !empty($_POST['change-user-password-new']) &&
+					 isset($_POST['change-user-password-confirm']) && !empty($_POST['change-user-password-confirm'])
+					) {
+						if(strlen($_POST['change-user-password-new']) > 5) { 
+						
+							if($_POST['change-user-password-new'] == $_POST['change-user-password-confirm']) {
+								//Abfrage der Logindaten
+								// init database
+								if(!(isset($SMAR_DB))) {
+									$SMAR_DB = new SMAR_MysqlConnect();
+								}
+								
+								$passwort = hash("sha256", $_POST['change-user-password-old'].$row['salt']);
+								if($passwort == $row['password']) {
+									$addSalt = hash("sha256", substr($row['username'],0,2).time().substr($row['lastname'],0,2));
+									$addPassword = hash("sha256", strip_tags($_POST['change-user-password-new']).$addSalt);
+									$resultUpdate = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_user SET password = '".$SMAR_DB->real_escape_string($addPassword)."', 
+																		salt = '".$SMAR_DB->real_escape_string($addSalt)."' WHERE user_id = '".$SMAR_DB->real_escape_string($userid)."'");
+									if($resultUpdate === TRUE) {
+										$SMAR_MESSAGES['success'][] = 'Password sucessfully updated.';
+									} else {
+										$SMAR_MESSAGES['error'][] = 'Password update failed.';
+									}
+								} else {
+									$SMAR_MESSAGES['error'][] = 'Old password incorrect.';
+								}
+							} else {
+								$SMAR_MESSAGES['error'][] = 'New password and confirm new password must be equal.';
+							}
+						} else {
+							$SMAR_MESSAGES['error'][] = 'Password must be at least 6 characters long.';
+						}
+				} else {
+					$SMAR_MESSAGES['error'][] = 'Please fill in all fields.';
+				}
+			}
 			?>
 			<h1>Change my password</h1>
+			<?php
+			// print messages
+			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			?>
 			<h2>Web Administration</h2>
-			<form>
+			<form id="form-change-pw" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage=changepw'); ?>">
 				<div class="form-box swap-order">
-					<input id="password" type="password" name="password" placeholder="mind. 16 Zeichen" />
+					<input id="change-user-password-old" type="password" name="change-user-password-old" placeholder="Old Password" />
 					<label for="password">Old Password</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="password" type="password" name="password" placeholder="mind. 16 Zeichen" />
+					<input id="change-user-password-new" type="password" name="change-user-password-new" placeholder="at least 6 characters" />
 					<label for="password">New Password</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="password" type="password" name="password" placeholder="mind. 16 Zeichen" />
+					<input id="change-user-password-confirm" type="password" name="change-user-password-confirm" placeholder="at least 6 characters" />
 					<label for="password">Confirm New Password</label>
 				</div>
-				<input type="submit" value="Change password" />
+				<input type="submit" name="send_changepw" value="Change password" />
 			</form>
-			<h2>Device</h2>
-			<a href="#">Print and activate new QR-Code for this user.</a>
+			<!--AJAX Request-->
+			<script>
+			setFormHandler('#form-change-pw');
+			</script>
 			<?php
+			if($row['role_device'] == 1) {
+			?>
+				<h2>Device</h2>
+				<a href="#">Print and activate new QR-Code for this user.</a>
+			<?php
+			}
 	}
 
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true')
