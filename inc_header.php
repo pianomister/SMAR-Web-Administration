@@ -11,6 +11,7 @@
 	<link href="css/smar.css" rel="stylesheet">
 	
 	<script src="js/jquery.min.js"></script>
+	<script src="js/jquery.colorbox-min.js"></script>
 	<script src="js/plugins.js"></script>
 	<script src="js/smar-frontend.js"></script>
 </head>
