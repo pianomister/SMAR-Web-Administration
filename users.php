@@ -204,7 +204,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					echo "<td>".$row['created']."</td>";
 					?>
 					<td>
-						<a href="#" title="Change password"><i class="mdi mdi-key-variant"></i></a> <a href="#" title="Edit"><i class="mdi mdi-pencil"></i></a> <a href="#" title="Delete"><i class="mdi mdi-delete"></i></a>
+						<a href="<?php echo($self); ?>?subpage=changepw&editID=<?php echo($row['user_id']); ?>" class="ajax" title="Change password"><i class="mdi mdi-key-variant"></i></a> <a href="#" title="Edit"><i class="mdi mdi-pencil"></i></a> <a href="#" title="Delete"><i class="mdi mdi-delete"></i></a>
 					</td></tr>
 					<?php
 				}
@@ -272,7 +272,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 			?>
 			<h2>Web Administration</h2>
-			<form id="form-change-pw" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage=changepw'); ?>">
+			<form id="form-change-pw" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage=changepw&editID='.$userid); ?>">
 				<div class="form-box swap-order">
 					<input id="change-user-password-old" type="password" name="change-user-password-old" placeholder="Old Password" />
 					<label for="password">Old Password</label>
