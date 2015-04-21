@@ -40,12 +40,11 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			<li><a href="<?php echo $self.'?subpage=new'; ?>" <?php echo ($subpage == 'new') ? 'class="smar-active"' : ''; ?>>Add new user</a></li>
 		</ul>
 	</nav>
+	<div id="smar-content-inner">
 	<?php
 }
-?>
-<div id="smar-content-inner">
-	<?php
-	// print messages
+
+// print messages
 	if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 
 	// page content
@@ -236,5 +235,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			<a href="#">Print and activate new QR-Code for this user.</a>
 			<?php
 	}
-	?>
-</div>
+
+if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
+	echo '</div>';
+?>
