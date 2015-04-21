@@ -12,8 +12,9 @@
 ************************************/
 
 // extract file name
-$self = explode('/', $_SERVER['SCRIPT_NAME']);
-$self = $self[count($self)-1];
+//$self = explode('/', $_SERVER['SCRIPT_NAME']);
+//$self = $self[count($self)-1];//TODO
+$self = 'users.php';
 $subpage = isset($_GET['subpage']) ? $_GET['subpage'] : '';
 
 // check for type of call (direct/AJAX)
@@ -236,6 +237,6 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			<?php
 	}
 
-if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
+if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true')
 	echo '</div>';
 ?>

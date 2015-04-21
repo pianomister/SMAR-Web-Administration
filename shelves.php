@@ -30,7 +30,6 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
 
-
 // include subnav if requested
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	
@@ -319,6 +318,6 @@ switch($subpage) {
 		<?php
 }
 
-if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
+if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true')
 	echo '</div>';
 ?>

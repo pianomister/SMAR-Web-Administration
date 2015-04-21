@@ -555,6 +555,6 @@ switch($subpage) {
 		<?php
 }
 
-if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
+if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true')
 	echo '</div>';
 ?>
