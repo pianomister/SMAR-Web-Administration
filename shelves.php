@@ -70,8 +70,11 @@ switch($subpage) {
 							<p>
 								<a href="" title="Add section"><i class="bg-icon mdi mdi-plus"></i> Add new section</a> &nbsp;&nbsp;
 							</p>
-							<div id="designer-canvas" style="background-color: #ccc;width: '.$row['size_x'].'px; height: '.$row['size_y'].'px;"></div>
-							<h2>Sections</h2>';
+							<!--<div id="designer-canvas" style="background-color: #ccc;width: '.$row['size_x'].'px; height: '.$row['size_y'].'px;"></div>-->';
+				
+				echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.'svg_generator.php?id='.$formID);
+				
+				echo '<h2>Sections</h2>';
 				
 				// get sections
 				$result = $SMAR_DB->dbquery("SELECT s.section_id, s.name, s.capacity, p.name as product FROM ".SMAR_MYSQL_PREFIX."_section s, ".SMAR_MYSQL_PREFIX."_product p WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."' AND p.product_id = s.product_id");
