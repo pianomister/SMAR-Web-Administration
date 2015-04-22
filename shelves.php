@@ -50,6 +50,70 @@ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MES
 // page content
 switch($subpage) {
 
+	case 'designer':
+	
+		if(isset($_GET['id']) && !empty($_GET['id'])) {
+			
+			$formID = intval($_GET['id']);
+			
+			// init database
+			if(!(isset($SMAR_DB))) {
+				$SMAR_DB = new SMAR_MysqlConnect();
+			}
+
+			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_shelf WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."' LIMIT 1");
+			if($result->num_rows == 1) {
+					$row = $result->fetch_array(MYSQLI_ASSOC);
+				
+				echo '<h1>Shelf Designer</h1>
+							<h2>'.$row['name'].' (ID: '.$row['shelf_id'].')</h2>
+							<p>
+								<a href="" title="Add section"><i class="bg-icon mdi mdi-plus"></i> Add new section</a> &nbsp;&nbsp;
+							</p>
+							<div id="designer-canvas" style="background-color: #ccc;width: '.$row['size_x'].'px; height: '.$row['size_y'].'px;"></div>
+							<h2>Sections</h2>';
+				
+				// get sections
+				$result = $SMAR_DB->dbquery("SELECT s.section_id, s.name, s.capacity, p.name as product FROM ".SMAR_MYSQL_PREFIX."_section s, ".SMAR_MYSQL_PREFIX."_product p WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."' AND p.product_id = s.product_id");
+				if($result->num_rows != 0) {
+						echo '<table>
+									<thead>
+									<tr>
+										<th>ID</th>
+										<th>Name</th>
+										<th>Capacity</th>
+										<th>Product</th>
+										<th>Actions</th>
+									</tr>
+									</thead>
+									<tbody>';
+						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+							echo '<tr>
+											<td>'.$row['section_id'].'</td>
+											<td>'.$row['name'].'</td>
+											<td>'.$row['capacity'].'</td>
+											<td>'.$row['product'].'</td>
+											<td>...</td>
+										</tr>';
+						}
+					echo '</tbody></table>';
+				} else {
+					echo '<p>No sections found for this shelf.</p>';
+				}
+			
+			// id not found
+			} else {
+					$SMAR_MESSAGES['error'][] = 'No item was found for given ID '.smar_form_input($formID).'.';
+			}
+		// id not given in parameter
+		} else {
+			$SMAR_MESSAGES['error'][] = 'No item ID was provided in URL parameters.';
+		}
+	
+		// print messages
+		if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+	
+		break;
 	case 'editshelf':
 
 		// set action type
@@ -70,10 +134,10 @@ switch($subpage) {
 					) {
 
 					$formName = strip_tags($_POST['form-shelf-name']);
-					$formX = strip_tags($_POST['form-shelf-x']);
-					$formY = doubleval(strip_tags($_POST['form-shelf-y']));
-					$formBarcode = intval(strip_tags($_POST['form-shelf-barcode']));
-					$formZ = empty($_POST['form-shelf-z']) ? strip_tags($_POST['form-shelf-z']) : 'NULL';
+					$formBarcode = intval(strip_tags($_POST['form-shelf-barcode']));	
+					$formX = intval(strip_tags($_POST['form-shelf-x']));
+					$formY = intval(strip_tags($_POST['form-shelf-y']));
+					$formZ = intval(strip_tags($_POST['form-shelf-z']));
 
 					if(!empty($_POST['form-shelf-name']) &&
 						 !empty($_POST['form-shelf-x']) &&
@@ -126,7 +190,7 @@ switch($subpage) {
 					$formLastupdate = $row['lastupdate'];
 
 				} else {
-					$SMAR_MESSAGES['error'][] = 'No item was found for given ID '.smar_save_input($formID).'.';
+					$SMAR_MESSAGES['error'][] = 'No item was found for given ID '.smar_form_input($formID).'.';
 				}
 			}
 
@@ -301,6 +365,7 @@ switch($subpage) {
 							<td>'.$row['size_z'].'</td>
 							<td>
 								<a href="'.$self.'?subpage=editshelf&id='.$row['shelf_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
+								<a href="'.$self.'?subpage=designer&id='.$row['shelf_id'].'" title="Shelf Designer" class="ajax"><i class="mdi mdi-math-compass"></i></a>
 								<!--<a href="'.$self.'?subpage=deleteshelf&id='.$row['shelf_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
 							</td>
 						</tr>';

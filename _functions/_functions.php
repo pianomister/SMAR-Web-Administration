@@ -30,6 +30,7 @@ class SMAR_MysqlConnect extends mysqli
 				echo "MySQL connection could not be created";
 				return false;
 			}
+			$this->set_charset('utf8');
     }
  
     function dbquery($sql)
