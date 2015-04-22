@@ -32,7 +32,7 @@ if(isset($_GET['id'])) {
 	}
 	
 	// get shelf data
-	$result = $SMAR_DB->dbquery("SELECT shelf_id, name, size_x, size_y, timestamp FROM ".SMAR_MYSQL_PREFIX."_shelf WHERE shelf_id = '".$SMAR_DB->real_escape_string($id)."' LIMIT 1");
+	$result = $SMAR_DB->dbquery("SELECT shelf_id, name, size_x, size_y, lastupdate FROM ".SMAR_MYSQL_PREFIX."_shelf WHERE shelf_id = '".$SMAR_DB->real_escape_string($id)."' LIMIT 1");
 	
 	if($result->num_rows == 1) {
 		$row = $result->fetch_array(MYSQLI_ASSOC);
@@ -40,7 +40,7 @@ if(isset($_GET['id'])) {
 
 		// insert shelf information into template
 		$tpl_search = array('{{shelfID}}','{{shelfName}}','{{time}}','{{shelfX}}','{{shelfY}}');
-		$tpl_replace = array($row['shelf_id'], $row['name'], date('d.m.Y H:i:s', $row['timestamp']), $row['size_x'], $row['size_y']);
+		$tpl_replace = array($row['shelf_id'], $row['name'], date('d.m.Y H:i:s', strtotime($row['lastupdate'])), $row['size_x'], $row['size_y']);
 		$tplSVG = str_replace($tpl_search, $tpl_replace, $tplSVG);
 		
 		// get sections
@@ -62,6 +62,8 @@ if(isset($_GET['id'])) {
 		}
 		
 		$tplSVG = str_replace('{{sections}}', $sections, $tplSVG);
+		
+		echo $tplSVG;
 	}
 }
 
