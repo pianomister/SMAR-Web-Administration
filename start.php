@@ -36,4 +36,5 @@ require_once('inc_session_check.php');
 	if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 	?>
 	<p>Choose an action to start.</p>
+	<p><a href="logout.php">Logout</a></p>
 </div>

@@ -21,7 +21,7 @@
     ordered & tabbed in a way that represents the nesting of the generated HTML.
 */
 #cboxOverlay{background-color: rgb(236,236,236); opacity: 0.8; filter: alpha(opacity = 80);}
-#colorbox{outline:0;box-shadow: 0 0 1em #333;}
+#colorbox{outline:0;box-shadow: 0 0 1rem #bfbfbf}
     /*#cboxTopLeft{width:25px; height:25px; background:url(images/border1.png) no-repeat 0 0;}
     #cboxTopCenter{height:25px; background:url(images/border1.png) repeat-x 0 -50px;}
     #cboxTopRight{width:25px; height:25px; background:url(images/border1.png) no-repeat -25px 0;}

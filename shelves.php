@@ -347,8 +347,7 @@ case 'editsection':
 						href: $target.attr('href')+'&smar_include=true',
 						closeButton: false,
 						width: '80%',
-						maxWidth: '700px',
-						onClosed: function() { $('#link-refresh').click(); }
+						maxWidth: '700px'
 					});
 				});
 				</script>
