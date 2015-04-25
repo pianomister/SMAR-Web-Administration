@@ -9,6 +9,7 @@
 	<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" asnyc>
 	<link href="css/materialdesignicons.min.css" rel="stylesheet">
 	<link href="css/smar.css" rel="stylesheet">
+	<link href="css/colorbox.css" rel="stylesheet">
 	
 	<script src="js/jquery.min.js"></script>
 	<script src="js/jquery.colorbox-min.js"></script>

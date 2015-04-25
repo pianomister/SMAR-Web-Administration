@@ -6,6 +6,7 @@ require_once '../inc_session_check.php';
 \Slim\Slim::registerAutoloader();
 
 $app = new \Slim\Slim();
+$app->contentType('application/json;charset=utf-8');
 
 /**
  * Step 3: Define the Slim application routes
@@ -22,7 +23,7 @@ $app = new \Slim\Slim();
 /**
  * get sections for a shelf (found by id)
  */
-$app->get('/sections/:shelfid', function ($shelfid) {
+$app->get('/sections/:shelfid', function ($shelfid) use($app) {
 
 	// init database
 	if(!(isset($SMAR_DB))) {
@@ -38,17 +39,21 @@ $app->get('/sections/:shelfid', function ($shelfid) {
 			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 				$resultArray[] = $row;
 			}
-			echo json_encode($resultArray);
+		
+			$response = json_encode($resultArray);
+			$res = $app->response();
+			$res->setBody($response);
 	} else {
-		echo '{}';
+		$res = $app->response();
+		$res->setBody('[{}]');
 	}
-});
+})->name('sections_by_shelf_id');
 
 
 /**
  * autocomplete services
  */
-$app->get('/autocomplete/:table/:search(/:limit)', function ($table, $search, $limit = 5) {
+$app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit = 5) use ($app) {
 
 	$table_whitelist = array('product', 'unit', 'shelf', 'section');
 	$table = strtolower($table);
@@ -68,15 +73,23 @@ $app->get('/autocomplete/:table/:search(/:limit)', function ($table, $search, $l
 				while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 					$resultArray[] = $row;
 				}
-				echo json_encode($resultArray);
+			
+				$response = json_encode($resultArray);
+			
+				$res = $app->response();
+				$res->setBody($response);
+
 		} else {
-			echo '{}';
+			$res = $app->response();
+			$res->setBody('[{}]');
 		}
 	
 	} else {
-		echo '{}';
+		$res = $app->response();
+		$res->setStatus(404);
+		$res->setBody('[{}]');
 	}
-});
+})->name('search_in_names');
 
 
 
@@ -84,10 +97,8 @@ $app->get('/autocomplete/:table/:search(/:limit)', function ($table, $search, $l
 
 // GET route
 
-$app->get(
-    '/',
-    function () {
-        $template = <<<EOT
+$app->get('/', function () use($app) {
+/*        $template = <<<EOT
 <!DOCTYPE html>
     <html>
         <head>
@@ -180,9 +191,28 @@ $app->get(
         </body>
     </html>
 EOT;
-        echo $template;
-    }
-);
+	echo $template;*/
+
+	// API index
+	// Display all routes and their URL
+	$routes = $app->router()->getNamedRoutes();
+	$result = array();
+	foreach($routes as $route) {
+		$result[$route->getName()] = $route->getPattern();
+	}
+	// Format JSON output
+	$result = json_encode($result, JSON_PRETTY_PRINT);
+	$result = stripslashes($result);
+
+	$res = $app->response();
+  $res->setBody($result);
+
+  $array = $res->finalize();
+});
+
+
+
+
 /*
 // POST route
 $app->post(

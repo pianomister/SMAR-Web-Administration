@@ -386,6 +386,7 @@ input[type="submit"].raised:hover, button.raised:hover, input[type="reset"].rais
 	width: 100%;
 	padding: 2rem;
 	overflow: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 nav#nav-main {
@@ -519,7 +520,7 @@ nav#nav-page ul li a:hover {
 	margin: 0;
 	padding: 0;
 	background-color: rgba(236,236,236,.8);
-	z-index: 7;
+	z-index: 10000;
 }
 .smar-overlay div {
 	display: -webkit-flex;
@@ -667,9 +668,8 @@ table a:hover > .mdi, a:hover .bg-icon, a.text-icon:hover {
 		height: 100%;
 		width: 4rem;
 	}
-	nav#nav-main ul li#smar-logo {
+	nav#nav-main ul #smar-logo {
 		border-width: 0 1px 0 0;
-		width: 6rem;
 	}	
 	nav#nav-main ul li a span {
 		display: none;

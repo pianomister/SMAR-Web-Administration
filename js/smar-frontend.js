@@ -157,13 +157,18 @@ function setFormHandler(cssSelector) {
 	
 	$( cssSelector ).on( 'submit', function( event ) {
 		
-		var $loadOverlay = $('#smar-loading');
-		var $targetContainer = $('#smar-content-inner');
-		
 		event.preventDefault();
 		$target = $( this );
+		
+		var $loadOverlay = $('#smar-loading');
 		var methodType = $target.attr('method').toUpperCase();
 		var formData = $target.serialize();
+		
+		attr = $target.attr('data-target');
+		if(typeof attr !== typeof undefined && attr !== false)
+			var $targetContainer = $(attr);
+		else
+			var $targetContainer = $('#smar-content-inner');
 		
 		var $formSubmit = $target.find('input[type="submit"]');
 		if($formSubmit.attr('name') != 'undefined') {
