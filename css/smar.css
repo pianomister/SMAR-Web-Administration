@@ -173,7 +173,8 @@ input:not([type="submit"]):not([type="reset"]), .input, select, textarea {
 	border-width: 0 0 1px;
 	outline: none;
 	font-size: 1rem;
-	background-color: transparent;
+	background: transparent none right center no-repeat;
+	background-size: auto 80%;
 	transition: border-color .4s ease-out 0s;
 }
 select {

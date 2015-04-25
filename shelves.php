@@ -150,7 +150,7 @@ case 'editsection':
 		// set action type
 		if(!isset($page_action))
 			$page_action = 'add';
-
+	
 		if(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
 			
 			$formID = intval($_REQUEST['id']);
@@ -243,8 +243,9 @@ case 'editsection':
 					<label for="form-section-posy">Vertical (y) position (cm)</label>
 				</div>
 				<div class="form-box swap-order">
-					<input id="form-section-productid" type="text" name="form-section-productid" placeholder="Type to search for product / article nr." value="<?php if(isset($formProductID)) echo smar_form_input($formProductID); ?>" />
-					<label for="form-section-productid">Product ID</label>
+					<input id="form-section-productid" type="hidden" name="form-section-productid" value="<?php if(isset($formProductID)) echo smar_form_input($formProductID); ?>">
+					<input id="form-section-product" type="text" name="form-section-product" placeholder="Type to search for product / article nr." value="<?php if(isset($formProductID)) echo smar_form_input($formProductID); ?>" />
+					<label for="form-section-product">Product (ID)</label>
 				</div>
 				<?php
 				echo '<input type="hidden" value="'.$formID.'" name="id" />';
@@ -269,6 +270,7 @@ case 'editsection':
 			<!--AJAX Request-->
 			<script>
 			setFormHandler('#form-section');
+			setAutocompleteHandler('#form-section-product', 'product', '#form-section-productid');
 			</script>
 			</div>
 			<?php

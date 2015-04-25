@@ -42,8 +42,10 @@ include('inc_header.php')
 				$params = smar_get_query_array($page);
 				$params['smar_include'] = true;
 				$params['smar_nav'] = true;
-				foreach($params as $k => $v)
+				foreach($params as $k => $v) {
+					$_REQUEST[$k] = $v;
 					$_GET[$k] = $v;
+				}
 	
 				if(file_exists($page_exploded[0]))
 					include $page_exploded[0];

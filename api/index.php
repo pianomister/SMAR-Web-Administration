@@ -65,8 +65,12 @@ $app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit =
 		if(!(isset($SMAR_DB))) {
 			$SMAR_DB = new SMAR_MysqlConnect();
 		}
+		
+		$constraints = '';
+		if($table == 'product')
+			$constraints .= " OR article_nr LIKE '%".$SMAR_DB->real_escape_string($search)."%'";
 
-		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_".$table." WHERE name LIKE '%".$SMAR_DB->real_escape_string($search)."%' LIMIT ".$SMAR_DB->real_escape_string($limit));
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_".$table." WHERE name LIKE '%".$SMAR_DB->real_escape_string($search)."%' ".$constraints." LIMIT ".$SMAR_DB->real_escape_string($limit));
 		if($result->num_rows != 0) {
 
 				$resultArray = array();

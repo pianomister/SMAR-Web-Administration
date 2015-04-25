@@ -27,7 +27,7 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 	$topinclude = 0;
 }
 
-#require_once('inc_session_check.php'); // TODO
+require_once('inc_session_check.php');
 
 // include subnav if requested
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
@@ -429,53 +429,56 @@ switch($subpage) {
 
 		// print messages
 		if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
-		?>
-		<form id="form-product" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage='.$page_action.'product'); ?>">
-			<div class="form-box swap-order">
-				<input id="form-product-name" type="text" name="form-product-name" placeholder="Title or short description" value="<?php if(isset($formName)) echo smar_form_input($formName); ?>" />
-				<label for="form-product-name">Product name</label>
-			</div>
-			<div class="form-box swap-order">
-				<input id="form-product-number" type="text" name="form-product-number" placeholder="May contain non-numerical characters" value="<?php if(isset($formNumber)) echo smar_form_input($formNumber); ?>" />
-				<label for="form-product-number">Article number</label>
-			</div>
-			<div class="form-box swap-order">
-				<input id="form-product-price" type="text" name="form-product-price" placeholder="0.00" value="<?php if(isset($formPrice)) echo smar_form_input($formPrice); ?>" />
-				<label for="form-product-price">Price</label>
-			</div>
-			<div class="form-box swap-order">
-				<input id="form-product-barcode" type="text" name="form-product-barcode" placeholder="0123456789" value="<?php if(isset($formBarcode)) echo smar_form_input($formBarcode); ?>" />
-				<label for="form-product-barcode">Barcode</label>
-			</div>
-			<div class="form-box swap-order">
-				<input id="form-product-image" type="text" name="form-product-image" placeholder="http://" value="<?php if(isset($formImage)) echo smar_form_input($formImage); ?>" />
-				<label for="form-product-image">Image URL (optional)</label>
-			</div>
-			<?php
-			if($page_action == 'add') {
-				echo '<input type="submit" value="Add product" name="send_addproduct" class="raised" />';
-			} else {
-				echo '<input type="hidden" value="'.$formID.'" name="id" />';
-				?>
-				<div class="form-box">
-					<span class="label">Date created</label>
-					<span class="input"><?php echo isset($formCreated) ? smar_form_input($formCreated) : '&mdash;'; ?></label>
-				</div>
-				<div class="form-box">
-						<span class="label">Last update</label>
-						<span class="input"><?php echo isset($formLastupdate) ? smar_form_input($formLastupdate) : '&mdash;'; ?></label>
-				</div>
-				<input type="submit" value="Save changes" name="send_editproduct" class="raised" />
-				<?php
-			}
+	
+		if($page_action == 'add' || $page_action == 'edit' && isset($formID)) {
 			?>
-			<input type="reset" value="Reset form" name="reset" />
-		</form>
-		<!--AJAX Request-->
-		<script>
-		setFormHandler('#form-product');
-		</script>
-		<?php
+			<form id="form-product" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage='.$page_action.'product'); ?>">
+				<div class="form-box swap-order">
+					<input id="form-product-name" type="text" name="form-product-name" placeholder="Title or short description" value="<?php if(isset($formName)) echo smar_form_input($formName); ?>" />
+					<label for="form-product-name">Product name</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-product-number" type="text" name="form-product-number" placeholder="May contain non-numerical characters" value="<?php if(isset($formNumber)) echo smar_form_input($formNumber); ?>" />
+					<label for="form-product-number">Article number</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-product-price" type="text" name="form-product-price" placeholder="0.00" value="<?php if(isset($formPrice)) echo smar_form_input($formPrice); ?>" />
+					<label for="form-product-price">Price</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-product-barcode" type="text" name="form-product-barcode" placeholder="0123456789" value="<?php if(isset($formBarcode)) echo smar_form_input($formBarcode); ?>" />
+					<label for="form-product-barcode">Barcode</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-product-image" type="text" name="form-product-image" placeholder="http://" value="<?php if(isset($formImage)) echo smar_form_input($formImage); ?>" />
+					<label for="form-product-image">Image URL (optional)</label>
+				</div>
+				<?php
+				if($page_action == 'add') {
+					echo '<input type="submit" value="Add product" name="send_addproduct" class="raised" />';
+				} else {
+					echo '<input type="hidden" value="'.$formID.'" name="id" />';
+					?>
+					<div class="form-box">
+						<span class="label">Date created</label>
+						<span class="input"><?php echo isset($formCreated) ? smar_form_input($formCreated) : '&mdash;'; ?></label>
+					</div>
+					<div class="form-box">
+							<span class="label">Last update</label>
+							<span class="input"><?php echo isset($formLastupdate) ? smar_form_input($formLastupdate) : '&mdash;'; ?></label>
+					</div>
+					<input type="submit" value="Save changes" name="send_editproduct" class="raised" />
+					<?php
+				}
+				?>
+				<input type="reset" value="Reset form" name="reset" />
+			</form>
+			<!--AJAX Request-->
+			<script>
+			setFormHandler('#form-product');
+			</script>
+			<?php
+		}
 		break;
 	default:
 		?>
@@ -497,7 +500,7 @@ switch($subpage) {
 				?>
 				<form id="form-filter" method="get" action="index.php?page=<?php echo urlencode($self); ?>">
 					<input type="hidden" name="page" value="<?php echo urlencode($self); ?>">
-					<input type="text" name="filter" placeholder="Filter by name" value="<?php if(isset($formFilter) && !empty($formFilter)) echo smar_form_input($formFilter); ?>" class="input-medium">
+					<input id="filter-products" type="text" name="filter" placeholder="Filter by name" value="<?php if(isset($formFilter) && !empty($formFilter)) echo smar_form_input($formFilter); ?>" class="input-medium">
 				</form>
 				<?php
 
