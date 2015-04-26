@@ -304,7 +304,7 @@ case 'editsection':
 				echo '<h2>Sections</h2>';
 				
 				// get sections
-				$result = $SMAR_DB->dbquery("SELECT s.section_id, s.name, s.capacity, p.name as product FROM ".SMAR_MYSQL_PREFIX."_section s, ".SMAR_MYSQL_PREFIX."_product p WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."' AND p.product_id = s.product_id");
+				$result = $SMAR_DB->dbquery("SELECT s.section_id, s.name, s.capacity, p.name as product FROM ".SMAR_MYSQL_PREFIX."_section s, ".SMAR_MYSQL_PREFIX."_product p WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."' AND p.product_id = s.product_id ORDER BY position_x");
 				if($result->num_rows != 0) {
 						echo '<table>
 									<thead>

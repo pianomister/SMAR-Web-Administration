@@ -152,7 +152,7 @@ function linkHandler() {
 }
 
 
-// handler for forms with POST request type
+// handler for forms with POST and GET request type
 function setFormHandler(cssSelector) {
 	
 	$( cssSelector ).on( 'submit', function( event ) {
@@ -207,6 +207,57 @@ function setFormHandler(cssSelector) {
 		});
 	});
 }
+
+
+// handler for inputs using autocomplete service api
+function setAutocompleteHandler(target, table, resultTarget) {
+	
+	resultTarget = resultTarget || false;
+	var $target = $(target);
+	
+	$target.autocomplete({
+		showNoSuggestionNotice: true,
+		lookup: function (search, done) {
+			
+			searchUrl = 'api/search/' + table + '/' + search;
+			
+			if(window.autocomplete) {
+				window.autocomplete.abort();
+			}
+			
+			window.autocomplete = $.get(
+				searchUrl
+			).done(function(data) {
+				
+				var result = {
+					suggestions: $.map(data, function(dataItem) {
+						if(typeof dataItem.name !== typeof undefined && dataItem.name !== false)
+							return { value: dataItem.article_nr +': '+ dataItem.name, data: dataItem[table + '_id'] };
+						return {};
+					})
+				};
+				
+				if(result.length == 0 || typeof result.suggestions[0].value === typeof undefined)
+					result = {suggestions: []}
+				done(result);
+
+			}).fail(function() {
+				console.error('Error on autocomplete request');
+			});
+    },
+		onSearchStart: function (query) {
+			$(this).css('background-image', 'url(img/ajax-loader.gif)');
+		},
+		onSearchComplete: function(query, suggestions) {
+			$(this).css('background-image', 'none');
+		},
+    onSelect: function (suggestion) {
+			if(resultTarget)
+				$(resultTarget).val(suggestion.data);
+    }
+	});
+}
+
 
 
 ////////////////////////////////////
