@@ -30,6 +30,11 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
 
+if($_SESSION['loginRole'] < 8) {
+	$SMAR_MESSAGES['error'][] = 'Insufficient permissions for users.php';
+	smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+} else {
+
 // include subnav if requested
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	
@@ -171,8 +176,124 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			<?php
 			break;
 		case 'edit':
+			// form was sent
+			if(isset($_POST['send_edituser'])) {
+
+				if(isset($_POST['edit-user-pnr']) && !empty($_POST['edit-user-pnr']) &&
+					 isset($_POST['edit-user-name']) && !empty($_POST['edit-user-name']) &&
+					 isset($_POST['edit-user-username']) && !empty($_POST['edit-user-username']) &&
+					 isset($_GET['editID']) && !empty($_GET['editID'])
+					) {
+						// init database
+						if(!(isset($SMAR_DB))) {
+							$SMAR_DB = new SMAR_MysqlConnect();
+						}
+						// get shelf data
+						$resultCheck = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE user_id = '".$SMAR_DB->real_escape_string($_GET['editID'])."'");
+						if(!($rowCheck = $resultCheck->fetch_array())) {
+							$SMAR_MESSAGES['error'][] = 'User with ID '.$_GET['editID'].' not known.';
+							unset($_GET['editID']);
+						} else {
+							if(strpos($_POST['edit-user-name'], " ") === false) {
+								$SMAR_MESSAGES['error'][] = 'Name field must have surname and lastname.';
+							} else {
+
+								$addPnr = strip_tags($_POST['edit-user-pnr']);
+								$addName = explode(" ", strip_tags($_POST['edit-user-name']));
+								$addSurname = "";
+								for($i = 0; $i < count($addName)-1; $i++) {
+									if($i != 0) $addSurname = $addSurname." ";
+									$addSurname = $addSurname.$addName[$i];
+								}
+								$addLastname = $addName[count($addName)-1];
+								$addUsername = strip_tags($_POST['edit-user-username']);
+								$addRoleWeb = intval(strip_tags($_POST['edit-user-role_web']));
+								if(isset($_POST['edit-user-role_device'])) {
+									$addRoleDevice = 1;
+								} else {
+									$addRoleDevice = 0;
+								}
+
+								$sql = "UPDATE `smar`.`smar_user` SET `role_web` = \'9\', `role_device` = \'1\' WHERE `smar_user`.`user_id` = 1;";
+								// get shelf data
+								$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_user
+															SET pnr = '".$SMAR_DB->real_escape_string($addPnr)."', surname = '".$SMAR_DB->real_escape_string($addSurname)."', lastname = '".$SMAR_DB->real_escape_string($addLastname)."', 
+															username = '".$SMAR_DB->real_escape_string($addUsername)."', role_web = '".$SMAR_DB->real_escape_string($addRoleWeb)."', role_device = '".$SMAR_DB->real_escape_string($addRoleDevice)."'
+															WHERE user_id = '".$SMAR_DB->real_escape_string($_GET['editID'])."'");
+								if($result === TRUE) {
+									$SMAR_MESSAGES['success'][] = 'User "'.$addUsername.'" was successfully updated.';
+									unset($_GET['editID']);
+								} else {
+									$SMAR_MESSAGES['error'][] = 'Updating the user "'.$addUsername.'" failed.';
+								}
+							}
+						}
+				} else {
+					$SMAR_MESSAGES['error'][] = 'Please fill in all required fields.';
+				}
+			}
 			?>
 			<h1>User Management</h1>
+			<?php
+			if(isset($_GET['editID']) && !empty($_GET['editID'])) {
+				// init database
+				if(!(isset($SMAR_DB))) {
+					$SMAR_DB = new SMAR_MysqlConnect();
+				}
+
+				// get shelf data
+				$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE user_id = '".$SMAR_DB->real_escape_string($_GET['editID'])."'");
+				if(!($row = $result->fetch_array())) {
+					$SMAR_MESSAGES['error'][] = 'User with ID '.$userid.' not known.';
+					unset($_GET['editID']);
+				}
+			}
+			// print messages
+			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			if(isset($_GET['editID']) && !empty($_GET['editID'])) {
+				?>
+				<h2>Edit user: <?php echo($row['username']); ?></h2>
+				<form id="form-edit-user" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage=edit&editID='.$row['user_id']); ?>">
+					<div class="form-box swap-order">
+						<input id="edit-user-pnr" type="text" name="edit-user-pnr" placeholder="abc123456" value="<?php echo(smar_form_input($row['pnr'])); ?>" />
+						<label for="edit-user-pnr">Personnell Number</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="edit-user-name" type="text" name="edit-user-name" placeholder="Surname Lastname" value="<?php echo(smar_form_input($row['surname'])." ".smar_form_input($row['lastname'])); ?>" />
+						<label for="edit-user-name">Name</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="edit-user-username" type="text" name="edit-user-username" placeholder="Username" value="<?php echo(smar_form_input($row['username'])); ?>" />
+						<label for="edit-user-username">Username</label>
+					</div>
+					<div class="form-box swap-order">
+						<select id="edit-user-role_web" name="edit-user-role_web" size="1">
+						<?php 
+							$userRolesWebText = array("No Rights", "Read only", "Products & Units", "Products, Units, Shelves, Sections", "Edit all", "Manager", "Administrator");
+							$userRolesWebValue = array(0,1,2,3,4,8,9);
+							for($l = 0; $l < count($userRolesWebText); $l++) {
+								echo("<option value=\"".$userRolesWebValue[$l]."\"");
+									if(intval(strip_tags($row['role_web'])) == $userRolesWebValue[$l])
+										echo(" selected");
+								echo(">".$userRolesWebText[$l]."</option>");
+							}
+						?>
+						</select>
+						<label for="edit-user-role_web">Role @ Web Administration</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="edit-user-role_device" type="checkbox" name="edit-user-role_device"<?php if($row['role_device']) echo("checked"); ?>/>
+						<label for="edit-user-role_device">Role @ Device</label>
+					</div>
+					<input type="submit" value="Update user" name="send_edituser" class="raised" />
+				</form>
+				<!--AJAX Request-->
+				<script>
+				setFormHandler('#form-edit-user');
+				</script>
+				<?php
+			} else {
+			?>
 			<table>
 				<thead>
 				<tr>
@@ -204,7 +325,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					echo "<td>".$row['created']."</td>";
 					?>
 					<td>
-						<a href="<?php echo($self); ?>?subpage=changepw&editID=<?php echo($row['user_id']); ?>" class="ajax" title="Change password"><i class="mdi mdi-key-variant"></i></a> <a href="#" title="Edit"><i class="mdi mdi-pencil"></i></a> <a href="#" title="Delete"><i class="mdi mdi-delete"></i></a>
+						<a href="<?php echo($self); ?>?subpage=changepw&editID=<?php echo($row['user_id']); ?>" class="ajax" title="Change password"><i class="mdi mdi-key-variant"></i></a> <a href="<?php echo($self); ?>?subpage=edit&editID=<?php echo($row['user_id']); ?>" class="ajax" title="Edit"><i class="mdi mdi-pencil"></i></a> <a href="#" title="Delete"><i class="mdi mdi-delete"></i></a>
 					</td></tr>
 					<?php
 				}
@@ -212,6 +333,14 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 				</tbody>
 			</table>
 			<?php
+			}
+			break;
+		case 'createqr':
+			include('_functions/_phpqrcode/qrlib.php');
+    
+			// outputs image directly into browser, as PNG stream
+			QRcode::png('PHP QR Code :)');
+			
 			break;
 		case 'changepw':
 		default:
@@ -295,11 +424,12 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			if($row['role_device'] == 1) {
 			?>
 				<h2>Device</h2>
-				<a href="#">Print and activate new QR-Code for this user.</a>
+				<a href="<?php echo($self); ?>?subpage=createqr&editID=<?php echo($row['user_id']); ?>" class="ajax">Print and activate new QR-Code for this user.</a>
 			<?php
 			}
 	}
 
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true')
 	echo '</div>';
+}
 ?>

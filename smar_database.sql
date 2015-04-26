@@ -292,8 +292,8 @@ CREATE TABLE IF NOT EXISTS `smar_user` (
 -- Daten für Tabelle `smar_user`
 --
 
-INSERT INTO `smar_user` (`user_id`, `name`, `is_admin`, `password`, `salt`, `created`, `lastupdate`) VALUES
-(1, 'admin', 1, '2323c469df9947e4e3525ea5e8cf701ee72775e374304282a9fb47074283a0b3', '0fd1d92468325d2350699fce039d2b342a5a435740fc13b0f0bbd4bbf1e2c2fe', '2015-03-02 12:13:42', '2015-03-02 11:16:36');
+INSERT INTO `smar_user` (`user_id`, `pnr`, `surname`, `lastname`, `username`, `role_web`, `role_device`, `password`, `salt`, `created`, `lastupdate`) VALUES
+(1, '123456', 'Admin', 'istrator', 'admin', 1, 0, '2323c469df9947e4e3525ea5e8cf701ee72775e374304282a9fb47074283a0b3', '0fd1d92468325d2350699fce039d2b342a5a435740fc13b0f0bbd4bbf1e2c2fe', '2015-03-02 12:13:42', '2015-03-02 11:16:36');
 
 --
 -- Constraints der exportierten Tabellen
