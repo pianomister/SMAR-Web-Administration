@@ -51,6 +51,45 @@ $app->get('/sections/:shelfid', function ($shelfid) use($app) {
 
 
 /**
+ * get database entry for a barcode
+ * returns first result for a barcode
+ */
+$app->get('/barcode/:barcode', function ($barcode) use($app) {
+
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	$barcode = intval($barcode);
+
+	$tables = array('product','product_unit','shelf');
+	for($i = 0; $i < count($tables);$i++) {
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_".$tables[$i]."
+																	WHERE barcode = '".$SMAR_DB->real_escape_string($barcode)."'
+																	LIMIT 1");
+		if($result->num_rows != 0)
+			break;
+	}
+	
+	if($result->num_rows != 0) {
+		
+			$resultArray = array();
+			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+				$resultArray[] = $row;
+			}
+		
+			$response = json_encode($resultArray);
+			$res = $app->response();
+			$res->setBody($response);
+	} else {
+		$res = $app->response();
+		$res->setBody('[{}]');
+	}
+})->name('object_by_barcode');
+
+
+/**
  * autocomplete services
  */
 $app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit = 5) use ($app) {
@@ -66,7 +105,7 @@ $app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit =
 			$SMAR_DB = new SMAR_MysqlConnect();
 		}
 		
-		$constraints = '';
+		$constraints = " OR ".$table."_id LIKE '%".$SMAR_DB->real_escape_string($search)."%'";
 		if($table == 'product')
 			$constraints .= " OR article_nr LIKE '%".$SMAR_DB->real_escape_string($search)."%'";
 
