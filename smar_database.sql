@@ -296,6 +296,34 @@ INSERT INTO `smar_user` (`user_id`, `pnr`, `surname`, `lastname`, `username`, `r
 (1, '123456', 'Admin', 'istrator', 'admin', 1, 0, '2323c469df9947e4e3525ea5e8cf701ee72775e374304282a9fb47074283a0b3', '0fd1d92468325d2350699fce039d2b342a5a435740fc13b0f0bbd4bbf1e2c2fe', '2015-03-02 12:13:42', '2015-03-02 11:16:36');
 
 --
+-- Beispieldaten TODO
+--
+INSERT INTO `smar_product` (`product_id`, `article_nr`, `barcode`, `name`, `price`, `image`, `created`, `lastupdate`) VALUES
+(1, 'ART953173', 953173, 'LekkaLekka Crunchy Bio-Chips', 2.99, '', '2015-04-03 00:16:12', '2015-04-02 22:16:12'),
+(2, 'ART473623', 584372615, 'MAMF Pampelmusencreme Brotaufstrich', 4.39, '', '2015-04-04 14:01:22', '2015-04-04 12:01:22'),
+(3, 'ART483721', 32847362, 'Förstermeister Kräuterlikör', 12.49, '', '2015-04-04 14:05:15', '2015-04-21 23:55:10'),
+(4, 'ART213211', 342761552, 'EKIA Garten-Klappstuhl', 21.99, '', '2015-04-04 14:06:53', '2015-04-17 12:17:32'),
+(5, 'ART230391', 2147483646, 'Vitalitasia Wasser still', 0.19, '', '2015-04-17 13:06:26', '2015-04-29 08:39:05');
+INSERT INTO `smar_unit` (`unit_id`, `name`, `capacity`, `created`, `lastupdate`) VALUES
+(1, 'Single', 1, '2015-04-17 14:51:33', '2015-04-17 12:52:56'),
+(2, 'Box 50', 50, '2015-04-17 14:59:38', '2015-04-17 12:59:38'),
+(3, 'Box 100', 100, '2015-04-17 14:59:46', '2015-04-17 12:59:46'),
+(4, 'Box 500', 500, '2015-04-17 15:01:08', '2015-04-17 13:11:30');
+INSERT INTO `smar_shelf` (`shelf_id`, `name`, `barcode`, `size_x`, `size_y`, `size_z`, `created`, `lastupdate`) VALUES
+(1, 'Süßwaren', 123324235, 1200, 200, 50, '2015-04-19 13:04:01', '2015-04-22 00:01:25'),
+(2, 'Softgetränke', 2147483647, 600, 180, 60, '2015-04-19 13:07:35', '2015-04-22 00:01:35'),
+(3, 'Weine', 34636234, 400, 200, 40, '2015-04-19 16:32:03', '2015-04-19 14:32:03');
+INSERT INTO `smar_section` (`section_id`, `shelf_id`, `product_id`, `name`, `capacity`, `size_x`, `size_y`, `position_x`, `position_y`, `created`, `lastupdate`) VALUES
+(1, 2, 3, 'Likör', 30, 50, 30, 30, 0, '2015-04-22 01:00:00', '2015-04-25 12:57:25'),
+(2, 2, 2, 'Aufstrich', 80, 80, 40, 200, 70, '2015-04-22 11:18:00', '2015-04-22 09:19:07'),
+(4, 2, 4, 'Test-Sektion', 120, 40, 40, 0, 0, '2015-04-25 14:43:25', '2015-04-25 17:14:33'),
+(5, 2, 3, 'Noch mehr Waldmeister', 20, 40, 60, 300, 0, '2015-04-25 19:05:25', '2015-04-25 17:05:25');
+
+
+
+
+
+--
 -- Constraints der exportierten Tabellen
 --
 
