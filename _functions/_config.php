@@ -21,5 +21,6 @@ define("SMAR_MYSQL_PW", "");
 define("SMAR_MYSQL_PREFIX", "smar");
 
 // Konstanten für das CMS
-define("SMAR_CMS_PASSWORT_SALZ", "Ih/VzAdKi8eD"); //Salz fürs Passwort. Wird an Passwort angehängt und mitverschlüsselt
+// not needed any more: user defined salt
+// define("SMAR_CMS_PASSWORT_SALZ", "Ih/VzAdKi8eD"); //Salz fürs Passwort. Wird an Passwort angehängt und mitverschlüsselt
 ?>

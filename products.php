@@ -29,6 +29,11 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 
 require_once('inc_session_check.php');
 
+if($_SESSION['loginRole'] < 1) {
+	$SMAR_MESSAGES['error'][] = 'Insufficient permissions for products management';
+	smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+} else {
+
 // include subnav if requested
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	
@@ -36,9 +41,9 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	<nav id="nav-page">
 		<ul>
 			<li><a href="<?php echo $self; ?>" <?php echo ($subpage == '') ? 'class="smar-active"' : ''; ?>>Products</a></li>
-			<li><a href="<?php echo $self.'?subpage=addproduct'; ?>" <?php echo ($subpage == 'addproduct') ? 'class="smar-active"' : ''; ?>>Add product</a></li>
+			<?php if($_SESSION['loginRole'] >= 2) { ?><li><a href="<?php echo $self.'?subpage=addproduct'; ?>" <?php echo ($subpage == 'addproduct') ? 'class="smar-active"' : ''; ?>>Add product</a></li><?php } ?>
 			<li><a href="<?php echo $self.'?subpage=units'; ?>" <?php echo ($subpage == 'units') ? 'class="smar-active"' : ''; ?>>Units</a></li>
-			<li><a href="<?php echo $self.'?subpage=addunit'; ?>" <?php echo ($subpage == 'addunit') ? 'class="smar-active"' : ''; ?>>Add unit</a></li>
+			<?php if($_SESSION['loginRole'] >= 2) { ?><li><a href="<?php echo $self.'?subpage=addunit'; ?>" <?php echo ($subpage == 'addunit') ? 'class="smar-active"' : ''; ?>>Add unit</a></li><?php } ?>
 			<li><a href="<?php echo $self.'?subpage=mapping'; ?>" <?php echo ($subpage == 'mapping') ? 'class="smar-active"' : ''; ?>>Mappings</a></li>
 		</ul>
 	</nav>
@@ -118,9 +123,11 @@ switch($subpage) {
 							<td>'.$row['unit_id'].'</td>
 							<td>'.$row['name'].'</td>
 							<td>'.$row['capacity'].'</td>
-							<td>
-								<a href="'.$self.'?subpage=editunit&id='.$row['unit_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
-								<a href="'.$self.'?subpage=mapping&id='.$row['unit_id'].'" title="Show connected products" class="ajax"><i class="mdi mdi-cart"></i></a>
+							<td>';
+						if($_SESSION['loginRole'] >= 2) {
+							echo '<a href="'.$self.'?subpage=editunit&id='.$row['unit_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>'; 
+						}
+						echo'<a href="'.$self.'?subpage=mapping&id='.$row['unit_id'].'" title="Show connected products" class="ajax"><i class="mdi mdi-cart"></i></a>
 								<!--<a href="'.$self.'?subpage=deleteunit&id='.$row['unit_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
 							</td>
 						</tr>';
@@ -209,6 +216,7 @@ switch($subpage) {
 		<h1>Edit unit</h1>
 		<?php
 	case 'addunit':
+	if($_SESSION['loginRole'] >= 2) {
 
 		// set action type
 		if(!isset($page_action))
@@ -288,8 +296,11 @@ switch($subpage) {
 		setFormHandler('#form-unit');
 		</script>
 		<?php
+		} else {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for products management';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+		}
 		break;
-
 	case 'editproduct':
 
 		// set action type
@@ -377,7 +388,7 @@ switch($subpage) {
 		<h1>Edit product</h1>
 		<?php
 	case 'addproduct':
-
+	if($_SESSION['loginRole'] >= 2) {
 		// set action type
 		if(!isset($page_action))
 			$page_action = 'add';
@@ -479,6 +490,10 @@ switch($subpage) {
 			</script>
 			<?php
 		}
+		} else {
+		$SMAR_MESSAGES['error'][] = 'Insufficient permissions for products management';
+		smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+		}
 		break;
 	default:
 		?>
@@ -539,9 +554,11 @@ switch($subpage) {
 							<td>'.$row['article_nr'].'</td>
 							<td>'.$row['name'].'</td>
 							<td>'.$row['price'].'</td>
-							<td>
-								<a href="'.$self.'?subpage=editproduct&id='.$row['product_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
-								<!--<a href="'.$self.'?subpage=deleteproduct&id='.$row['product_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
+							<td>';
+						if($_SESSION['loginRole'] >= 2) {
+							echo '	<a href="'.$self.'?subpage=editproduct&id='.$row['product_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>';
+						}
+						echo'		<!--<a href="'.$self.'?subpage=deleteproduct&id='.$row['product_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
 							</td>
 						</tr>';
 					}
@@ -560,4 +577,5 @@ switch($subpage) {
 
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true')
 	echo '</div>';
+}
 ?>

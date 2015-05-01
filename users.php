@@ -31,7 +31,7 @@ require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
 
 if($_SESSION['loginRole'] < 8) {
-	$SMAR_MESSAGES['error'][] = 'Insufficient permissions for users.php';
+	$SMAR_MESSAGES['error'][] = 'Insufficient permissions for user management';
 	smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
 } else {
 
@@ -336,11 +336,47 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			}
 			break;
 		case 'createqr':
-			include('_functions/_phpqrcode/qrlib.php');
-    
-			// outputs image directly into browser, as PNG stream
-			QRcode::png('PHP QR Code :)');
+			?><h1>Generating QR-Code</h1><?php
+			if(isset($_GET['editID']) && !empty($_GET['editID'])) {
+				$userid = $_GET['editID'];
+			} else {
+				$userid = $_SESSION['loginID'];
+			}
 			
+			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE user_id = '".$SMAR_DB->real_escape_string($userid)."'");
+			if(!($row = $result->fetch_array())) {
+				$SMAR_MESSAGES['error'][] = 'User with ID '.$userid.' not known.';
+			} else {
+				$partTime = time();
+				$partRndNo = mt_rand();
+				$partUsername = $row['username'];
+				$partSalt = $row['salt'];
+				$partLength = mt_rand(5, 16);
+				
+				$partArray = str_split($partSalt, $partLength);
+				
+				$qrCode = $partArray[0].$partRndNo.$partArray[1].$partUsername.$partArray[2].$partTime.$partArray[3];
+				$qrCode = hash("sha256", $qrCode);
+				
+				$resultUpdate = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_user SET password_device = '".$SMAR_DB->real_escape_string($qrCode)."'
+													WHERE user_id = '".$SMAR_DB->real_escape_string($userid)."'");
+				if($resultUpdate === TRUE) {
+					$SMAR_MESSAGES['success'][] = 'Generating QR code for user "'.$row['username'].'" succeeded.';
+				} else {
+					$SMAR_MESSAGES['error'][] = 'Generating QR code for user "'.$row['username'].'" failed.';
+				}
+			}
+			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			if($resultUpdate === TRUE) {
+				?>
+				<p>To download QR-Code press right button and click "save target as".</p>
+				<p><a target="_blank" href="qrcode_print.php?editID=<?php echo($userid); ?>&mode=svg">Download QR-Code as SVG</a></p>
+				<p>
+					Download QR-Code as PNG:<br />
+					<img src="qrcode_print.php?editID=<?php echo($userid); ?>&mode=png" width="300">
+				</p>
+				<?php
+			}
 			break;
 		case 'changepw':
 		default:
@@ -394,6 +430,21 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					$SMAR_MESSAGES['error'][] = 'Please fill in all fields.';
 				}
 			}
+			
+			// form was sent
+			if(isset($_POST['send_devicepw'])) {
+				if(isset($_POST['password-device']) && !empty($_POST['password-device'])) {
+					$resultUpdate = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_user SET password_device = '".$SMAR_DB->real_escape_string($_POST['password-device'])."'
+													WHERE user_id = '".$SMAR_DB->real_escape_string($userid)."'");
+					if($resultUpdate === TRUE) {
+						$SMAR_MESSAGES['success'][] = 'Activating QR code "'.$_POST['password-device'].'" for user "'.$row['username'].'" succeeded.';
+					} else {
+						$SMAR_MESSAGES['error'][] = 'Activating QR code "'.$_POST['password-device'].'" for user "'.$row['username'].'" failed.';
+					}
+				} else {
+					$SMAR_MESSAGES['error'][] = 'Please fill in required fields.';
+				}
+			}
 			?>
 			<h1>Change my password</h1>
 			<?php
@@ -424,7 +475,17 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			if($row['role_device'] == 1) {
 			?>
 				<h2>Device</h2>
-				<a href="<?php echo($self); ?>?subpage=createqr&editID=<?php echo($row['user_id']); ?>" class="ajax">Print and activate new QR-Code for this user.</a>
+				<a href="<?php echo($self); ?>?subpage=createqr&editID=<?php echo($row['user_id']); ?>" class="ajax">Create and activate new QR-Code for this user.</a><br />
+				<p>OR</p>
+				<form id="form-device-pw" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage=changepw&editID='.$userid); ?>">
+					<div class="form-box swap-order">
+						<input id="password-device" type="text" name="password-device" placeholder="QR-Code password" />
+						<label for="password-device">Enter given QR code (data)</label>
+					</div>
+					<input type="submit" name="send_devicepw" value="Activate device password" />
+				</form>
+				<p>OR</p>
+				<p>Download current QR-Code as <a target="_blank" href="qrcode_print.php?editID=<?php echo($userid); ?>&mode=svg">SVG</a> or <a target="_blank" href="qrcode_print.php?editID=<?php echo($userid); ?>&mode=png">PNG</a></p>
 			<?php
 			}
 	}

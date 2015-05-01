@@ -30,6 +30,11 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
 
+if($_SESSION['loginRole'] < 1) {
+	$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelves management';
+	smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+} else {
+
 // include subnav if requested
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	
@@ -37,7 +42,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	<nav id="nav-page">
 		<ul>
 			<li><a href="<?php echo $self; ?>" <?php echo ($subpage == '') ? 'class="smar-active"' : ''; ?>>Shelves</a></li>
-			<li><a href="<?php echo $self.'?subpage=addshelf'; ?>" <?php echo ($subpage == 'addshelf') ? 'class="smar-active"' : ''; ?>>Add shelf</a></li>
+			<?php if($_SESSION['loginRole'] >= 2) { ?><li><a href="<?php echo $self.'?subpage=addshelf'; ?>" <?php echo ($subpage == 'addshelf') ? 'class="smar-active"' : ''; ?>>Add shelf</a></li><?php } ?>
 		</ul>
 	</nav>
 	<div id="smar-content-inner">
@@ -146,7 +151,7 @@ case 'editsection':
 		<div id="formSectionContainer"><h1>Edit section</h1>
 		<?php
 	case 'addsection':
-
+		if($_SESSION['loginRole'] >= 2) {
 		// set action type
 		if(!isset($page_action))
 			$page_action = 'add';
@@ -275,9 +280,13 @@ case 'editsection':
 			</div>
 			<?php
 		}
+		} else {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelves management';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+		}
 		break;
 	case 'designer':
-	
+		if($_SESSION['loginRole'] >= 2) {
 		if(isset($_GET['id']) && !empty($_GET['id'])) {
 			
 			$formID = intval($_GET['id']);
@@ -323,9 +332,11 @@ case 'editsection':
 											<td>'.$row['name'].'</td>
 											<td>'.$row['capacity'].'</td>
 											<td>'.$row['product'].'</td>
-											<td>
-												<a href="'.$self.'?subpage=editsection&id='.$row['section_id'].'" title="Edit" class="link-editsection"><i class="mdi mdi-pencil"></i></a>
-											</td>
+											<td>';
+							if($_SESSION['loginRole'] >= 2) {
+							echo '				<a href="'.$self.'?subpage=editsection&id='.$row['section_id'].'" title="Edit" class="link-editsection"><i class="mdi mdi-pencil"></i></a>';
+							}
+							echo '			</td>
 										</tr>';
 						}
 					echo '</tbody></table>';
@@ -366,7 +377,10 @@ case 'editsection':
 
 		// print messages
 		if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
-
+		} else {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelves management';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+		}
 		break;
 	case 'editshelf':
 
@@ -456,7 +470,7 @@ case 'editsection':
 		<h1>Edit shelf</h1>
 		<?php
 	case 'addshelf':
-
+		if($_SESSION['loginRole'] >= 2) {
 		// set action type
 		if(!isset($page_action))
 			$page_action = 'add';
@@ -556,6 +570,10 @@ case 'editsection':
 		setFormHandler('#form-shelf');
 		</script>
 		<?php
+		} else {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelves management';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+		}
 		break;
 	default:
 		?>
@@ -617,9 +635,11 @@ case 'editsection':
 							<td>'.$row['size_x'].'</td>
 							<td>'.$row['size_y'].'</td>
 							<td>'.$row['size_z'].'</td>
-							<td>
-								<a href="'.$self.'?subpage=editshelf&id='.$row['shelf_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
-								<a href="'.$self.'?subpage=designer&id='.$row['shelf_id'].'" title="Shelf Designer" class="ajax"><i class="mdi mdi-math-compass"></i></a>
+							<td>';
+						if($_SESSION['loginRole'] >= 3) {
+						echo '	<a href="'.$self.'?subpage=editshelf&id='.$row['shelf_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>';
+						}
+						echo '	<a href="'.$self.'?subpage=designer&id='.$row['shelf_id'].'" title="Shelf Designer" class="ajax"><i class="mdi mdi-math-compass"></i></a>
 								<!--<a href="'.$self.'?subpage=deleteshelf&id='.$row['shelf_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
 							</td>
 						</tr>';
@@ -639,4 +659,5 @@ case 'editsection':
 
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true')
 	echo '</div>';
+}
 ?>

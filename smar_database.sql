@@ -282,6 +282,7 @@ CREATE TABLE IF NOT EXISTS `smar_user` (
   `role_device` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `password` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `salt` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `password_device` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   `created` datetime NOT NULL,
   `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),
@@ -292,8 +293,8 @@ CREATE TABLE IF NOT EXISTS `smar_user` (
 -- Daten für Tabelle `smar_user`
 --
 
-INSERT INTO `smar_user` (`user_id`, `pnr`, `surname`, `lastname`, `username`, `role_web`, `role_device`, `password`, `salt`, `created`, `lastupdate`) VALUES
-(1, '123456', 'Admin', 'istrator', 'admin', 1, 0, '2323c469df9947e4e3525ea5e8cf701ee72775e374304282a9fb47074283a0b3', '0fd1d92468325d2350699fce039d2b342a5a435740fc13b0f0bbd4bbf1e2c2fe', '2015-03-02 12:13:42', '2015-03-02 11:16:36');
+INSERT INTO `smar_user` (`user_id`, `pnr`, `surname`, `lastname`, `username`, `role_web`, `role_device`, `password`, `salt`, `password_device`, `created`, `lastupdate`) VALUES
+(1, '123456', 'Admin', 'istrator', 'admin', 9, 1, '2323c469df9947e4e3525ea5e8cf701ee72775e374304282a9fb47074283a0b3', '0fd1d92468325d2350699fce039d2b342a5a435740fc13b0f0bbd4bbf1e2c2fe', NULL, '2015-03-02 12:13:42', '2015-05-01 16:35:48');
 
 --
 -- Beispieldaten TODO
