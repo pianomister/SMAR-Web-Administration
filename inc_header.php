@@ -12,6 +12,7 @@
 	<link href="css/jquery.autocomplete.css" rel="stylesheet">
 	<link href="css/smar.css" rel="stylesheet">
 	
+	<script src="js/interact-1.2.4.min.js"></script>
 	<script src="js/jquery.min.js"></script>
 	<script src="js/plugins.js"></script>
 	<script src="js/smar-frontend.js"></script>
