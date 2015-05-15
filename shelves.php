@@ -304,6 +304,7 @@ case 'editsection':
 							<h2>'.$row['name'].' (ID: '.$row['shelf_id'].')</h2>
 							<p>
 								<a href="'.$self.'?subpage=addsection&amp;id='.$formID.'" id="link-addsection"><i class="bg-icon mdi mdi-plus"></i> Add new section</a> &nbsp;&nbsp;
+								<a href="/api/designer/setshelf" id="link-designer-save"><i class="bg-icon mdi mdi-content-save"></i> Save changes</a> &nbsp;&nbsp;
 								<a href="'.$self.'?subpage=designer&amp;id='.$formID.'" id="link-refresh" class="ajax"><i class="bg-icon mdi mdi-refresh"></i> Refresh view</a>
 							</p>
 							<div id="designer-canvas" style="width: '.$row['size_x'].'px; height: '.$row['size_y'].'px;">';
@@ -350,8 +351,6 @@ case 'editsection':
 				
 				echo '</div>';
 				
-				//echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.'svg_generator.php?id='.$formID);
-				
 				echo '<h2>Sections</h2>';
 				echo $sectionsTable;
 				?>
@@ -375,12 +374,13 @@ case 'editsection':
 					});
 				});
 				setDesignerHandler('designer-canvas', '.canvas-section');
+				setDesignerSaveHandler('#link-designer-save', '#designer-canvas', '.canvas-section');
 				</script>
 				<?php
 
 			// id not found
 			} else {
-					$SMAR_MESSAGES['error'][] = 'No item was found for given ID '.smar_form_input($formID).'.';
+				$SMAR_MESSAGES['error'][] = 'No item was found for given ID '.smar_form_input($formID).'.';
 			}
 		// id not given in parameter
 		} else {

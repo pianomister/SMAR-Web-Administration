@@ -259,6 +259,14 @@ function setAutocompleteHandler(target, table, resultTarget) {
 }
 
 
+function setDesignerSaveHandler(link, canvas, container) {
+	
+	$(link).on('click', function() {
+		//TODO
+	});
+}
+
+
 // handler for shelf designer
 function setDesignerHandler(canvasID, containerSelector) {
 	
