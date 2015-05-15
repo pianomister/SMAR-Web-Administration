@@ -306,43 +306,54 @@ case 'editsection':
 								<a href="'.$self.'?subpage=addsection&amp;id='.$formID.'" id="link-addsection"><i class="bg-icon mdi mdi-plus"></i> Add new section</a> &nbsp;&nbsp;
 								<a href="'.$self.'?subpage=designer&amp;id='.$formID.'" id="link-refresh" class="ajax"><i class="bg-icon mdi mdi-refresh"></i> Refresh view</a>
 							</p>
-							<!--<div id="designer-canvas" style="background-color: #ccc;width: '.$row['size_x'].'px; height: '.$row['size_y'].'px;"></div> TODO-->';
+							<div id="designer-canvas" style="width: '.$row['size_x'].'px; height: '.$row['size_y'].'px;">';
+
+				// get sections
+				$sectionsTable = '';
+				$result = $SMAR_DB->dbquery("SELECT s.section_id, s.name, s.capacity, s.size_x, s.size_y, s.position_x, s.position_y, p.name as product FROM ".SMAR_MYSQL_PREFIX."_section s, ".SMAR_MYSQL_PREFIX."_product p WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."' AND p.product_id = s.product_id ORDER BY position_x");
+
+				if($result->num_rows != 0) {
+					$sectionsTable .= '<table>
+								<thead>
+								<tr>
+									<th>ID</th>
+									<th>Name</th>
+									<th>Capacity</th>
+									<th>Product</th>
+									<th>Actions</th>
+								</tr>
+								</thead>
+								<tbody>';
+					while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+						
+						// create element on canvas
+						echo '<div class="canvas-section" style="transform: translate('.$row['position_x'].'px, '.$row['position_y'].'px);width:'.$row['size_x'].'px;height:'.$row['size_y'].'px;" data-sectionid="'.$row['section_id'].'" data-sizex="'.$row['size_x'].'" data-sizey="'.$row['size_y'].'" data-x="'.$row['position_x'].'" data-y="'.$row['position_y'].'">'.$row['section_id'].'</div>';
+						
+						// append to sections table
+						$sectionsTable .= '<tr>
+										<td>'.$row['section_id'].'</td>
+										<td>'.$row['name'].'</td>
+										<td>'.$row['capacity'].'</td>
+										<td>'.$row['product'].'</td>
+										<td>';
+						if($_SESSION['loginRole'] >= 2) {
+							$sectionsTable .= '<a href="'.$self.'?subpage=editsection&id='.$row['section_id'].'" title="Edit" class="link-editsection"><i class="mdi mdi-pencil"></i></a>';
+						}
+						$sectionsTable .= '</td>
+									</tr>';
+					}
+					$sectionsTable .= '</tbody></table>';
+					
+				} else {
+					$sectionsTable .= '<p>No sections found for this shelf.</p>';
+				}
 				
-				echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.'svg_generator.php?id='.$formID);
+				echo '</div>';
+				
+				//echo file_get_contents(SMAR_SITE_URL.SMAR_CURRENT_DIR.'svg_generator.php?id='.$formID);
 				
 				echo '<h2>Sections</h2>';
-				
-				// get sections
-				$result = $SMAR_DB->dbquery("SELECT s.section_id, s.name, s.capacity, p.name as product FROM ".SMAR_MYSQL_PREFIX."_section s, ".SMAR_MYSQL_PREFIX."_product p WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."' AND p.product_id = s.product_id ORDER BY position_x");
-				if($result->num_rows != 0) {
-						echo '<table>
-									<thead>
-									<tr>
-										<th>ID</th>
-										<th>Name</th>
-										<th>Capacity</th>
-										<th>Product</th>
-										<th>Actions</th>
-									</tr>
-									</thead>
-									<tbody>';
-						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-							echo '<tr>
-											<td>'.$row['section_id'].'</td>
-											<td>'.$row['name'].'</td>
-											<td>'.$row['capacity'].'</td>
-											<td>'.$row['product'].'</td>
-											<td>';
-							if($_SESSION['loginRole'] >= 2) {
-							echo '				<a href="'.$self.'?subpage=editsection&id='.$row['section_id'].'" title="Edit" class="link-editsection"><i class="mdi mdi-pencil"></i></a>';
-							}
-							echo '			</td>
-										</tr>';
-						}
-					echo '</tbody></table>';
-				} else {
-					echo '<p>No sections found for this shelf.</p>';
-				}
+				echo $sectionsTable;
 				?>
 				<script>
 				$('#link-addsection').colorbox({
@@ -363,6 +374,7 @@ case 'editsection':
 						maxWidth: '700px'
 					});
 				});
+				setDesignerHandler('designer-canvas', '.canvas-section');
 				</script>
 				<?php
 

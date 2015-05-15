@@ -628,6 +628,21 @@ table a:hover > .mdi, a:hover .bg-icon, a.text-icon:hover {
 
 
 
+#designer-canvas {
+	position: relative;
+	padding: 0;
+	background-color: #ccc;
+}
+.canvas-section {
+	position: absolute;
+	box-sizing: border-box;
+	border: 1px solid #777;
+	background-color: #aaa;
+	opacity: .8;
+}
+
+
+
 /**
  * @section media queries
  */
