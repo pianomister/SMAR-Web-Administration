@@ -1,7 +1,7 @@
 <?php
 require '../_functions/Slim/Slim.php';
 require_once '../_functions/_functions.php';
-require_once '../inc_session_check.php';
+//require_once '../inc_session_check.php';//TODO
 
 \Slim\Slim::registerAutoloader();
 
@@ -182,7 +182,9 @@ $app->post('/designer/update/:shelfid', function ($shelfid) use ($app) {
 		$res->setBody($response);
 	} else {
 		// update shelf SVG in database
-		smar_update_shelf_svg($shelfid);
+		$update = smar_update_shelf_svg($shelfid);
+		
+		$return['updateSVG'] = $update;
 		
 		$response = json_encode($return);
 		$res = $app->response();

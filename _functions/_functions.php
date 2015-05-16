@@ -176,7 +176,35 @@ function smar_form_input($inputtext) {
 // generate new SVG for a shelf and save it to DB
 // called after changes on shelf or sections
 function smar_update_shelf_svg($shelfid) {
-	// TODO
+	
+	$shelfid = intval($shelfid);
+	
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	// check if shelf exists
+	$result = $SMAR_DB->dbquery("SELECT name FROM ".SMAR_MYSQL_PREFIX."_shelf WHERE shelf_id = '".$SMAR_DB->real_escape_string($shelfid)."'");
+	if($result->num_rows != 0) {
+	
+		$svg = file_get_contents(SMAR_SITE_URL.SMAR_ROOT_PATH.'svg_generator.php?id='.$shelfid);
+		
+		$check = $SMAR_DB->dbquery("SELECT shelf_id FROM ".SMAR_MYSQL_PREFIX."_shelf_graphic WHERE shelf_id = '".$SMAR_DB->real_escape_string($shelfid)."'");
+		if($check->num_rows == 0) {
+			$update = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_shelf_graphic
+														(shelf_id, graphic, created) VALUES
+														('".$SMAR_DB->real_escape_string($shelfid)."', '".$SMAR_DB->real_escape_string($svg)."', NOW())
+														");
+		} else {
+			$update = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_shelf_graphic SET
+																			graphic = '".$SMAR_DB->real_escape_string($svg)."'
+																			WHERE shelf_id = '".$SMAR_DB->real_escape_string($shelfid)."'");
+		}
+		
+		return ($update === TRUE);
+	}
+	return false;
 }
 
 

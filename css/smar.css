@@ -631,14 +631,16 @@ table a:hover > .mdi, a:hover .bg-icon, a.text-icon:hover {
 #designer-canvas {
 	position: relative;
 	padding: 0;
-	background-color: #ccc;
+	background: #ccc url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAF0lEQVQYlWNgYGCQIhJDCGLAqELKFQIAQ4IB74sCh3YAAAAASUVORK5CYII=") repeat;
 }
 .canvas-section {
 	position: absolute;
+	padding: .2em;
 	box-sizing: border-box;
 	border: 1px solid #777;
 	background-color: #aaa;
 	opacity: .8;
+	transition: background-color .4s ease-out 0s;
 }
 
 

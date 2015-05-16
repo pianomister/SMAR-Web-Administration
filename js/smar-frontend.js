@@ -334,6 +334,11 @@ function setDesignerHandler(canvasID, containerSelector) {
       elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
     },
 
+		onstart: function (event) {
+			var target = event.target;
+			target.style.borderColor = '#107861';
+			target.style.backgroundColor = '#16A082';
+		},
     // call this function on every dragmove event
     onmove: function (event) {
 			var target = event.target,
@@ -349,6 +354,11 @@ function setDesignerHandler(canvasID, containerSelector) {
 			// update the posiion attributes
 			target.setAttribute('data-x', x);
 			target.setAttribute('data-y', y);
+		},
+		onend: function(event) {
+			var target = event.target;
+			target.style.borderColor = '';
+			target.style.backgroundColor = '';
 		}
   })
 	.resizable({
@@ -360,6 +370,11 @@ function setDesignerHandler(canvasID, containerSelector) {
       relativePoints: [ { x: 0, y: 0 } ]
     },
     edges: { left: true, right: true, bottom: true, top: true },
+		onstart: function (event) {
+			var target = event.target;
+			target.style.borderColor = '#107861';
+			target.style.backgroundColor = '#16A082';
+		},
   	onmove: function (event) {
 			var target = event.target,
 					x = (parseFloat(target.getAttribute('data-x')) || 0),
@@ -383,7 +398,10 @@ function setDesignerHandler(canvasID, containerSelector) {
 			target.textContent = event.rect.width + '×' + event.rect.height;
 		},
 		onend: function(event) {
-			event.target.textContent = event.target.getAttribute('data-sectionid');
+			var target = event.target;
+			target.style.borderColor = '';
+			target.style.backgroundColor = '';
+			target.textContent = event.target.getAttribute('data-sectionid');
 		}
   });
 

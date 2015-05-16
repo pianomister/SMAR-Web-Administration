@@ -109,7 +109,7 @@ case 'editsection':
 						if($result === TRUE) {
 							$SMAR_MESSAGES['success'][] = 'Changes for "'.$formName.'" were successfully saved.';
 							
-							$result = $SMAR_DB->dbquery("SELECT shelf_id FROM _section WHERE section_id = ''");
+							$result = $SMAR_DB->dbquery("SELECT shelf_id FROM ".SMAR_MYSQL_PREFIX."_section WHERE section_id = ''");
 							if($result->num_rows != 0) {
 								$row = $result->fetch_array(MYSQLI_ASSOC);
 								smar_update_shelf_svg($row['shelf_id']);
