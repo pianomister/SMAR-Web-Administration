@@ -108,6 +108,12 @@ case 'editsection':
 																					WHERE section_id = '".$SMAR_DB->real_escape_string($formID)."'");
 						if($result === TRUE) {
 							$SMAR_MESSAGES['success'][] = 'Changes for "'.$formName.'" were successfully saved.';
+							
+							$result = $SMAR_DB->dbquery("SELECT shelf_id FROM _section WHERE section_id = ''");
+							if($result->num_rows != 0) {
+								$row = $result->fetch_array(MYSQLI_ASSOC);
+								smar_update_shelf_svg($row['shelf_id']);
+							}
 						} else {
 							$SMAR_MESSAGES['error'][] = 'Inserting the changes for section "'.$formName.'" into database failed.';
 						}
@@ -198,6 +204,7 @@ case 'editsection':
 																					('".$SMAR_DB->real_escape_string($formID)."', '".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formX)."', '".$SMAR_DB->real_escape_string($formY)."', '".$SMAR_DB->real_escape_string($formProductID)."', '".$SMAR_DB->real_escape_string($formPosX)."', '".$SMAR_DB->real_escape_string($formPosY)."', '".$SMAR_DB->real_escape_string($formCapacity)."', NOW())");
 						if($result === TRUE) {
 							$SMAR_MESSAGES['success'][] = 'Section "'.$formName.'" was successfully created.';
+							smar_update_shelf_svg($formID);
 						} else {
 							$SMAR_MESSAGES['error'][] = 'Inserting the section "'.$formName.'" into database failed.';
 						}
@@ -304,10 +311,10 @@ case 'editsection':
 							<h2>'.$row['name'].' (ID: '.$row['shelf_id'].')</h2>
 							<p>
 								<a href="'.$self.'?subpage=addsection&amp;id='.$formID.'" id="link-addsection"><i class="bg-icon mdi mdi-plus"></i> Add new section</a> &nbsp;&nbsp;
-								<a href="/api/designer/setshelf" id="link-designer-save"><i class="bg-icon mdi mdi-content-save"></i> Save changes</a> &nbsp;&nbsp;
+								<a href="#" id="link-designer-save"><i class="bg-icon mdi mdi-content-save"></i> Save changes</a> &nbsp;&nbsp;
 								<a href="'.$self.'?subpage=designer&amp;id='.$formID.'" id="link-refresh" class="ajax"><i class="bg-icon mdi mdi-refresh"></i> Refresh view</a>
 							</p>
-							<div id="designer-canvas" style="width: '.$row['size_x'].'px; height: '.$row['size_y'].'px;">';
+							<div id="designer-canvas" data-shelfid="'.$formID.'" style="width: '.$row['size_x'].'px; height: '.$row['size_y'].'px;">';
 
 				// get sections
 				$sectionsTable = '';
@@ -441,6 +448,7 @@ case 'editsection':
 																					WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."'");
 						if($result === TRUE) {
 							$SMAR_MESSAGES['success'][] = 'Changes for "'.$formName.'" were successfully saved.';
+							smar_update_shelf_svg($formID);
 						} else {
 							$SMAR_MESSAGES['error'][] = 'Inserting the changes for shelf "'.$formName.'" into database failed.';
 						}
@@ -521,6 +529,7 @@ case 'editsection':
 																				('".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formX)."', '".$SMAR_DB->real_escape_string($formY)."', '".$SMAR_DB->real_escape_string($formBarcode)."', '".$SMAR_DB->real_escape_string($formZ)."', NOW())");
 					if($result === TRUE) {
 						$SMAR_MESSAGES['success'][] = 'Shelf "'.$formName.'" was successfully created.';
+						// TODO: create shelf SVG here?
 					} else {
 						$SMAR_MESSAGES['error'][] = 'Inserting the shelf "'.$formName.'" into database failed.';
 					}

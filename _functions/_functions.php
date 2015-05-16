@@ -173,6 +173,13 @@ function smar_form_input($inputtext) {
 }
 
 
+// generate new SVG for a shelf and save it to DB
+// called after changes on shelf or sections
+function smar_update_shelf_svg($shelfid) {
+	// TODO
+}
+
+
 // create pagination
 function smar_pagination($url, $num_items, $items_per_page, $current_page, $param_name = 'limit') {
 	

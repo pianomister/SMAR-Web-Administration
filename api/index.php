@@ -91,6 +91,7 @@ $app->get('/barcode/:barcode', function ($barcode) use($app) {
 
 /**
  * autocomplete services
+ * returns list of results matching the search term
  */
 $app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit = 5) use ($app) {
 
@@ -135,11 +136,67 @@ $app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit =
 })->name('search_in_names');
 
 
+/**
+ * autocomplete services
+ * returns list of results matching the search term
+ */
+$app->post('/designer/update/:shelfid', function ($shelfid) use ($app) {
+	
+	// get parameters from PUT request
+	//parse_str(file_get_contents("php://input"), $_MY_PUT);//TODO
+	//$sections = json_decode($_MY_PUT['data']);
+	$sections = json_decode($_POST['data']);
+	$shelfid = intval($shelfid);
+	$return = array();
+	
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	foreach($sections as $section) {
 
+		$section->section_id = intval($section->section_id);
+		$section->size_x = intval($section->size_x);
+		$section->size_y = intval($section->size_y);
+		$section->position_x = intval($section->position_x);
+		$section->position_y = intval($section->position_y);
+		
+		$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_section SET
+								size_x = '".$SMAR_DB->real_escape_string($section->size_x)."',
+								size_y = '".$SMAR_DB->real_escape_string($section->size_y)."',
+								position_x = '".$SMAR_DB->real_escape_string($section->position_x)."',
+								position_y = '".$SMAR_DB->real_escape_string($section->position_y)."'
+							WHERE section_id = '".$SMAR_DB->real_escape_string($section->section_id)."'
+							AND shelf_id = '".$SMAR_DB->real_escape_string($shelfid)."'");
+		
+		if(!$result) {
+			$return[] = $section;
+		}
+	}
+	
+	if(count($return) > 0) {
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(422);
+		$res->setBody($response);
+	} else {
+		// update shelf SVG in database
+		smar_update_shelf_svg($shelfid);
+		
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(200);
+		$res->setBody($response);
+	}
+	
+})->name('update_shelf_designer');
 
+	
 
-// GET route
-
+/**
+ * root folder, prints all APIs
+ */
 $app->get('/', function () use($app) {
 /*        $template = <<<EOT
 <!DOCTYPE html>
