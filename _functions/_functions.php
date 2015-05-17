@@ -18,6 +18,7 @@ error_reporting(E_ALL); // ... wir sind ja am programmieren :-) TODO
 
 // Lade Konfiguration
 require_once('_config.php');
+require_once('_jwt/JWT.php');
 
 // class for MySQLi operations
 class SMAR_MysqlConnect extends mysqli
