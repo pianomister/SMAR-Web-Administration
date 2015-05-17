@@ -1,6 +1,7 @@
 <?php
 require '../_functions/Slim/Slim.php';
 require_once '../_functions/_functions.php';
+require_once '../_functions/_jwt/JWT.php';
 //require_once '../inc_session_check.php';//TODO
 
 \Slim\Slim::registerAutoloader();
@@ -19,6 +20,59 @@ $app->contentType('application/json;charset=utf-8');
  * DOCS: http://docs.slimframework.com/
  */
 
+/**
+ * authenticate with JWT
+ */
+$app->post('/authenticate', function () use ($app) {
+	
+	$hwaddress = $_POST['hwaddress'];
+	$deviceUser = $_POST['user'];
+	$devicePass = $_POST['password'];
+	$return = array();
+	
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE hwaddress = '".$SMAR_DB->real_escape_string($hwaddress)."' AND activated = 1");
+	if($result->num_rows != 0) {
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($deviceUser)."' AND password_device = '".$SMAR_DB->real_escape_string($devicePass)."'");
+		if($result->num_rows != 0) {
+			$row = $result->fetch_array();
+			if($row['role_device'] == 1) {
+				$token = array(
+					"hwaddress" => $hwaddress,
+					"deviceUser" => $deviceUser,
+					"devicePass" => $devicePass
+				);
+				$return['jwt'] = JWT::encode($token, SMAR_JWT_SSK);
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(200);
+				$res->setBody($response);
+			} else {
+				$return['reason'] = "permission";
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(401);
+				$res->setBody($response);
+			}
+		} else {
+			$return['reason'] = "password";
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(403);
+			$res->setBody($response);
+		}
+	} else {
+		$return['reason'] = "device";
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(403);
+		$res->setBody($response);
+	}
+})->name('authentication');
 
 /**
  * get sections for a shelf (found by id)
@@ -178,7 +232,7 @@ $app->post('/designer/update/:shelfid', function ($shelfid) use ($app) {
 	if(count($return) > 0) {
 		$response = json_encode($return);
 		$res = $app->response();
-		$res->setStatus(422);
+		$res->setStatus(500);
 		$res->setBody($response);
 	} else {
 		// update shelf SVG in database

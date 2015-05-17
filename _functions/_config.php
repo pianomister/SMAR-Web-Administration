@@ -20,4 +20,7 @@ define("SMAR_MYSQL_USER", "root");
 define("SMAR_MYSQL_PW", "");
 define("SMAR_MYSQL_PREFIX", "smar");
 define("SMAR_ROOT_PATH", "/SMAR-Web-Administration/");//TODO
+
+// Secret Server Key - Encoding JSON authentication (JSON Web Token)
+define("SMAR_JWT_SSK", "BABABAMINION42BABANANA");
 ?>
