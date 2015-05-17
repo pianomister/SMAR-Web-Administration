@@ -2,7 +2,30 @@
 require '../_functions/Slim/Slim.php';
 require_once '../_functions/_functions.php';
 require_once '../_functions/_jwt/JWT.php';
-//require_once '../inc_session_check.php';//TODO
+
+function checkLogin($jwtToken) {
+	$decoded = JWT::decode($jwtToken, SMAR_JWT_SSK, array('HS256'));
+	if($decoded['device'] == true) {
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE hwaddress = '".$SMAR_DB->real_escape_string($decoded['hwaddress'])."' AND activated = 1");
+		if($result->num_rows != 0) {
+			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($decoded['user'])."'");
+			if($result->num_rows != 0) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	} else {
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE user_id = '".$SMAR_DB->real_escape_string($decoded['user_id'])."' AND username = '".$SMAR_DB->real_escape_string($decoded['username'])."' AND role_web = '".$SMAR_DB->real_escape_string($decoded['user_role'])."'");
+		if($result->num_rows != 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
 
 \Slim\Slim::registerAutoloader();
 
@@ -26,8 +49,8 @@ $app->contentType('application/json;charset=utf-8');
 $app->post('/authenticate', function () use ($app) {
 	
 	$hwaddress = $_POST['hwaddress'];
-	$deviceUser = $_POST['user'];
-	$devicePass = $_POST['password'];
+	$user = $_POST['user'];
+	$password = $_POST['password'];
 	$return = array();
 	
 	// init database
@@ -37,14 +60,14 @@ $app->post('/authenticate', function () use ($app) {
 	
 	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE hwaddress = '".$SMAR_DB->real_escape_string($hwaddress)."' AND activated = 1");
 	if($result->num_rows != 0) {
-		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($deviceUser)."' AND password_device = '".$SMAR_DB->real_escape_string($devicePass)."'");
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($user)."' AND password_device = '".$SMAR_DB->real_escape_string($password)."'");
 		if($result->num_rows != 0) {
 			$row = $result->fetch_array();
 			if($row['role_device'] == 1) {
 				$token = array(
 					"hwaddress" => $hwaddress,
-					"deviceUser" => $deviceUser,
-					"devicePass" => $devicePass
+					"user" => $user,
+					"device" => "true"
 				);
 				$return['jwt'] = JWT::encode($token, SMAR_JWT_SSK);
 				$response = json_encode($return);

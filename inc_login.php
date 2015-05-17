@@ -47,6 +47,13 @@
 				$_SESSION['loginRole']		= $row['role_web'];
 				$_SESSION['loginTime']		= time();
 				$_SESSION['loginLastActivity']		= time();
+				$token = array(
+					"user_id" => $row['user_id'],
+					"username" => $row['username'],
+					"user_role" => $row['role_web'],
+					"device" => "false"
+				);
+				$_SESSION['loginJWTToken'] = JWT::encode($token, SMAR_JWT_SSK);
 
 				$_SESSION['login'] = 1;
 
