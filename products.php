@@ -44,7 +44,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			<?php if($_SESSION['loginRole'] >= 2) { ?><li><a href="<?php echo $self.'?subpage=addproduct'; ?>" <?php echo ($subpage == 'addproduct') ? 'class="smar-active"' : ''; ?>>Add product</a></li><?php } ?>
 			<li><a href="<?php echo $self.'?subpage=units'; ?>" <?php echo ($subpage == 'units') ? 'class="smar-active"' : ''; ?>>Units</a></li>
 			<?php if($_SESSION['loginRole'] >= 2) { ?><li><a href="<?php echo $self.'?subpage=addunit'; ?>" <?php echo ($subpage == 'addunit') ? 'class="smar-active"' : ''; ?>>Add unit</a></li><?php } ?>
-			<li><a href="<?php echo $self.'?subpage=mapping'; ?>" <?php echo ($subpage == 'mapping') ? 'class="smar-active"' : ''; ?>>Mappings</a></li>
+			<?php if($_SESSION['loginRole'] >= 2 && $subpage == 'mapping') { ?><li><a href="<?php echo $self.'?subpage=mapping'; ?>" class="smar-active">Mappings</a></li><?php } ?>
 		</ul>
 	</nav>
 	<div id="smar-content-inner">
@@ -61,6 +61,30 @@ switch($subpage) {
 		?>
 		<h1>Unit mappings</h1>
 		<?php
+		$types = array('unit', 'product');
+		
+		if(isset($_GET['type']) && isset($_GET['id']) && !empty($_GET['type']) && !empty($_GET['id']) && in_array($_GET['type'], $types)) {
+			$type = $_GET['type'];
+			$id = intval(strip_tags($_GET['id']));
+			
+			
+			?>
+			<div class="form-box">
+				<span class="label"><?php echo $type; ?> name (ID)</span>
+				<span class="input"><?php echo $id; ?></span>
+			</div>
+			<div class="form-box swap-order">
+				<input id="form-mappings-search" type="text" name="form-mappings-search" placeholder="Type to search for name / article nr." />
+				<label for="form-mappings-search">Search and click to add</label>
+			</div>
+			
+			<?php
+		} else {
+			$SMAR_MESSAGES['error'][] = 'Correct type and ID must be provided in URL parameters.<br>Please only open this view using links from product and unit views.';
+		}
+	
+		// print messages
+		if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 		break;
 	case 'units':
 		?>
@@ -88,7 +112,7 @@ switch($subpage) {
 				<?php
 
 				// pagination
-				$items_per_page = 2;	
+				$items_per_page = 20;	
 				$current_page = 0;
 				if(isset($_GET['limit']) && !empty($_GET['limit']))
 					$current_page = intval($_GET['limit']);
@@ -127,7 +151,7 @@ switch($subpage) {
 						if($_SESSION['loginRole'] >= 2) {
 							echo '<a href="'.$self.'?subpage=editunit&id='.$row['unit_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>'; 
 						}
-						echo'<a href="'.$self.'?subpage=mapping&id='.$row['unit_id'].'" title="Show connected products" class="ajax"><i class="mdi mdi-cart"></i></a>
+						echo'<a href="'.$self.'?subpage=mapping&type=unit&id='.$row['unit_id'].'" title="Show connected products" class="ajax"><i class="mdi mdi-cart"></i></a>
 								<!--<a href="'.$self.'?subpage=deleteunit&id='.$row['unit_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
 							</td>
 						</tr>';
@@ -604,7 +628,8 @@ switch($subpage) {
 						if($_SESSION['loginRole'] >= 2) {
 							echo '	<a href="'.$self.'?subpage=editproduct&id='.$row['product_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>';
 						}
-						echo'		<!--<a href="'.$self.'?subpage=deleteproduct&id='.$row['product_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
+						echo'<a href="'.$self.'?subpage=mapping&type=product&id='.$row['product_id'].'" title="Show connected units" class="ajax"><i class="mdi mdi-pound"></i></a>
+									<!--<a href="'.$self.'?subpage=deleteproduct&id='.$row['product_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
 							</td>
 						</tr>';
 					}
