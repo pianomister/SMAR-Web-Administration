@@ -243,6 +243,11 @@ case 'editsection':
 					<label for="form-section-name">Section name</label>
 				</div>
 				<div class="form-box swap-order">
+					<input id="form-section-productid" type="hidden" name="form-section-productid" value="<?php if(isset($formProductID)) echo smar_form_input($formProductID); ?>">
+					<input id="form-section-product" type="text" name="form-section-product" placeholder="Type to search for product / article nr." value="<?php if(isset($formProductID)) echo smar_form_input($formProductID); ?>" />
+					<label for="form-section-product">Product (ID)</label>
+				</div>
+				<div class="form-box swap-order">
 					<input id="form-section-capacity" type="number" name="form-section-capacity" placeholder="Capacity" value="<?php if(isset($formCapacity)) echo smar_form_input($formCapacity); ?>" />
 					<label for="form-section-capacity">Capacity</label>
 				</div>
@@ -265,11 +270,6 @@ case 'editsection':
 				<div class="form-box swap-order">
 					<input id="form-section-posy" type="number" name="form-section-posy" placeholder="0 cm" value="<?php if(isset($formPosY)) echo smar_form_input($formPosY); ?>" />
 					<label for="form-section-posy">Vertical (y) position (cm)</label>
-				</div>
-				<div class="form-box swap-order">
-					<input id="form-section-productid" type="hidden" name="form-section-productid" value="<?php if(isset($formProductID)) echo smar_form_input($formProductID); ?>">
-					<input id="form-section-product" type="text" name="form-section-product" placeholder="Type to search for product / article nr." value="<?php if(isset($formProductID)) echo smar_form_input($formProductID); ?>" />
-					<label for="form-section-product">Product (ID)</label>
 				</div>
 				<?php
 				echo '<input type="hidden" value="'.$formID.'" name="id" />';

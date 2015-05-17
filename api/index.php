@@ -43,6 +43,7 @@ $app->contentType('application/json;charset=utf-8');
  * DOCS: http://docs.slimframework.com/
  */
 
+
 /**
  * authenticate with JWT
  */
@@ -96,6 +97,7 @@ $app->post('/authenticate', function () use ($app) {
 		$res->setBody($response);
 	}
 })->name('authentication');
+
 
 /**
  * get sections for a shelf (found by id)
