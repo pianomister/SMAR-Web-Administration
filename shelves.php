@@ -73,7 +73,8 @@ case 'editsection':
 					 isset($_POST['form-section-y']) &&
 					 isset($_POST['form-section-posx']) &&
 					 isset($_POST['form-section-posy']) &&
-					 isset($_POST['form-section-capacity'])
+					 isset($_POST['form-section-capacity']) &&
+					 isset($_POST['form-section-mincapacity'])
 					) {
 
 					$formName = strip_tags($_POST['form-section-name']);
@@ -83,12 +84,14 @@ case 'editsection':
 					$formPosX = intval(strip_tags($_POST['form-section-posx']));
 					$formPosY = intval(strip_tags($_POST['form-section-posy']));
 				  $formCapacity = intval(strip_tags($_POST['form-section-capacity']));
+					$formMinCapacity = intval(strip_tags($_POST['form-section-mincapacity']));
 
 					if(!empty($_POST['form-section-name']) &&
 						 !empty($_POST['form-section-productid']) &&
 						 !empty($_POST['form-section-x']) &&
 						 !empty($_POST['form-section-y']) &&
-						 !empty($_POST['form-section-capacity'])
+						 !empty($_POST['form-section-capacity']) &&
+						 !empty($_POST['form-section-mincapacity'])
 						) {
 
 						// init database
@@ -104,7 +107,8 @@ case 'editsection':
 																					product_id = '".$SMAR_DB->real_escape_string($formProductID)."',
 																					position_x = '".$SMAR_DB->real_escape_string($formPosX)."',
 																					position_y = '".$SMAR_DB->real_escape_string($formPosY)."',
-																					capacity = '".$SMAR_DB->real_escape_string($formCapacity)."'
+																					capacity = '".$SMAR_DB->real_escape_string($formCapacity)."',
+																					min_capacity = '".$SMAR_DB->real_escape_string($formMinCapacity)."'
 																					WHERE section_id = '".$SMAR_DB->real_escape_string($formID)."'");
 						if($result === TRUE) {
 							$SMAR_MESSAGES['success'][] = 'Changes for "'.$formName.'" were successfully saved.';
@@ -141,6 +145,7 @@ case 'editsection':
 					$formPosX = $row['position_x'];
 					$formPosY = $row['position_y'];
 					$formCapacity = $row['capacity'];
+					$formMinCapacity = $row['min_capacity'];
 					$formCreated = $row['created'];
 					$formLastupdate = $row['lastupdate'];
 
@@ -175,7 +180,8 @@ case 'editsection':
 					 isset($_POST['form-section-y']) &&
 					 isset($_POST['form-section-posx']) &&
 					 isset($_POST['form-section-posy']) &&
-					 isset($_POST['form-section-capacity'])
+					 isset($_POST['form-section-capacity']) &&
+					 isset($_POST['form-section-mincapacity'])
 					) {
 
 					$formName = strip_tags($_POST['form-section-name']);
@@ -185,12 +191,14 @@ case 'editsection':
 					$formPosX = intval(strip_tags($_POST['form-section-posx']));
 					$formPosY = intval(strip_tags($_POST['form-section-posy']));
 					$formCapacity = intval(strip_tags($_POST['form-section-capacity']));
+					$formMinCapacity = intval(strip_tags($_POST['form-section-mincapacity']));
 
 					if(!empty($_POST['form-section-name']) &&
 						 !empty($_POST['form-section-productid']) &&
 						 !empty($_POST['form-section-x']) &&
 						 !empty($_POST['form-section-y']) &&
-						 !empty($_POST['form-section-capacity'])
+						 !empty($_POST['form-section-capacity']) &&
+						 !empty($_POST['form-section-mincapacity'])
 						) {
 
 						// init database
@@ -200,8 +208,8 @@ case 'editsection':
 
 						// insert section data
 						$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_section
-																					(shelf_id, name, size_x, size_y, product_id, position_x, position_y, capacity, created) VALUES
-																					('".$SMAR_DB->real_escape_string($formID)."', '".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formX)."', '".$SMAR_DB->real_escape_string($formY)."', '".$SMAR_DB->real_escape_string($formProductID)."', '".$SMAR_DB->real_escape_string($formPosX)."', '".$SMAR_DB->real_escape_string($formPosY)."', '".$SMAR_DB->real_escape_string($formCapacity)."', NOW())");
+																					(shelf_id, name, size_x, size_y, product_id, position_x, position_y, capacity, min_capacity, created) VALUES
+																					('".$SMAR_DB->real_escape_string($formID)."', '".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formX)."', '".$SMAR_DB->real_escape_string($formY)."', '".$SMAR_DB->real_escape_string($formProductID)."', '".$SMAR_DB->real_escape_string($formPosX)."', '".$SMAR_DB->real_escape_string($formPosY)."', '".$SMAR_DB->real_escape_string($formCapacity)."', '".$SMAR_DB->real_escape_string($formMinCapacity)."', NOW())");
 						if($result === TRUE) {
 							$SMAR_MESSAGES['success'][] = 'Section "'.$formName.'" was successfully created.';
 							smar_update_shelf_svg($formID);
@@ -237,6 +245,10 @@ case 'editsection':
 				<div class="form-box swap-order">
 					<input id="form-section-capacity" type="number" name="form-section-capacity" placeholder="Capacity" value="<?php if(isset($formCapacity)) echo smar_form_input($formCapacity); ?>" />
 					<label for="form-section-capacity">Capacity</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-section-mincapacity" type="number" name="form-section-mincapacity" placeholder="Minimum capacity" value="<?php if(isset($formMinCapacity)) echo smar_form_input($formMinCapacity); ?>" />
+					<label for="form-section-mincapacity">Minimum capacity (for alerts)</label>
 				</div>
 				<div class="form-box swap-order">
 					<input id="form-section-x" type="number" name="form-section-x" placeholder="0 cm" value="<?php if(isset($formX)) echo smar_form_input($formX); ?>" />

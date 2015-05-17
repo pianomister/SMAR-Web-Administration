@@ -315,7 +315,10 @@ switch($subpage) {
 
 				if(isset($_POST['form-product-name']) &&
 					 isset($_POST['form-product-number']) &&
-					 isset($_POST['form-product-price']) && 
+					 isset($_POST['form-product-price']) &&
+					 isset($_POST['form-product-sizex']) && 
+					 isset($_POST['form-product-sizey']) && 
+					 isset($_POST['form-product-sizez']) && 
 					 isset($_POST['form-product-barcode']) &&
 					 isset($_POST['form-product-image'])
 					) {
@@ -323,8 +326,16 @@ switch($subpage) {
 					$formName = strip_tags($_POST['form-product-name']);
 					$formNumber = strip_tags($_POST['form-product-number']);
 					$formPrice = doubleval(strip_tags($_POST['form-product-price']));
+					$formSizeX = intval(strip_tags($_POST['form-product-sizex']));
+					$formSizeY = intval(strip_tags($_POST['form-product-sizey']));
+					$formSizeZ = intval(strip_tags($_POST['form-product-sizez']));
 					$formBarcode = intval(strip_tags($_POST['form-product-barcode']));
 					$formImage = empty($_POST['form-product-image']) ? strip_tags($_POST['form-product-image']) : 'NULL';
+					
+					if(isset($_POST['form-product-stackable']))
+						$formStackable = 1;
+					else
+						$formStackable = 0;
 
 					if(!empty($_POST['form-product-name']) &&
 						 !empty($_POST['form-product-number']) &&
@@ -342,6 +353,10 @@ switch($subpage) {
 																					name = '".$SMAR_DB->real_escape_string($formName)."',
 																					article_nr = '".$SMAR_DB->real_escape_string($formNumber)."',
 																					price = '".$SMAR_DB->real_escape_string($formPrice)."',
+																					size_x = '".$SMAR_DB->real_escape_string($formSizeX)."',
+																					size_y = '".$SMAR_DB->real_escape_string($formSizeY)."',
+																					size_z = '".$SMAR_DB->real_escape_string($formSizeZ)."',
+																					stackable = '".$SMAR_DB->real_escape_string($formStackable)."',
 																					barcode = '".$SMAR_DB->real_escape_string($formBarcode)."',
 																					image = '".$SMAR_DB->real_escape_string($formImage)."'
 																					WHERE product_id = '".$SMAR_DB->real_escape_string($formID)."'");
@@ -370,6 +385,10 @@ switch($subpage) {
 					$formName = $row['name'];
 					$formNumber = $row['article_nr'];
 					$formPrice = $row['price'];
+					$formSizeX = $row['size_x'];
+					$formSizeY = $row['size_y'];
+					$formSizeZ = $row['size_z'];
+					$formStackable = $row['stackable'];
 					$formBarcode = $row['barcode'];
 					$formImage = $row['image'];
 					$formCreated = $row['created'];
@@ -399,21 +418,32 @@ switch($subpage) {
 			if(isset($_POST['form-product-name']) &&
 					 isset($_POST['form-product-number']) &&
 					 isset($_POST['form-product-price']) && 
+				 	 isset($_POST['form-product-sizex']) && 
+				 	 isset($_POST['form-product-sizey']) && 
+				 	 isset($_POST['form-product-sizez']) && 
 					 isset($_POST['form-product-barcode']) &&
 					 isset($_POST['form-product-image'])
 					) {
 
-					$formName = strip_tags($_POST['form-product-name']);
-					$formNumber = strip_tags($_POST['form-product-number']);
-					$formPrice = doubleval(strip_tags($_POST['form-product-price']));
-					$formBarcode = intval(strip_tags($_POST['form-product-barcode']));
-					$formImage = empty($_POST['form-product-image']) ? strip_tags($_POST['form-product-image']) : 'NULL';
+				$formName = strip_tags($_POST['form-product-name']);
+				$formNumber = strip_tags($_POST['form-product-number']);
+				$formPrice = doubleval(strip_tags($_POST['form-product-price']));
+				$formSizeX = intval(strip_tags($_POST['form-product-sizex']));
+				$formSizeY = intval(strip_tags($_POST['form-product-sizey']));
+				$formSizeZ = intval(strip_tags($_POST['form-product-sizez']));
+				$formBarcode = intval(strip_tags($_POST['form-product-barcode']));
+				$formImage = empty($_POST['form-product-image']) ? strip_tags($_POST['form-product-image']) : 'NULL';
 
-					if(!empty($_POST['form-product-name']) &&
-						 !empty($_POST['form-product-number']) &&
-						 !empty($_POST['form-product-price']) &&
-						 !empty($_POST['form-product-barcode'])
-						) {
+				if(isset($_POST['form-product-stackable']))
+					$formStackable = 1;
+				else
+					$formStackable = 0;
+
+				if(!empty($_POST['form-product-name']) &&
+					 !empty($_POST['form-product-number']) &&
+					 !empty($_POST['form-product-price']) &&
+					 !empty($_POST['form-product-barcode'])
+					) {
 
 					// init database
 					if(!(isset($SMAR_DB))) {
@@ -422,8 +452,8 @@ switch($subpage) {
 
 					// insert
 					$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product
-																				(name, article_nr, price, barcode, image, created) VALUES
-																				('".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formNumber)."', '".$SMAR_DB->real_escape_string($formPrice)."', '".$SMAR_DB->real_escape_string($formBarcode)."', '".$SMAR_DB->real_escape_string($formImage)."', NOW())");
+																				(name, article_nr, price, size_x, size_y, size_z, stackable, barcode, image, created) VALUES
+																				('".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formNumber)."', '".$SMAR_DB->real_escape_string($formPrice)."', '".$SMAR_DB->real_escape_string($formSizeX)."', '".$SMAR_DB->real_escape_string($formSizeY)."', '".$SMAR_DB->real_escape_string($formSizeZ)."', '".$SMAR_DB->real_escape_string($formStackable)."', '".$SMAR_DB->real_escape_string($formBarcode)."', '".$SMAR_DB->real_escape_string($formImage)."', NOW())");
 					if($result === TRUE) {
 						$SMAR_MESSAGES['success'][] = 'Product "'.$formName.'" was successfully created.';
 					} else {
@@ -455,6 +485,22 @@ switch($subpage) {
 				<div class="form-box swap-order">
 					<input id="form-product-price" type="text" name="form-product-price" placeholder="0.00" value="<?php if(isset($formPrice)) echo smar_form_input($formPrice); ?>" />
 					<label for="form-product-price">Price</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-product-sizex" type="text" name="form-product-sizex" placeholder="0" value="<?php if(isset($formSizeX)) echo smar_form_input($formSizeX); ?>" />
+					<label for="form-product-sizex">Width (cm)</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-product-sizey" type="text" name="form-product-sizey" placeholder="0" value="<?php if(isset($formSizeY)) echo smar_form_input($formSizeY); ?>" />
+					<label for="form-product-sizey">Height (cm)</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-product-sizez" type="text" name="form-product-sizez" placeholder="0" value="<?php if(isset($formSizeZ)) echo smar_form_input($formSizeZ); ?>" />
+					<label for="form-product-sizez">Depth (cm)</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-product-stackable" type="checkbox" name="form-product-stackable" placeholder="0" <?php if(isset($formStackable) && $formStackable == 1) echo 'checked'; ?> />
+					<label for="form-product-stackable">Stackable</label>
 				</div>
 				<div class="form-box swap-order">
 					<input id="form-product-barcode" type="text" name="form-product-barcode" placeholder="0123456789" value="<?php if(isset($formBarcode)) echo smar_form_input($formBarcode); ?>" />
