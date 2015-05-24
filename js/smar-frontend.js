@@ -225,7 +225,7 @@ function setAutocompleteHandler(target, table, resultTarget) {
 		showNoSuggestionNotice: true,
 		lookup: function (search, done) {
 			
-			searchUrl = 'api/search/' + table + '/' + search;
+			searchUrl = 'api/search/' + table + '/' + urlencode(search) + '?token=' + window.loginJWTToken;
 			
 			if(window.autocomplete) {
 				window.autocomplete.abort();
@@ -284,7 +284,7 @@ function setDesignerSaveHandler(link, canvas, container) {
 			});
 		});
 
-		var formData = 'data=' + JSON.stringify(resultSet),
+		var formData = 'data=' + JSON.stringify(resultSet) + '&token=' + window.loginJWTToken,
 			$loadOverlay = $('#smar-loading');
 
 		$loadOverlay.fadeIn(100, function() {
