@@ -12,6 +12,10 @@
 	<link href="css/jquery.autocomplete.css" rel="stylesheet">
 	<link href="css/smar.css" rel="stylesheet">
 	
+	<script>
+	// JWT token for API calls
+	window.loginJWTToken = '<?php echo $_SESSION['loginJWTToken']; ?>';
+	</script>
 	<script src="js/interact-1.2.4.min.js"></script>
 	<script src="js/jquery.min.js"></script>
 	<script src="js/plugins.js"></script>

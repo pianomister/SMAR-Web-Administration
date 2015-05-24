@@ -66,12 +66,35 @@ switch($subpage) {
 		if(isset($_GET['type']) && isset($_GET['id']) && !empty($_GET['type']) && !empty($_GET['id']) && in_array($_GET['type'], $types)) {
 			$type = $_GET['type'];
 			$id = intval(strip_tags($_GET['id']));
+			$type1 = array_search($type, $types);
+			$type2 = $types[($type1+1)%2];
+			$type1 = $types[$type1];
 			
+			// init database
+			if(!(isset($SMAR_DB))) {
+				$SMAR_DB = new SMAR_MysqlConnect();
+			}
+			
+			// get name
+			$resultn = $SMAR_DB->dbquery("SELECT name FROM
+																		".SMAR_MYSQL_PREFIX."_".$type1."
+																		WHERE ".$type1."_id = '".$id."'");
+			if($resultn->num_rows) {
+				$name = $resultn->fetch_array(MYSQLI_ASSOC);
+				$name = $name['name'];
+				$resultg = $SMAR_DB->dbquery("SELECT ".$type2."_id FROM
+																		".SMAR_MYSQL_PREFIX."_product_unit
+																		WHERE ".$type1."_id = '".$id."'");
+			} else {
+				$SMAR_MESSAGES['error'][] = 'No item was found for the given ID.';
+			}
+			
+			if($result->num_rows > 0) {
+				print_r($result->fetch_array(MYSQLI_ASSOC));
+			} else echo "Nope";
 			
 			?>
-			<div class="form-box">
-				<span class="label"><?php echo $type; ?> name (ID)</span>
-				<span class="input"><?php echo $id; ?></span>
+			<h3><?php echo $name.' ('.$id.')'; ?></h3>
 			</div>
 			<div class="form-box swap-order">
 				<input id="form-mappings-search" type="text" name="form-mappings-search" placeholder="Type to search for name / article nr." />
@@ -344,7 +367,9 @@ switch($subpage) {
 					 isset($_POST['form-product-sizey']) && 
 					 isset($_POST['form-product-sizez']) && 
 					 isset($_POST['form-product-barcode']) &&
-					 isset($_POST['form-product-image'])
+					 isset($_POST['form-product-image']) &&
+					 isset($_POST['form-product-stock-warehouse']) &&
+					 isset($_POST['form-product-stock-shop'])
 					) {
 
 					$formName = strip_tags($_POST['form-product-name']);
@@ -355,6 +380,8 @@ switch($subpage) {
 					$formSizeZ = intval(strip_tags($_POST['form-product-sizez']));
 					$formBarcode = intval(strip_tags($_POST['form-product-barcode']));
 					$formImage = empty($_POST['form-product-image']) ? strip_tags($_POST['form-product-image']) : 'NULL';
+					$formStockWarehouse = empty($_POST['form-product-stock-warehouse']) ? '0' : intval(strip_tags($_POST['form-product-stock-warehouse']));
+					$formStockShop = empty($_POST['form-product-stock-shop']) ? '0' : intval(strip_tags($_POST['form-product-stock-shop']));
 					
 					if(isset($_POST['form-product-stackable']))
 						$formStackable = 1;
@@ -386,6 +413,17 @@ switch($subpage) {
 																					WHERE product_id = '".$SMAR_DB->real_escape_string($formID)."'");
 						if($result === TRUE) {
 							$SMAR_MESSAGES['success'][] = 'Changes for "'.$formName.'" were successfully saved.';
+							
+							$result2 = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock SET
+																					amount_warehouse = '".$SMAR_DB->real_escape_string($formStockWarehouse)."',
+																					amount_shop = '".$SMAR_DB->real_escape_string($formStockShop)."'
+																					WHERE product_id = '".$SMAR_DB->real_escape_string($formID)."'");
+							
+							if($result2 === TRUE) {
+								$SMAR_MESSAGES['success'][] = 'Changes on stock for "'.$formName.'" were successfully saved.';
+							} else {
+								$SMAR_MESSAGES['error'][] = 'Inserting the changes on stock for product "'.$formName.'" into database failed.';
+							}		
 						} else {
 							$SMAR_MESSAGES['error'][] = 'Inserting the changes for product "'.$formName.'" into database failed.';
 						}
@@ -402,7 +440,9 @@ switch($subpage) {
 					$SMAR_DB = new SMAR_MysqlConnect();
 				}
 
-				$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_product WHERE product_id = '".$SMAR_DB->real_escape_string($formID)."' LIMIT 1");
+				$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s
+																		WHERE p.product_id = '".$SMAR_DB->real_escape_string($formID)."'
+																					AND s.product_id = p.product_id LIMIT 1");
 				if($result->num_rows == 1) {
 					$row = $result->fetch_array(MYSQLI_ASSOC);
 
@@ -415,6 +455,8 @@ switch($subpage) {
 					$formStackable = $row['stackable'];
 					$formBarcode = $row['barcode'];
 					$formImage = $row['image'];
+					$formStockWarehouse = $row['amount_warehouse'];
+					$formStockShop = $row['amount_shop'];
 					$formCreated = $row['created'];
 					$formLastupdate = $row['lastupdate'];
 
@@ -446,7 +488,9 @@ switch($subpage) {
 				 	 isset($_POST['form-product-sizey']) && 
 				 	 isset($_POST['form-product-sizez']) && 
 					 isset($_POST['form-product-barcode']) &&
-					 isset($_POST['form-product-image'])
+					 isset($_POST['form-product-image']) &&
+					 isset($_POST['form-product-stock-warehouse']) &&
+					 isset($_POST['form-product-stock-shop'])
 					) {
 
 				$formName = strip_tags($_POST['form-product-name']);
@@ -456,7 +500,9 @@ switch($subpage) {
 				$formSizeY = intval(strip_tags($_POST['form-product-sizey']));
 				$formSizeZ = intval(strip_tags($_POST['form-product-sizez']));
 				$formBarcode = intval(strip_tags($_POST['form-product-barcode']));
-				$formImage = empty($_POST['form-product-image']) ? strip_tags($_POST['form-product-image']) : 'NULL';
+				$formImage = empty($_POST['form-product-image']) ? 'NULL' : strip_tags($_POST['form-product-image']);
+				$formStockWarehouse = empty($_POST['form-product-stock-warehouse']) ? '0' : intval(strip_tags($_POST['form-product-stock-warehouse']));
+				$formStockShop = empty($_POST['form-product-stock-shop']) ? '0' : intval(strip_tags($_POST['form-product-stock-shop']));
 
 				if(isset($_POST['form-product-stackable']))
 					$formStackable = 1;
@@ -478,8 +524,18 @@ switch($subpage) {
 					$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product
 																				(name, article_nr, price, size_x, size_y, size_z, stackable, barcode, image, created) VALUES
 																				('".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formNumber)."', '".$SMAR_DB->real_escape_string($formPrice)."', '".$SMAR_DB->real_escape_string($formSizeX)."', '".$SMAR_DB->real_escape_string($formSizeY)."', '".$SMAR_DB->real_escape_string($formSizeZ)."', '".$SMAR_DB->real_escape_string($formStackable)."', '".$SMAR_DB->real_escape_string($formBarcode)."', '".$SMAR_DB->real_escape_string($formImage)."', NOW())");
+					
 					if($result === TRUE) {
 						$SMAR_MESSAGES['success'][] = 'Product "'.$formName.'" was successfully created.';
+						
+						$result2 = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_stock
+																				(product_id, amount_warehouse, amount_shop, created) VALUES
+																				(LAST_INSERT_ID(), '".$SMAR_DB->real_escape_string($formStockWarehouse)."', '".$SMAR_DB->real_escape_string($formStockShop)."', NOW())");
+						if($result === TRUE) {
+							$SMAR_MESSAGES['success'][] = 'Stock for product "'.$formName.'" was successfully created.';
+						} else {
+							$SMAR_MESSAGES['error'][] = 'Inserting the product stock for "'.$formName.'" into database failed.';
+						}
 					} else {
 						$SMAR_MESSAGES['error'][] = 'Inserting the product "'.$formName.'" into database failed.';
 					}
@@ -534,6 +590,17 @@ switch($subpage) {
 					<input id="form-product-image" type="text" name="form-product-image" placeholder="http://" value="<?php if(isset($formImage)) echo smar_form_input($formImage); ?>" />
 					<label for="form-product-image">Image URL (optional)</label>
 				</div>
+				
+				<h3>Stock</h3>
+				<div class="form-box swap-order">
+					<input id="form-product-stock-warehouse" type="text" name="form-product-stock-warehouse" placeholder="0" value="<?php if(isset($formStockWarehouse)) echo smar_form_input($formStockWarehouse); ?>" />
+					<label for="form-product-stock-warehouse">Product stock (in warehouse)</label>
+				</div>
+				<div class="form-box swap-order">
+					<input id="form-product-stock-shop" type="text" name="form-product-stock-shop" placeholder="0" value="<?php if(isset($formStockShop)) echo smar_form_input($formStockShop); ?>" />
+					<label for="form-product-stock-shop">Product stock (in shop)</label>
+				</div>
+				
 				<?php
 				if($page_action == 'add') {
 					echo '<input type="submit" value="Add product" name="send_addproduct" class="raised" />';
@@ -576,11 +643,11 @@ switch($subpage) {
 					$SMAR_DB = new SMAR_MysqlConnect();
 				}
 
-				$filter = '';
+				$filter = ' WHERE s.product_id = p.product_id';
 				$formFilter = '';
 				if(isset($_GET['filter']) && !empty($_GET['filter'])) {
 					$formFilter = $_GET['filter'];
-					$filter = " WHERE name LIKE '%".$SMAR_DB->real_escape_string($formFilter)."%'";
+					$filter .= " AND name LIKE '%".$SMAR_DB->real_escape_string($formFilter)."%'";
 				}
 				?>
 				<form id="form-filter" method="get" action="index.php?page=<?php echo urlencode($self); ?>">
@@ -610,13 +677,14 @@ switch($subpage) {
 				<th>Article No.</th>
 				<th>Name</th>
 				<th>Price</th>
+				<th>Stock (warehouse)</th>
 				<th>Actions</th>
 			</tr>
 			</thead>
 			<tbody>
 				<?php
 				// get product
-				$result = $SMAR_DB->dbquery("SELECT product_id, article_nr, name, price FROM ".SMAR_MYSQL_PREFIX."_product".$filter." ORDER BY product_id LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
+				$result = $SMAR_DB->dbquery("SELECT p.product_id, p.article_nr, p.name, p.price, s.amount_warehouse, s.amount_shop FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s ".$filter." ORDER BY product_id LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
 				if($result->num_rows > 0) {
 					while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 						echo '<tr>
@@ -624,6 +692,7 @@ switch($subpage) {
 							<td>'.$row['article_nr'].'</td>
 							<td>'.$row['name'].'</td>
 							<td>'.$row['price'].'</td>
+							<td>'.$row['amount_shop'].' ('.$row['amount_warehouse'].')</td>
 							<td>';
 						if($_SESSION['loginRole'] >= 2) {
 							echo '	<a href="'.$self.'?subpage=editproduct&id='.$row['product_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>';
