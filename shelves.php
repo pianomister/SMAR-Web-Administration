@@ -55,7 +55,59 @@ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MES
 // page content
 switch($subpage) {
 
-case 'editsection':
+	case 'deletesection':
+	
+		if(isset($_GET['id']) && !empty($_GET['id'])) {
+
+			$formID = intval($_GET['id']);
+			
+			// when confirmation was sent, delete
+			if(isset($_GET['confirm']) && $_GET['confirm'] === 'yes') {
+				
+				// init database
+				if(!(isset($SMAR_DB))) {
+					$SMAR_DB = new SMAR_MysqlConnect();
+				}
+
+				// delete
+				$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_section WHERE section_id = '".$SMAR_DB->real_escape_string($formID)."'");
+				
+				if($result === TRUE) {
+					$SMAR_MESSAGES['success'][] = 'The item with ID "'.$formID.'" was successfully deleted.';
+				} else {
+					$SMAR_MESSAGES['error'][] = 'Deleting the item with ID "'.$formID.'" failed.';
+				}
+				
+			} else {
+				$SMAR_MESSAGES['warning'][] = 'Do you really want to delete the section with ID "'.$formID.'"?';
+			}
+			
+			?>
+			<div id="sectionDeleteContainer">
+			<h1>Delete Section (ID: <?php echo $formID; ?>)</h1>
+			<?php
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			if(!isset($_GET['confirm'])) {
+				?>
+				<form id="form-section-delete" method="get" data-target="#sectionDeleteContainer" action="index.php?page=<?php echo urlencode($self.'?subpage=deletesection'); ?>">
+					<input type="hidden" value="yes" name="confirm" />
+					<input type="hidden" value="<?php echo $formID; ?>" name="id" />
+					<input type="submit" value="Yes, delete this item" name="send_delete" class="raised" />
+				</form>
+				<!--AJAX Request-->
+				<script>
+				setFormHandler('#form-section-delete');
+				</script>
+				<?php
+			}
+			echo '</div>';
+			
+		} else {
+			$SMAR_MESSAGES['error'][] = 'No item ID was provided in URL parameters.';
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+		}
+		break;
+	case 'editsection':
 
 		// set action type
 		$page_action = 'edit';
@@ -166,11 +218,11 @@ case 'editsection':
 		// set action type
 		if(!isset($page_action))
 			$page_action = 'add';
-	
+
 		if(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
-			
+
 			$formID = intval($_REQUEST['id']);
-	
+
 			// form was sent
 			if($page_action == 'add' && isset($_POST['send_addsection'])) {
 
@@ -230,7 +282,7 @@ case 'editsection':
 
 		// print messages
 		if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
-	
+
 		if(isset($formID)) {
 			?>
 			<form id="form-section" method="post" data-target="#formSectionContainer" action="index.php?page=<?php echo urlencode($self.'?subpage='.$page_action.'section'); ?>">
@@ -307,9 +359,9 @@ case 'editsection':
 	case 'designer':
 		if($_SESSION['loginRole'] >= 2) {
 		if(isset($_GET['id']) && !empty($_GET['id'])) {
-			
+
 			$formID = intval($_GET['id']);
-			
+
 			// init database
 			if(!(isset($SMAR_DB))) {
 				$SMAR_DB = new SMAR_MysqlConnect();
@@ -318,7 +370,7 @@ case 'editsection':
 			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_shelf WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."' LIMIT 1");
 			if($result->num_rows == 1) {
 					$row = $result->fetch_array(MYSQLI_ASSOC);
-				
+
 				echo '<h1>Shelf Designer</h1>
 							<h2>'.$row['name'].' (ID: '.$row['shelf_id'].')</h2>
 							<p>
@@ -356,8 +408,9 @@ case 'editsection':
 										<td>'.$row['capacity'].'</td>
 										<td>'.$row['product'].'</td>
 										<td>';
-						if($_SESSION['loginRole'] >= 2) {
+						if($_SESSION['loginRole'] >= 3) {
 							$sectionsTable .= '<a href="'.$self.'?subpage=editsection&id='.$row['section_id'].'" title="Edit" class="link-editsection"><i class="mdi mdi-pencil"></i></a>';
+							$sectionsTable .= '<a href="'.$self.'?subpage=deletesection&id='.$row['section_id'].'" title="Delete" class="link-deletesection"><i class="mdi mdi-delete"></i></a>';
 						}
 						$sectionsTable .= '</td>
 									</tr>';
@@ -381,7 +434,7 @@ case 'editsection':
 					maxWidth: '700px',
 					onClosed: function() { $('#link-refresh').click(); }
 				});
-				$('.link-editsection').on('click', function(e) {
+				$('.link-editsection, .link-deletesection').on('click', function(e) {
 					
 					e.preventDefault();
 					$target = $(e.delegateTarget);
