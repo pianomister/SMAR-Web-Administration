@@ -170,14 +170,13 @@ switch($subpage) {
 							<td>'.$row['unit_id'].'</td>
 							<td>'.$row['name'].'</td>
 							<td>'.$row['capacity'].'</td>
-							<td>';
+							<td>
+								<a href="'.$self.'?subpage=mapping&type=unit&id='.$row['unit_id'].'" title="Show connected products" class="ajax"><i class="mdi mdi-cart"></i></a> ';
 						if($_SESSION['loginRole'] >= 2) {
-							echo '<a href="'.$self.'?subpage=editunit&id='.$row['unit_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>'; 
+							echo '<a href="'.$self.'?subpage=editunit&id='.$row['unit_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
+										<a href="'.$self.'?subpage=deleteunit&id='.$row['unit_id'].'" title="Delete" class="link-deleteunit"><i class="mdi mdi-delete"></i></a>'; 
 						}
-						echo'<a href="'.$self.'?subpage=mapping&type=unit&id='.$row['unit_id'].'" title="Show connected products" class="ajax"><i class="mdi mdi-cart"></i></a>
-								<!--<a href="'.$self.'?subpage=deleteunit&id='.$row['unit_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
-							</td>
-						</tr>';
+						echo '</td></tr>';
 					}
 				} else {
 					echo '<tr><td colspan="5">No units found</td></tr>';
@@ -187,8 +186,91 @@ switch($subpage) {
 		</table>
 		<script>
 		setFormHandler('#form-filter');
+			
+		$('.link-deleteunit').on('click', function(e) {
+
+			e.preventDefault();
+			$target = $(e.delegateTarget);
+			$.colorbox({
+				href: $target.attr('href')+'&smar_include=true',
+				closeButton: false,
+				width: '80%',
+				maxWidth: '700px'
+			});
+		});
 		</script>
 		<?php
+		break;
+	case 'deleteunit':
+	
+		if(isset($_GET['id']) && !empty($_GET['id'])) {
+
+			$formID = intval($_GET['id']);
+			
+			// when confirmation was sent, delete
+			if(isset($_GET['confirm']) && $_GET['confirm'] === 'yes') {
+				
+				// init database
+				if(!(isset($SMAR_DB))) {
+					$SMAR_DB = new SMAR_MysqlConnect();
+				}
+				
+				// unit cannot be deleted if it is part of orders
+				$result = $SMAR_DB->dbquery("SELECT COUNT(*) as count FROM ".SMAR_MYSQL_PREFIX."_order_item WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."'");
+				$row = $result->fetch_array(MYSQLI_ASSOC);
+				
+				if($row['count'] > 0) {
+					$SMAR_MESSAGES['error'][] = 'The unit with ID "'.$formID.'" must not be deleted, because it is contained in orders. Deletion would cause inconsistencies in the orders system.';
+				} else {
+				
+					// delete unit mappings
+					$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_product_unit WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."'");
+
+					if($result === TRUE) {
+						$SMAR_MESSAGES['success'][] = 'The unit mappings for unit with ID "'.$formID.'" were successfully deleted.';
+		
+						// delete unit
+						$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_unit WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."'");
+
+						if($result === TRUE) {
+							$SMAR_MESSAGES['success'][] = 'The unit with ID "'.$formID.'" was successfully deleted.';
+						} else {
+							$SMAR_MESSAGES['error'][] = 'Deleting the unit with ID "'.$formID.'" failed.';
+						}
+						
+					} else {
+						$SMAR_MESSAGES['error'][] = 'Deleting the unit mappings for product with ID "'.$formID.'" failed.';
+					}
+				}
+				
+			} else {
+				$SMAR_MESSAGES['warning'][] = 'You are going to delete a unit. When deleting a unit, all related mappings with products will also be deleted.<br> Do you really want to delete the unit with ID "'.$formID.'"?';
+			}
+			
+			?>
+			<div id="unitDeleteContainer">
+			<h1>Delete product (ID: <?php echo $formID; ?>)</h1>
+			<?php
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			if(!isset($_GET['confirm'])) {
+				?>
+				<form id="form-unit-delete" method="get" data-target="#unitDeleteContainer" action="index.php?page=<?php echo urlencode($self.'?subpage=deleteunit'); ?>">
+					<input type="hidden" value="yes" name="confirm" />
+					<input type="hidden" value="<?php echo $formID; ?>" name="id" />
+					<input type="submit" value="Yes, delete unit and related mappings" name="send_delete" class="raised" />
+				</form>
+				<!--AJAX Request-->
+				<script>
+				setFormHandler('#form-unit-delete');
+				</script>
+				<?php
+			}
+			echo '</div>';
+			
+		} else {
+			$SMAR_MESSAGES['error'][] = 'No item ID was provided in URL parameters.';
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+		}
 		break;
 	case 'editunit':
 
