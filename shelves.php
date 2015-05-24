@@ -466,6 +466,78 @@ switch($subpage) {
 			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
 		}
 		break;
+	case 'deleteshelf':
+	
+		if(isset($_GET['id']) && !empty($_GET['id'])) {
+
+			$formID = intval($_GET['id']);
+			
+			// when confirmation was sent, delete
+			if(isset($_GET['confirm']) && $_GET['confirm'] === 'yes') {
+				
+				// init database
+				if(!(isset($SMAR_DB))) {
+					$SMAR_DB = new SMAR_MysqlConnect();
+				}
+
+				// delete sections
+				$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_section WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."'");
+				
+				if($result === TRUE) {
+					$SMAR_MESSAGES['success'][] = 'Sections contained in the shelf with ID "'.$formID.'" were successfully deleted.';
+					
+					// delete shelf_graphic
+					$result2 = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_shelf_graphic WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."'");
+
+					if($result2 === TRUE) {
+						$SMAR_MESSAGES['success'][] = 'The graphic for shelf with ID "'.$formID.'" was successfully deleted.';
+						
+						// delete shelf
+						$result2 = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_shelf WHERE shelf_id = '".$SMAR_DB->real_escape_string($formID)."'");
+
+						if($result2 === TRUE) {
+							$SMAR_MESSAGES['success'][] = 'The shelf with ID "'.$formID.'" was successfully deleted.';
+						} else {
+							$SMAR_MESSAGES['error'][] = 'Deleting the shelf with ID "'.$formID.'" failed.';
+						}
+						
+					} else {
+						$SMAR_MESSAGES['error'][] = 'Deleting the graphic shelf with ID "'.$formID.'" failed.';
+					}
+					
+				} else {
+					$SMAR_MESSAGES['error'][] = 'Deleting the sections for the shelf with ID "'.$formID.'" failed.';
+				}
+				
+			} else {
+				$SMAR_MESSAGES['warning'][] = 'You want to delete a shelf. All sections contained in this shelf will also be deleted. This step cannot be undone!<br>Do you really want to delete the shelf with ID "'.$formID.'"?';
+			}
+			
+			?>
+			<div id="shelfDeleteContainer">
+			<h1>Delete Shelf (ID: <?php echo $formID; ?>)</h1>
+			<?php
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			if(!isset($_GET['confirm'])) {
+				?>
+				<form id="form-shelf-delete" method="get" data-target="#shelfDeleteContainer" action="index.php?page=<?php echo urlencode($self.'?subpage=deleteshelf'); ?>">
+					<input type="hidden" value="yes" name="confirm" />
+					<input type="hidden" value="<?php echo $formID; ?>" name="id" />
+					<input type="submit" value="Yes, delete shelf and sections" name="send_delete" class="raised" />
+				</form>
+				<!--AJAX Request-->
+				<script>
+				setFormHandler('#form-shelf-delete');
+				</script>
+				<?php
+			}
+			echo '</div>';
+			
+		} else {
+			$SMAR_MESSAGES['error'][] = 'No item ID was provided in URL parameters.';
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+		}
+		break;
 	case 'editshelf':
 
 		// set action type
@@ -721,14 +793,14 @@ switch($subpage) {
 							<td>'.$row['size_x'].'</td>
 							<td>'.$row['size_y'].'</td>
 							<td>'.$row['size_z'].'</td>
-							<td>';
+							<td>
+								<a href="'.$self.'?subpage=designer&id='.$row['shelf_id'].'" title="Shelf Designer" class="ajax"><i class="mdi mdi-math-compass"></i></a> ';
+
 						if($_SESSION['loginRole'] >= 3) {
-						echo '	<a href="'.$self.'?subpage=editshelf&id='.$row['shelf_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>';
-						}
-						echo '	<a href="'.$self.'?subpage=designer&id='.$row['shelf_id'].'" title="Shelf Designer" class="ajax"><i class="mdi mdi-math-compass"></i></a>
-								<!--<a href="'.$self.'?subpage=deleteshelf&id='.$row['shelf_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
-							</td>
-						</tr>';
+						echo '<a href="'.$self.'?subpage=editshelf&id='.$row['shelf_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
+									<a href="'.$self.'?subpage=deleteshelf&id='.$row['shelf_id'].'" title="Delete" class="link-deleteshelf"><i class="mdi mdi-delete"></i></a>';
+						}								
+						echo '</td></tr>';
 					}
 				} else {
 					echo '<tr><td colspan="5">No shelves found</td></tr>';
@@ -739,6 +811,18 @@ switch($subpage) {
 		<!--AJAX Request-->
 		<script>
 		setFormHandler('#form-filter');
+			
+		$('.link-deleteshelf').on('click', function(e) {
+
+				e.preventDefault();
+				$target = $(e.delegateTarget);
+				$.colorbox({
+					href: $target.attr('href')+'&smar_include=true',
+					closeButton: false,
+					width: '80%',
+					maxWidth: '700px'
+				});
+			});
 		</script>
 		<?php
 }

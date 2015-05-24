@@ -37,6 +37,7 @@ class SMAR_MysqlConnect extends mysqli
     function dbquery($sql)
     {
 			if(!($erg = $this->query($sql))) {
+				//TODO remove
 				echo "Error with SQL request, the statement: ".$sql." --- Fehlernummer ".$this->errno." ::: ".$this->error;
 				return false;
 				#die('Query Error (' . $this->errno . ') '.$sql. $this->error);
