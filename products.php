@@ -348,6 +348,97 @@ switch($subpage) {
 			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
 		}
 		break;
+	case 'deleteproduct':
+	
+		if(isset($_GET['id']) && !empty($_GET['id'])) {
+
+			$formID = intval($_GET['id']);
+			
+			// when confirmation was sent, delete
+			if(isset($_GET['confirm']) && $_GET['confirm'] === 'yes') {
+				
+				// init database
+				if(!(isset($SMAR_DB))) {
+					$SMAR_DB = new SMAR_MysqlConnect();
+				}
+				
+				// product cannot be deleted if it is part of orders
+				$result = $SMAR_DB->dbquery("SELECT COUNT(*) as count FROM ".SMAR_MYSQL_PREFIX."_order_item WHERE product_id = '".$SMAR_DB->real_escape_string($formID)."'");
+				$row = $result->fetch_array(MYSQLI_ASSOC);
+				
+				if($row['count'] > 0) {
+					$SMAR_MESSAGES['error'][] = 'The product with ID "'.$formID.'" must not be deleted, because it is contained in orders. Deletion would cause inconsistencies in the orders system.';
+				} else {
+				
+					// delete unit mappings for product
+					$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_product_unit WHERE product_id = '".$SMAR_DB->real_escape_string($formID)."'");
+
+					if($result === TRUE) {
+						$SMAR_MESSAGES['success'][] = 'The unit mappings for product with ID "'.$formID.'" were successfully deleted.';
+						
+						// delete stock for product
+						$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_stock WHERE product_id = '".$SMAR_DB->real_escape_string($formID)."'");
+
+						if($result === TRUE) {
+							$SMAR_MESSAGES['success'][] = 'The stock for product with ID "'.$formID.'" was successfully deleted.';
+
+							// delete section for product
+							$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_section WHERE product_id = '".$SMAR_DB->real_escape_string($formID)."'");
+
+							if($result === TRUE) {
+								$SMAR_MESSAGES['success'][] = 'The sections for product with ID "'.$formID.'" were successfully deleted.';
+								
+								// delete product
+								$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_product WHERE product_id = '".$SMAR_DB->real_escape_string($formID)."'");
+
+								if($result === TRUE) {
+									$SMAR_MESSAGES['success'][] = 'The product with ID "'.$formID.'" was successfully deleted.';
+								} else {
+									$SMAR_MESSAGES['error'][] = 'Deleting the product with ID "'.$formID.'" failed.';
+								}
+								
+							} else {
+								$SMAR_MESSAGES['error'][] = 'Deleting the sections for product with ID "'.$formID.'" failed.';
+							}
+							
+						} else {
+							$SMAR_MESSAGES['error'][] = 'Deleting the stock for product with ID "'.$formID.'" failed.';
+						}
+						
+					} else {
+						$SMAR_MESSAGES['error'][] = 'Deleting the unit mappings for product with ID "'.$formID.'" failed.';
+					}
+				}
+				
+			} else {
+				$SMAR_MESSAGES['warning'][] = 'You are going to delete a product. When deleting a product, all related entities like unit mappings, related sections and the product stock will also be deleted.<br> Do you really want to delete the product with ID "'.$formID.'"?';
+			}
+			
+			?>
+			<div id="productDeleteContainer">
+			<h1>Delete product (ID: <?php echo $formID; ?>)</h1>
+			<?php
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			if(!isset($_GET['confirm'])) {
+				?>
+				<form id="form-product-delete" method="get" data-target="#productDeleteContainer" action="index.php?page=<?php echo urlencode($self.'?subpage=deleteproduct'); ?>">
+					<input type="hidden" value="yes" name="confirm" />
+					<input type="hidden" value="<?php echo $formID; ?>" name="id" />
+					<input type="submit" value="Yes, delete product and related items" name="send_delete" class="raised" />
+				</form>
+				<!--AJAX Request-->
+				<script>
+				setFormHandler('#form-product-delete');
+				</script>
+				<?php
+			}
+			echo '</div>';
+			
+		} else {
+			$SMAR_MESSAGES['error'][] = 'No item ID was provided in URL parameters.';
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+		}
+		break;
 	case 'editproduct':
 
 		// set action type
@@ -473,163 +564,163 @@ switch($subpage) {
 		<h1>Edit product</h1>
 		<?php
 	case 'addproduct':
-	if($_SESSION['loginRole'] >= 2) {
-		// set action type
-		if(!isset($page_action))
-			$page_action = 'add';
+		if($_SESSION['loginRole'] >= 2) {
+			// set action type
+			if(!isset($page_action))
+				$page_action = 'add';
 
-		// form was sent
-		if($page_action == 'add' && isset($_POST['send_addproduct'])) {
+			// form was sent
+			if($page_action == 'add' && isset($_POST['send_addproduct'])) {
 
-			if(isset($_POST['form-product-name']) &&
-					 isset($_POST['form-product-number']) &&
-					 isset($_POST['form-product-price']) && 
-				 	 isset($_POST['form-product-sizex']) && 
-				 	 isset($_POST['form-product-sizey']) && 
-				 	 isset($_POST['form-product-sizez']) && 
-					 isset($_POST['form-product-barcode']) &&
-					 isset($_POST['form-product-image']) &&
-					 isset($_POST['form-product-stock-warehouse']) &&
-					 isset($_POST['form-product-stock-shop'])
-					) {
+				if(isset($_POST['form-product-name']) &&
+						 isset($_POST['form-product-number']) &&
+						 isset($_POST['form-product-price']) && 
+						 isset($_POST['form-product-sizex']) && 
+						 isset($_POST['form-product-sizey']) && 
+						 isset($_POST['form-product-sizez']) && 
+						 isset($_POST['form-product-barcode']) &&
+						 isset($_POST['form-product-image']) &&
+						 isset($_POST['form-product-stock-warehouse']) &&
+						 isset($_POST['form-product-stock-shop'])
+						) {
 
-				$formName = strip_tags($_POST['form-product-name']);
-				$formNumber = strip_tags($_POST['form-product-number']);
-				$formPrice = doubleval(strip_tags($_POST['form-product-price']));
-				$formSizeX = intval(strip_tags($_POST['form-product-sizex']));
-				$formSizeY = intval(strip_tags($_POST['form-product-sizey']));
-				$formSizeZ = intval(strip_tags($_POST['form-product-sizez']));
-				$formBarcode = intval(strip_tags($_POST['form-product-barcode']));
-				$formImage = empty($_POST['form-product-image']) ? 'NULL' : strip_tags($_POST['form-product-image']);
-				$formStockWarehouse = empty($_POST['form-product-stock-warehouse']) ? '0' : intval(strip_tags($_POST['form-product-stock-warehouse']));
-				$formStockShop = empty($_POST['form-product-stock-shop']) ? '0' : intval(strip_tags($_POST['form-product-stock-shop']));
+					$formName = strip_tags($_POST['form-product-name']);
+					$formNumber = strip_tags($_POST['form-product-number']);
+					$formPrice = doubleval(strip_tags($_POST['form-product-price']));
+					$formSizeX = intval(strip_tags($_POST['form-product-sizex']));
+					$formSizeY = intval(strip_tags($_POST['form-product-sizey']));
+					$formSizeZ = intval(strip_tags($_POST['form-product-sizez']));
+					$formBarcode = intval(strip_tags($_POST['form-product-barcode']));
+					$formImage = empty($_POST['form-product-image']) ? 'NULL' : strip_tags($_POST['form-product-image']);
+					$formStockWarehouse = empty($_POST['form-product-stock-warehouse']) ? '0' : intval(strip_tags($_POST['form-product-stock-warehouse']));
+					$formStockShop = empty($_POST['form-product-stock-shop']) ? '0' : intval(strip_tags($_POST['form-product-stock-shop']));
 
-				if(isset($_POST['form-product-stackable']))
-					$formStackable = 1;
-				else
-					$formStackable = 0;
+					if(isset($_POST['form-product-stackable']))
+						$formStackable = 1;
+					else
+						$formStackable = 0;
 
-				if(!empty($_POST['form-product-name']) &&
-					 !empty($_POST['form-product-number']) &&
-					 !empty($_POST['form-product-price']) &&
-					 !empty($_POST['form-product-barcode'])
-					) {
+					if(!empty($_POST['form-product-name']) &&
+						 !empty($_POST['form-product-number']) &&
+						 !empty($_POST['form-product-price']) &&
+						 !empty($_POST['form-product-barcode'])
+						) {
 
-					// init database
-					if(!(isset($SMAR_DB))) {
-						$SMAR_DB = new SMAR_MysqlConnect();
-					}
+						// init database
+						if(!(isset($SMAR_DB))) {
+							$SMAR_DB = new SMAR_MysqlConnect();
+						}
 
-					// insert
-					$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product
-																				(name, article_nr, price, size_x, size_y, size_z, stackable, barcode, image, created) VALUES
-																				('".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formNumber)."', '".$SMAR_DB->real_escape_string($formPrice)."', '".$SMAR_DB->real_escape_string($formSizeX)."', '".$SMAR_DB->real_escape_string($formSizeY)."', '".$SMAR_DB->real_escape_string($formSizeZ)."', '".$SMAR_DB->real_escape_string($formStackable)."', '".$SMAR_DB->real_escape_string($formBarcode)."', '".$SMAR_DB->real_escape_string($formImage)."', NOW())");
-					
-					if($result === TRUE) {
-						$SMAR_MESSAGES['success'][] = 'Product "'.$formName.'" was successfully created.';
-						
-						$result2 = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_stock
-																				(product_id, amount_warehouse, amount_shop, created) VALUES
-																				(LAST_INSERT_ID(), '".$SMAR_DB->real_escape_string($formStockWarehouse)."', '".$SMAR_DB->real_escape_string($formStockShop)."', NOW())");
+						// insert
+						$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product
+																					(name, article_nr, price, size_x, size_y, size_z, stackable, barcode, image, created) VALUES
+																					('".$SMAR_DB->real_escape_string($formName)."', '".$SMAR_DB->real_escape_string($formNumber)."', '".$SMAR_DB->real_escape_string($formPrice)."', '".$SMAR_DB->real_escape_string($formSizeX)."', '".$SMAR_DB->real_escape_string($formSizeY)."', '".$SMAR_DB->real_escape_string($formSizeZ)."', '".$SMAR_DB->real_escape_string($formStackable)."', '".$SMAR_DB->real_escape_string($formBarcode)."', '".$SMAR_DB->real_escape_string($formImage)."', NOW())");
+
 						if($result === TRUE) {
-							$SMAR_MESSAGES['success'][] = 'Stock for product "'.$formName.'" was successfully created.';
+							$SMAR_MESSAGES['success'][] = 'Product "'.$formName.'" was successfully created.';
+
+							$result2 = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_stock
+																					(product_id, amount_warehouse, amount_shop, created) VALUES
+																					(LAST_INSERT_ID(), '".$SMAR_DB->real_escape_string($formStockWarehouse)."', '".$SMAR_DB->real_escape_string($formStockShop)."', NOW())");
+							if($result === TRUE) {
+								$SMAR_MESSAGES['success'][] = 'Stock for product "'.$formName.'" was successfully created.';
+							} else {
+								$SMAR_MESSAGES['error'][] = 'Inserting the product stock for "'.$formName.'" into database failed.';
+							}
 						} else {
-							$SMAR_MESSAGES['error'][] = 'Inserting the product stock for "'.$formName.'" into database failed.';
+							$SMAR_MESSAGES['error'][] = 'Inserting the product "'.$formName.'" into database failed.';
 						}
 					} else {
-						$SMAR_MESSAGES['error'][] = 'Inserting the product "'.$formName.'" into database failed.';
+						$SMAR_MESSAGES['error'][] = 'Please fill in all required fields.';
 					}
-				} else {
-					$SMAR_MESSAGES['error'][] = 'Please fill in all required fields.';
 				}
 			}
-		}
 
-		if($page_action == 'add')
-			echo '<h1>Add product</h1>';
+			if($page_action == 'add')
+				echo '<h1>Add product</h1>';
 
-		// print messages
-		if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
-	
-		if($page_action == 'add' || $page_action == 'edit' && isset($formID)) {
-			?>
-			<form id="form-product" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage='.$page_action.'product'); ?>">
-				<div class="form-box swap-order">
-					<input id="form-product-name" type="text" name="form-product-name" placeholder="Title or short description" value="<?php if(isset($formName)) echo smar_form_input($formName); ?>" />
-					<label for="form-product-name">Product name</label>
-				</div>
-				<div class="form-box swap-order">
-					<input id="form-product-number" type="text" name="form-product-number" placeholder="May contain non-numerical characters" value="<?php if(isset($formNumber)) echo smar_form_input($formNumber); ?>" />
-					<label for="form-product-number">Article number</label>
-				</div>
-				<div class="form-box swap-order">
-					<input id="form-product-price" type="text" name="form-product-price" placeholder="0.00" value="<?php if(isset($formPrice)) echo smar_form_input($formPrice); ?>" />
-					<label for="form-product-price">Price</label>
-				</div>
-				<div class="form-box swap-order">
-					<input id="form-product-sizex" type="text" name="form-product-sizex" placeholder="0" value="<?php if(isset($formSizeX)) echo smar_form_input($formSizeX); ?>" />
-					<label for="form-product-sizex">Width (cm)</label>
-				</div>
-				<div class="form-box swap-order">
-					<input id="form-product-sizey" type="text" name="form-product-sizey" placeholder="0" value="<?php if(isset($formSizeY)) echo smar_form_input($formSizeY); ?>" />
-					<label for="form-product-sizey">Height (cm)</label>
-				</div>
-				<div class="form-box swap-order">
-					<input id="form-product-sizez" type="text" name="form-product-sizez" placeholder="0" value="<?php if(isset($formSizeZ)) echo smar_form_input($formSizeZ); ?>" />
-					<label for="form-product-sizez">Depth (cm)</label>
-				</div>
-				<div class="form-box swap-order">
-					<input id="form-product-stackable" type="checkbox" name="form-product-stackable" placeholder="0" <?php if(isset($formStackable) && $formStackable == 1) echo 'checked'; ?> />
-					<label for="form-product-stackable">Stackable</label>
-				</div>
-				<div class="form-box swap-order">
-					<input id="form-product-barcode" type="text" name="form-product-barcode" placeholder="0123456789" value="<?php if(isset($formBarcode)) echo smar_form_input($formBarcode); ?>" />
-					<label for="form-product-barcode">Barcode</label>
-				</div>
-				<div class="form-box swap-order">
-					<input id="form-product-image" type="text" name="form-product-image" placeholder="http://" value="<?php if(isset($formImage)) echo smar_form_input($formImage); ?>" />
-					<label for="form-product-image">Image URL (optional)</label>
-				</div>
-				
-				<h3>Stock</h3>
-				<div class="form-box swap-order">
-					<input id="form-product-stock-warehouse" type="text" name="form-product-stock-warehouse" placeholder="0" value="<?php if(isset($formStockWarehouse)) echo smar_form_input($formStockWarehouse); ?>" />
-					<label for="form-product-stock-warehouse">Product stock (in warehouse)</label>
-				</div>
-				<div class="form-box swap-order">
-					<input id="form-product-stock-shop" type="text" name="form-product-stock-shop" placeholder="0" value="<?php if(isset($formStockShop)) echo smar_form_input($formStockShop); ?>" />
-					<label for="form-product-stock-shop">Product stock (in shop)</label>
-				</div>
-				
-				<?php
-				if($page_action == 'add') {
-					echo '<input type="submit" value="Add product" name="send_addproduct" class="raised" />';
-				} else {
-					echo '<input type="hidden" value="'.$formID.'" name="id" />';
-					?>
-					<div class="form-box">
-						<span class="label">Date created</label>
-						<span class="input"><?php echo isset($formCreated) ? smar_form_input($formCreated) : '&mdash;'; ?></label>
-					</div>
-					<div class="form-box">
-							<span class="label">Last update</label>
-							<span class="input"><?php echo isset($formLastupdate) ? smar_form_input($formLastupdate) : '&mdash;'; ?></label>
-					</div>
-					<input type="submit" value="Save changes" name="send_editproduct" class="raised" />
-					<?php
-				}
+			// print messages
+			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+
+			if($page_action == 'add' || $page_action == 'edit' && isset($formID)) {
 				?>
-				<input type="reset" value="Reset form" name="reset" />
-			</form>
-			<!--AJAX Request-->
-			<script>
-			setFormHandler('#form-product');
-			</script>
-			<?php
-		}
+				<form id="form-product" method="post" action="index.php?page=<?php echo urlencode($self.'?subpage='.$page_action.'product'); ?>">
+					<div class="form-box swap-order">
+						<input id="form-product-name" type="text" name="form-product-name" placeholder="Title or short description" value="<?php if(isset($formName)) echo smar_form_input($formName); ?>" />
+						<label for="form-product-name">Product name</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="form-product-number" type="text" name="form-product-number" placeholder="May contain non-numerical characters" value="<?php if(isset($formNumber)) echo smar_form_input($formNumber); ?>" />
+						<label for="form-product-number">Article number</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="form-product-price" type="text" name="form-product-price" placeholder="0.00" value="<?php if(isset($formPrice)) echo smar_form_input($formPrice); ?>" />
+						<label for="form-product-price">Price</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="form-product-sizex" type="text" name="form-product-sizex" placeholder="0" value="<?php if(isset($formSizeX)) echo smar_form_input($formSizeX); ?>" />
+						<label for="form-product-sizex">Width (cm)</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="form-product-sizey" type="text" name="form-product-sizey" placeholder="0" value="<?php if(isset($formSizeY)) echo smar_form_input($formSizeY); ?>" />
+						<label for="form-product-sizey">Height (cm)</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="form-product-sizez" type="text" name="form-product-sizez" placeholder="0" value="<?php if(isset($formSizeZ)) echo smar_form_input($formSizeZ); ?>" />
+						<label for="form-product-sizez">Depth (cm)</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="form-product-stackable" type="checkbox" name="form-product-stackable" placeholder="0" <?php if(isset($formStackable) && $formStackable == 1) echo 'checked'; ?> />
+						<label for="form-product-stackable">Stackable</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="form-product-barcode" type="text" name="form-product-barcode" placeholder="0123456789" value="<?php if(isset($formBarcode)) echo smar_form_input($formBarcode); ?>" />
+						<label for="form-product-barcode">Barcode</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="form-product-image" type="text" name="form-product-image" placeholder="http://" value="<?php if(isset($formImage)) echo smar_form_input($formImage); ?>" />
+						<label for="form-product-image">Image URL (optional)</label>
+					</div>
+
+					<h3>Stock</h3>
+					<div class="form-box swap-order">
+						<input id="form-product-stock-warehouse" type="text" name="form-product-stock-warehouse" placeholder="0" value="<?php if(isset($formStockWarehouse)) echo smar_form_input($formStockWarehouse); ?>" />
+						<label for="form-product-stock-warehouse">Product stock (in warehouse)</label>
+					</div>
+					<div class="form-box swap-order">
+						<input id="form-product-stock-shop" type="text" name="form-product-stock-shop" placeholder="0" value="<?php if(isset($formStockShop)) echo smar_form_input($formStockShop); ?>" />
+						<label for="form-product-stock-shop">Product stock (in shop)</label>
+					</div>
+
+					<?php
+					if($page_action == 'add') {
+						echo '<input type="submit" value="Add product" name="send_addproduct" class="raised" />';
+					} else {
+						echo '<input type="hidden" value="'.$formID.'" name="id" />';
+						?>
+						<div class="form-box">
+							<span class="label">Date created</label>
+							<span class="input"><?php echo isset($formCreated) ? smar_form_input($formCreated) : '&mdash;'; ?></label>
+						</div>
+						<div class="form-box">
+								<span class="label">Last update</label>
+								<span class="input"><?php echo isset($formLastupdate) ? smar_form_input($formLastupdate) : '&mdash;'; ?></label>
+						</div>
+						<input type="submit" value="Save changes" name="send_editproduct" class="raised" />
+						<?php
+					}
+					?>
+					<input type="reset" value="Reset form" name="reset" />
+				</form>
+				<!--AJAX Request-->
+				<script>
+				setFormHandler('#form-product');
+				</script>
+				<?php
+			}
 		} else {
-		$SMAR_MESSAGES['error'][] = 'Insufficient permissions for products management';
-		smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for products management';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
 		}
 		break;
 	default:
@@ -693,14 +784,15 @@ switch($subpage) {
 							<td>'.$row['name'].'</td>
 							<td>'.$row['price'].'</td>
 							<td>'.$row['amount_shop'].' ('.$row['amount_warehouse'].')</td>
-							<td>';
+							<td>
+								<a href="'.$self.'?subpage=mapping&type=product&id='.$row['product_id'].'" title="Show connected units" class="ajax"><i class="mdi mdi-pound"></i></a> ';
+						
 						if($_SESSION['loginRole'] >= 2) {
-							echo '	<a href="'.$self.'?subpage=editproduct&id='.$row['product_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>';
+							echo '<a href="'.$self.'?subpage=editproduct&id='.$row['product_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
+										<a href="'.$self.'?subpage=deleteproduct&id='.$row['product_id'].'" title="Delete" class="link-deleteproduct"><i class="mdi mdi-delete"></i></a>';
 						}
-						echo'<a href="'.$self.'?subpage=mapping&type=product&id='.$row['product_id'].'" title="Show connected units" class="ajax"><i class="mdi mdi-pound"></i></a>
-									<!--<a href="'.$self.'?subpage=deleteproduct&id='.$row['product_id'].'" title="Delete" class="ajax"><i class="mdi mdi-delete"></i></a>-->
-							</td>
-						</tr>';
+
+						echo '</td></tr>';
 					}
 				} else {
 					echo '<tr><td colspan="5">No products found</td></tr>';
@@ -711,6 +803,18 @@ switch($subpage) {
 		<!--AJAX Request-->
 		<script>
 		setFormHandler('#form-filter');
+			
+		$('.link-deleteproduct').on('click', function(e) {
+
+			e.preventDefault();
+			$target = $(e.delegateTarget);
+			$.colorbox({
+				href: $target.attr('href')+'&smar_include=true',
+				closeButton: false,
+				width: '80%',
+				maxWidth: '700px'
+			});
+		});
 		</script>
 		<?php
 }

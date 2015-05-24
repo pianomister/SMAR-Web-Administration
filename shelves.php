@@ -56,14 +56,14 @@ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MES
 switch($subpage) {
 
 	case 'deletesection':
-	
+
 		if(isset($_GET['id']) && !empty($_GET['id'])) {
 
 			$formID = intval($_GET['id']);
-			
+
 			// when confirmation was sent, delete
 			if(isset($_GET['confirm']) && $_GET['confirm'] === 'yes') {
-				
+
 				// init database
 				if(!(isset($SMAR_DB))) {
 					$SMAR_DB = new SMAR_MysqlConnect();
@@ -410,7 +410,7 @@ switch($subpage) {
 										<td>';
 						if($_SESSION['loginRole'] >= 3) {
 							$sectionsTable .= '<a href="'.$self.'?subpage=editsection&id='.$row['section_id'].'" title="Edit" class="link-editsection"><i class="mdi mdi-pencil"></i></a>';
-							$sectionsTable .= '<a href="'.$self.'?subpage=deletesection&id='.$row['section_id'].'" title="Delete" class="link-deletesection"><i class="mdi mdi-delete"></i></a>';
+							$sectionsTable .= ' <a href="'.$self.'?subpage=deletesection&id='.$row['section_id'].'" title="Delete" class="link-deletesection"><i class="mdi mdi-delete"></i></a>';
 						}
 						$sectionsTable .= '</td>
 									</tr>';
