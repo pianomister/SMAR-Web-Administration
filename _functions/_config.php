@@ -23,4 +23,7 @@ define("SMAR_ROOT_PATH", "/SMAR-Web-Administration/");//TODO
 
 // Secret Server Key - Encoding JSON authentication (JSON Web Token)
 define("SMAR_JWT_SSK", "BABABAMINION42BABANANA");
+
+// Is REST Api ready to use?
+define("SMAR_REST_API_READY", 1);
 ?>

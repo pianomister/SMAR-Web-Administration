@@ -43,6 +43,14 @@ $app->contentType('application/json;charset=utf-8');
  * DOCS: http://docs.slimframework.com/
  */
 
+ /**
+ * only a short check
+ */
+ $app->get('/checkConnection', function() use($app) {
+	$resultArray['ready'] = SMAR_REST_API_READY;
+	$res = $app->response();
+	$res->setBody(json_encode($resultArray));
+})->name('check_connection');
 
 /**
  * authenticate with JWT
@@ -97,7 +105,6 @@ $app->post('/authenticate', function () use ($app) {
 		$res->setBody($response);
 	}
 })->name('authentication');
-
 
 /**
  * get sections for a shelf (found by id)
