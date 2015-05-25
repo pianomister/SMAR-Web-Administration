@@ -317,6 +317,8 @@ $app->post('/mappings/update/', function () use ($app) {
 			if(isset($mapping->product_unit_id))
 				$mapping->product_unit_id = intval($mapping->product_unit_id);
 
+			$result = NULL;
+			
 			switch($mapping->action) {
 				case 'add':
 
@@ -336,6 +338,10 @@ $app->post('/mappings/update/', function () use ($app) {
 						$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_product_unit SET
 													barcode = '".$SMAR_DB->real_escape_string($mapping->barcode)."'									
 													WHERE product_unit_id = '".$SMAR_DB->real_escape_string($mapping->product_unit_id)."'");
+						
+						$return[] = "UPDATE ".SMAR_MYSQL_PREFIX."_product_unit SET
+													barcode = '".$SMAR_DB->real_escape_string($mapping->barcode)."'									
+													WHERE product_unit_id = '".$SMAR_DB->real_escape_string($mapping->product_unit_id)."'";
 						
 						if(!$result)
 							$return[] = $mapping;
@@ -370,7 +376,7 @@ $app->post('/mappings/update/', function () use ($app) {
 		if(count($return) > 0) {
 			$response = json_encode($return);
 			$res = $app->response();
-			$res->setStatus(500);
+			$res->setStatus(200);//TODO reset on 500
 			$res->setBody($response);
 		} else {
 			$response = json_encode($return);

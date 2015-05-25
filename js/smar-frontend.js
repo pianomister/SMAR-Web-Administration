@@ -292,7 +292,9 @@ function setMappingsSaveHandler(link, type, itemID) {
 				data: formData
 			}).done(function (data) {
 				$loadOverlay.fadeOut(100, function() {
-					// TODO evaluate result
+					mappings.forEach(function(m) {
+						m.action = 'none';
+					});
 				});
 			}).fail(function(e) {
 				$loadOverlay.fadeOut(100, function() {

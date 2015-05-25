@@ -88,7 +88,7 @@ switch($subpage) {
 																		".SMAR_MYSQL_PREFIX."_product_unit g, ".SMAR_MYSQL_PREFIX."_".$SMAR_DB->real_escape_string($type2)." n
 																		WHERE g.".$type1."_id = '".$id."'
 																					AND n.".$type2."_id = g.".$type2."_id
-																		ORDER BY g.product_unit_id");
+																		ORDER BY ".$SMAR_DB->real_escape_string($type2)."_id");
 
 				$mappings = array();
 				if($resultg->num_rows > 0) {
@@ -125,8 +125,8 @@ switch($subpage) {
 
 			<script>
 			// list of mappings for change tracking
-			var mappings = [<?php foreach($mappings as $m) echo "{'id': ".$m['id'].", 'product_unit_id': ".$m['id'].", 'name': '".$m['name']."', 'barcode': '".$m['barcode']."', 'action': 'none'},"; ?>];
-			
+			var mappings = [<?php foreach($mappings as $m) echo "{'id': ".$m['id'].", 'product_unit_id': ".$m['product_unit_id'].", 'name': '".$m['name']."', 'barcode': '".$m['barcode']."', 'action': 'none'},"; ?>];
+
 			var lookup = {};
 			function updateLookup() {
 				lookup = {};
@@ -134,36 +134,37 @@ switch($subpage) {
 						lookup[mappings[i].id] = i;
 				}
 			}
-				
+			updateLookup();
+
 			var $list = $('#list-mappings'),
 			$formSearch = $('#form-mappings-search'),
 			deleteClass = 'color-red';
 
 			// create HTML list item
 			function listItem(item, action) {
-				
+
 				switch(action) {
 					case 'delete':
-						
+
 						var $delete = $list.find('[data-id="' + item.id + '"]');
 						$delete.addClass(deleteClass);
 						$delete.find('.link-deletemapping').hide();
 						$delete.find('.link-restoremapping').show();
-						
+
 						// update list
 						var action = mappings[ lookup[item.id] ].action;
 						if(action === 'add')
 							mappings[ lookup[item.id] ].action = 'none';
 						else
 							mappings[ lookup[item.id] ].action = 'delete';
-						
+
 						break;
 					case 'add':
-						
+
 						// check if item already in list (marked as delete?)
 						$check = $list.find('[data-id="' + item.id + '"]');
 						if( $check.length != 0) {
-							
+
 							// if already in list, do nothing
 							// except the item is marked as deleted
 							if($check.hasClass(deleteClass)) {
@@ -171,16 +172,16 @@ switch($subpage) {
 								$check.find('.link-deletemapping').show();
 								$check.find('.link-restoremapping').hide();
 							}
-							
+
 							// update list
 							var action = mappings[ lookup[item.id] ].action;
 							if(action === 'none')
 								mappings[ lookup[item.id] ].action = 'add';
 							else
 								mappings[ lookup[item.id] ].action = 'change';
-							
+
 						} else {
-							
+
 							$('#list-mappings-placeholder').remove();
 							
 							// prepend item to list
@@ -216,14 +217,15 @@ switch($subpage) {
 			// create HTML list
 			if(mappings.length > 0) {
 				mappings.reverse();
+				// update here because order is confused by reverse()
+				updateLookup();
 				mappings.forEach(function(current, index) {
 					listItem(current, 'add');
 				});
 			} else {
 				$list.html('<tr id="list-mappings-placeholder"><td colspan="4">No mappings yet</td></tr>');
 			}
-			// update here because order might be confused by reverse()
-			updateLookup();
+			
 				
 			// add delete link listener
 			function setDeleteLinkListener() {
