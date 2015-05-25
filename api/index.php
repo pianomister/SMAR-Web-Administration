@@ -55,6 +55,27 @@ $app->contentType('application/json;charset=utf-8');
 /**
 Raffa probiert
 */
+$app->get('/getProduct/:product_code', function($product_code) use($app) {
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s WHERE p.product_id= '".$SMAR_DB->real_escape_string($product_code)."' AND s.product_id ='".$SMAR_DB->real_escape_string($product_code)."'");
+	if($result->num_rows != 0) {
+		while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+		$resultArray[] = $row; }
+	
+	
+	$response = json_encode($resultArray);
+	$res = $app->response();
+	$res->setBody($response); 
+	}
+	else {
+		$res = $app->response();
+		$res->setBody('[{}]');
+	}
+})->name('get_productInformation');
 
 /**
  * authenticate with JWT
