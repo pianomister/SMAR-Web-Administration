@@ -22,7 +22,7 @@ $tplSVG = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 	{{sections}}
 </svg>
 ';
-$tplSection = '<rect id="section{{sectionID}}" x="{{sectionPosX}}" y="{{sectionPosY}}" width="{{sectionX}}" height="{{sectionY}}" class="section" />\n
+$tplSection = '<rect id="section{{sectionID}}" x="{{sectionPosX}}" y="{{sectionPosY}}" width="{{sectionX}}" height="{{sectionY}}" class="section" />
 							 <text x="{{sectionTextX}}" y="{{sectionTextY}}">{{sectionID}}: {{sectionName}}</text>';
 
 // check if id for shelf is given
