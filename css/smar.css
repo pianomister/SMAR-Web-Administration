@@ -600,6 +600,12 @@ table a:hover > .mdi, a:hover .bg-icon, a.text-icon:hover {
 .color-gray {
 	color: #9E9E9E;
 }
+.color-lightgray {
+	color: #D7D7D7;
+}
+.color-darkgray {
+	color: #6D6D6D;
+}
 .color-white, .messages {
 	color: #fff;
 }
@@ -609,6 +615,12 @@ table a:hover > .mdi, a:hover .bg-icon, a.text-icon:hover {
 
 .bg-gray, .messages {
 	background-color: #9E9E9E;
+}
+.bg-lightgray {
+	background-color: #D7D7D7;
+}
+.bg-darkgray {
+	background-color: #6D6D6D;
 }
 .bg-red, .messages-error {
 	background-color: #F44336;

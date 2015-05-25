@@ -36,7 +36,7 @@ if($_SESSION['loginRole'] < 1) {
 
 // include subnav if requested
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
-	
+
 	?>
 	<nav id="nav-page">
 		<ul>
@@ -62,45 +62,162 @@ switch($subpage) {
 		<h1>Unit mappings</h1>
 		<?php
 		$types = array('unit', 'product');
-		
+
 		if(isset($_GET['type']) && isset($_GET['id']) && !empty($_GET['type']) && !empty($_GET['id']) && in_array($_GET['type'], $types)) {
 			$type = $_GET['type'];
 			$id = intval(strip_tags($_GET['id']));
 			$type1 = array_search($type, $types);
 			$type2 = $types[($type1+1)%2];
 			$type1 = $types[$type1];
-			
+
 			// init database
 			if(!(isset($SMAR_DB))) {
 				$SMAR_DB = new SMAR_MysqlConnect();
 			}
-			
+
 			// get name
 			$resultn = $SMAR_DB->dbquery("SELECT name FROM
-																		".SMAR_MYSQL_PREFIX."_".$type1."
-																		WHERE ".$type1."_id = '".$id."'");
-			if($resultn->num_rows) {
+																		".SMAR_MYSQL_PREFIX."_".$SMAR_DB->real_escape_string($type1)."
+																		WHERE ".$SMAR_DB->real_escape_string($type1)."_id = '".$SMAR_DB->real_escape_string($id)."'");
+			if($resultn->num_rows > 0) {
 				$name = $resultn->fetch_array(MYSQLI_ASSOC);
 				$name = $name['name'];
-				$resultg = $SMAR_DB->dbquery("SELECT ".$type2."_id FROM
-																		".SMAR_MYSQL_PREFIX."_product_unit
-																		WHERE ".$type1."_id = '".$id."'");
+				
+				// get mappings
+				$resultg = $SMAR_DB->dbquery("SELECT g.".$SMAR_DB->real_escape_string($type1)."_id, n.name, g.barcode FROM
+																		".SMAR_MYSQL_PREFIX."_product_unit g, ".SMAR_MYSQL_PREFIX."_".$SMAR_DB->real_escape_string($type2)." n
+																		WHERE g.".$type1."_id = '".$id."'
+																					AND n.".$type2."_id = g.".$type2."_id");
+
+				$mappings = array();
+				if($resultg->num_rows > 0) {
+					while( $row = $resultg->fetch_array(MYSQLI_ASSOC) ) {
+						$mappings[] = array('id' => $row[$type2.'_id'], 'name' => $row['name'], 'barcode' => $row['barcode']);
+					}
+				}
 			} else {
 				$SMAR_MESSAGES['error'][] = 'No item was found for the given ID.';
 			}
-			
-			if($result->num_rows > 0) {
-				print_r($result->fetch_array(MYSQLI_ASSOC));
-			} else echo "Nope";
-			
+
+			// print messages
+			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 			?>
 			<h3><?php echo $name.' ('.$id.')'; ?></h3>
-			</div>
 			<div class="form-box swap-order">
 				<input id="form-mappings-search" type="text" name="form-mappings-search" placeholder="Type to search for name / article nr." />
 				<label for="form-mappings-search">Search and click to add</label>
 			</div>
-			
+
+			<h3>Mappings</h3>
+			<table>
+			<thead>
+			<tr>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Barcode</th>
+				<th>Actions</th>
+			</tr>
+			</thead>
+				<tbody id="list-mappings"></tbody>
+			</table>
+
+			<script>
+			// list of mappings for change tracking
+			mappings = [<?php foreach($mappings as $m) echo "{'id': ".$m[$type2.'_id'].", 'name': '".$m['name']."', 'barcode': '".$m['barcode']."', 'action': 'none'}"; ?>];
+			$list = $('#list-mappings');
+			$formSearch = $('#form-mappings-search');
+			deleteClass = 'color-red';
+
+			// create HTML list item
+			function listItem(item, action) {
+				
+				switch(action) {
+					case 'delete':
+						
+						$delete = $list.find('[data-id="' + item.id + '"]');
+						$delete.addClass(deleteClass);
+						$delete.find('.link-deletemapping').hide();
+						$delete.find('.link-restoremapping').show();
+						
+						break;
+					case 'add':
+						
+						$('#list-mappings-placeholder').remove();
+						
+						// check if item already in list (marked as delete?)
+						$check = $list.find('[data-id="' + item.id + '"]');
+						if( $check.length != 0) {
+							
+							// if already in list, do nothing
+							// except the item is marked as deleted
+							if($check.hasClass(deleteClass)) {
+								$check.removeClass(deleteClass);
+								$check.find('.link-deletemapping').show();
+								$check.find('.link-restoremapping').hide();
+							}
+							
+						} else {
+							
+							// prepend item to list
+							html = '<tr data-id="' + item.id + '">' + 
+											'<td>' + item.id + '</td>' +
+											'<td>' + item.name + '</td>' +
+											'<td>' + item.barcode + '</td>' +
+											'<td>' +
+												'<a href="#" title="Delete" class="link-deletemapping" data-deleteid="' + item.id + '"><i class="mdi mdi-delete"></i></a>' +
+												'<a href="#" title="Restore" class="link-restoremapping" data-restoreid="' + item.id + '" style="display: none"><i class="mdi mdi-refresh bg-white color-green"></i></a>' +
+											'</td>' +
+										'</tr>';
+							$list.prepend(html);
+							setDeleteLinkListener();
+						}
+						
+						break;
+				}
+			}
+
+			// callback function for autocomplete selection
+			addMapping = function(item) {
+				item.barcode = 'TODO';
+				mappings.push({id: item.id, name: item.name, barcode: item.barcode, action: 'add'});
+				listItem(item, 'add');
+				$formSearch.val('');
+			}
+
+			// mappings search handler
+			setAutocompleteHandler($formSearch, '<?php echo $type2; ?>', false, addMapping);
+			//$formSearch.on('blur', function(e) {
+			//	$formSearch.val('');
+			//});
+
+			// create HTML list
+			if(mappings.length > 0) {
+				mappings.reverse();
+				mappings.forEach(function(current, index) {
+					listItem(current, 'add');
+				});
+			} else {
+				$list.html('<tr id="list-mappings-placeholder"><td colspan="4">No mappings yet</td></tr>');
+			}
+				
+			// add delete link listener
+			function setDeleteLinkListener() {
+				$('.link-deletemapping').on('click', function(e) {
+
+					$target = $(e.delegateTarget);
+					id = $target.attr('data-deleteid');
+					listItem({id:id}, 'delete');
+				});
+				$('.link-restoremapping').on('click', function(e) {
+
+					$target = $(e.delegateTarget);
+					id = $target.attr('data-restoreid');
+					listItem({id:id}, 'add');
+				});
+			}
+			setDeleteLinkListener();
+			</script>
+
 			<?php
 		} else {
 			$SMAR_MESSAGES['error'][] = 'Correct type and ID must be provided in URL parameters.<br>Please only open this view using links from product and unit views.';

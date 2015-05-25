@@ -86,7 +86,7 @@ function setMainNav(target) {
 // for navigating back, track the onpopstate event
 window.onpopstate = function (event) {
 	
-	if (event.state.page) {
+	if (event.state && event.state.page) {
 		loadPage(event.state.page, true, false, true);
 		console.log(event.state.navId);
 		if (event.state.navId)
@@ -216,16 +216,17 @@ function setFormHandler(cssSelector) {
 
 
 // handler for inputs using autocomplete service api
-function setAutocompleteHandler(target, table, resultTarget) {
+function setAutocompleteHandler(target, table, resultTarget, resultFunction) {
 	
 	resultTarget = resultTarget || false;
+	resultFunction = resultFunction || false; // function expects object parameter with id and name attributes
 	var $target = $(target);
 	
 	$target.autocomplete({
 		showNoSuggestionNotice: true,
 		lookup: function (search, done) {
 			
-			searchUrl = 'api/search/' + table + '/' + urlencode(search) + '?token=' + window.loginJWTToken;
+			searchUrl = 'api/search/' + table + '/' + encodeURI(search) + '?token=' + window.loginJWTToken;
 			
 			if(window.autocomplete) {
 				window.autocomplete.abort();
@@ -237,8 +238,12 @@ function setAutocompleteHandler(target, table, resultTarget) {
 				
 				var result = {
 					suggestions: $.map(data, function(dataItem) {
-						if(typeof dataItem.name !== typeof undefined && dataItem.name !== false)
-							return { value: dataItem.article_nr +': '+ dataItem.name, data: dataItem[table + '_id'] };
+						if(typeof dataItem.name !== typeof undefined && dataItem.name !== false) {
+							var artnr = '';
+							if(typeof dataItem.article_nr !== typeof undefined && dataItem.article_nr !== false)
+								artnr = dataItem.article_nr +': ';
+							return { value: artnr + dataItem.name, data: dataItem[table + '_id'] };
+						}
 						return {};
 					})
 				};
@@ -260,6 +265,8 @@ function setAutocompleteHandler(target, table, resultTarget) {
     onSelect: function (suggestion) {
 			if(resultTarget)
 				$(resultTarget).val(suggestion.data);
+			if(resultFunction)
+				resultFunction({name: suggestion.value, id: suggestion.data});
     }
 	});
 }
