@@ -53,6 +53,10 @@ $app->contentType('application/json;charset=utf-8');
 })->name('check_connection');
 
 /**
+Raffa probiert
+*/
+
+/**
  * authenticate with JWT
  */
 $app->post('/authenticate', function () use ($app) {
