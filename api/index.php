@@ -43,6 +43,8 @@ $app->contentType('application/json;charset=utf-8');
  * DOCS: http://docs.slimframework.com/
  */
 
+
+
  /**
  * only a short check
  */
@@ -52,6 +54,11 @@ $app->contentType('application/json;charset=utf-8');
 	$res->setBody(json_encode($resultArray));
 })->name('check_connection');
 
+
+
+/**
+ * returns a list of users that have authorization to use devices
+ */
 $app->get('/listDeviceUsers', function() use($app) {
 	// init database
 	if(!(isset($SMAR_DB))) {
@@ -75,9 +82,11 @@ $app->get('/listDeviceUsers', function() use($app) {
 	}
 })->name('list_device_users');
 
+
+
 /**
-Raffa probiert
-*/
+ * get product with given ID
+ */
 $app->get('/getProduct/:product_code', function($product_code) use($app) {
 	// init database
 	if(!(isset($SMAR_DB))) {
@@ -87,18 +96,19 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
 	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s WHERE p.product_id= '".$SMAR_DB->real_escape_string($product_code)."' AND s.product_id ='".$SMAR_DB->real_escape_string($product_code)."'");
 	if($result->num_rows != 0) {
 		while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-		$resultArray[] = $row; }
+			$resultArray[] = $row;
+		}
 	
-	
-	$response = json_encode($resultArray);
-	$res = $app->response();
-	$res->setBody($response); 
-	}
-	else {
+		$response = json_encode($resultArray);
+		$res = $app->response();
+		$res->setBody($response); 
+	} else {
 		$res = $app->response();
 		$res->setBody('[{}]');
 	}
 })->name('get_productInformation');
+
+
 
 /**
  * authenticate with JWT
@@ -154,6 +164,8 @@ $app->post('/authenticate', function () use ($app) {
 	}
 })->name('authentication');
 
+
+
 /**
  * get sections for a shelf (found by id)
  */
@@ -182,6 +194,7 @@ $app->get('/sections/:shelfid', function ($shelfid) use($app) {
 		$res->setBody('[{}]');
 	}
 })->name('sections_by_shelf_id');
+
 
 
 /**
@@ -221,6 +234,7 @@ $app->get('/barcode/:barcode', function ($barcode) use($app) {
 		$res->setBody('[{}]');
 	}
 })->name('object_by_barcode');
+
 
 
 /**
@@ -270,9 +284,115 @@ $app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit =
 })->name('search_in_names');
 
 
+
 /**
- * autocomplete services
- * returns list of results matching the search term
+ * update shelf designer service
+ * saves positions for shelves from designer canvas
+ */
+$app->post('/mappings/update/', function () use ($app) {
+
+	if(isset($_POST['data']) &&
+		 isset($_POST['type']) &&
+		 isset($_POST['id'])) {
+
+		// get parameters from POST request
+		$mappings = json_decode($_POST['data']);
+		$itemid = intval($_POST['id']);
+		$return = array();
+
+		$types = array('unit', 'product');
+		$type1 = array_search($_POST['type'], $types);
+		$type2 = $types[($type1+1)%2];
+		$type1 = $types[$type1];
+
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
+		}
+
+		foreach($mappings as $mapping) {
+
+			$mapping->id = intval($mapping->id);
+			$mapping->barcode = strip_tags($mapping->barcode);
+			if(isset($mapping->product_unit_id))
+				$mapping->product_unit_id = intval($mapping->product_unit_id);
+
+			switch($mapping->action) {
+				case 'add':
+
+					$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product_unit
+													(".$SMAR_DB->real_escape_string($type1)."_id, ".$SMAR_DB->real_escape_string($type2)."_id, barcode, created) VALUES
+													('".$SMAR_DB->real_escape_string($itemid)."', '".$SMAR_DB->real_escape_string($mapping->id)."',
+														'".$SMAR_DB->real_escape_string($mapping->barcode)."', NOW())");
+
+					if(!$result)
+						$return[] = $mapping;
+
+					break;
+				case 'change':
+
+					if(isset($mapping->product_unit_id)) {
+						
+						$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_product_unit SET
+													barcode = '".$SMAR_DB->real_escape_string($mapping->barcode)."'									
+													WHERE product_unit_id = '".$SMAR_DB->real_escape_string($mapping->product_unit_id)."'");
+						
+						if(!$result)
+							$return[] = $mapping;
+					} else {
+						$return[] = $mapping;
+					}
+				
+					break;
+				case 'delete':
+				
+					if(isset($mapping->product_unit_id)) {
+						
+						$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_product_unit						
+													WHERE product_unit_id = '".$SMAR_DB->real_escape_string($mapping->product_unit_id)."'");
+						
+						if(!$result)
+							$return[] = $mapping;
+					} else {
+						$return[] = $mapping;
+					}
+					
+					break;
+				case 'none':
+					break;
+				default:
+					$return['reason'] = 'mapping definition without valid action type';
+					$return[] = $mapping;
+					break;
+			}
+		}
+
+		if(count($return) > 0) {
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(500);
+			$res->setBody($response);
+		} else {
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(200);
+			$res->setBody($response);
+		}
+	} else {
+		$return['reason'] = 'missing parameters';
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(500);
+		$res->setBody($response);
+	}
+	
+})->name('update_mappings');
+
+
+
+/**
+ * update shelf designer service
+ * saves positions for shelves from designer canvas
  */
 $app->post('/designer/update/:shelfid', function ($shelfid) use ($app) {
 	

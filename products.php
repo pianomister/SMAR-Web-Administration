@@ -134,7 +134,6 @@ switch($subpage) {
 						lookup[mappings[i].id] = i;
 				}
 			}
-			updateLookup();
 				
 			var $list = $('#list-mappings'),
 			$formSearch = $('#form-mappings-search'),
@@ -223,6 +222,8 @@ switch($subpage) {
 			} else {
 				$list.html('<tr id="list-mappings-placeholder"><td colspan="4">No mappings yet</td></tr>');
 			}
+			// update here because order might be confused by reverse()
+			updateLookup();
 				
 			// add delete link listener
 			function setDeleteLinkListener() {
@@ -231,32 +232,37 @@ switch($subpage) {
 					$target = $(e.delegateTarget);
 					id = $target.attr('data-deleteid');
 					listItem({id:id}, 'delete');
+					$('input[data-barcodeid="' + id + '"]').attr('disabled','disabled');
 				});
 				$('.link-restoremapping').on('click', function(e) {
 
 					$target = $(e.delegateTarget);
 					id = $target.attr('data-restoreid');
 					listItem({id:id}, 'add');
+					$('input[data-barcodeid="' + id + '"]').removeAttr('disabled');
 				});
 				$('input[name="form-mappings-barcode"]').on('change', function(e) {
+
 					$target = $(e.delegateTarget);
 					id = $target.attr('data-barcodeid');
 					
+					mappings[ lookup[id] ].barcode = $target.val();
+					
 					// update list
 					var action = mappings[ lookup[id] ].action;
-					if(action !== 'add')
+					if(action !== 'add' && action !== 'delete')
 						mappings[ lookup[id] ].action = 'change';
-					
 				});
 			}
 			setDeleteLinkListener();
+			setMappingsSaveHandler('#link-mappings-save', '<?php echo $type1; ?>', <?php echo $id; ?>);
 			</script>
 
 			<?php
 		} else {
 			$SMAR_MESSAGES['error'][] = 'Correct type and ID must be provided in URL parameters.<br>Please only open this view using links from product and unit views.';
 		}
-	
+
 		// print messages
 		if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 

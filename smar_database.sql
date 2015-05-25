@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `smar_order_item` (
 CREATE TABLE IF NOT EXISTS `smar_product` (
   `product_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `article_nr` varchar(30) DEFAULT NULL,
-  `barcode` int(15) DEFAULT NULL,
+  `barcode` bigint(15) unsigned DEFAULT NULL,
   `name` varchar(100) DEFAULT NULL,
   `price` double NOT NULL DEFAULT '0',
 	`size_x` int(3) unsigned NOT NULL DEFAULT '0',
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS `smar_product_unit` (
   `product_unit_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `product_id` int(10) unsigned NOT NULL,
   `unit_id` int(10) unsigned NOT NULL,
-  `barcode` int(15) DEFAULT NULL,
+  `barcode` bigint(15) unsigned DEFAULT NULL,
   `created` datetime NOT NULL,
   `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`product_unit_id`),
@@ -202,7 +202,7 @@ CREATE TABLE IF NOT EXISTS `smar_section` (
 CREATE TABLE IF NOT EXISTS `smar_shelf` (
   `shelf_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) DEFAULT NULL,
-  `barcode` int(15) unsigned DEFAULT NULL,
+  `barcode` bigint(15) unsigned DEFAULT NULL,
   `size_x` int(5) NOT NULL DEFAULT '0',
   `size_y` int(5) NOT NULL DEFAULT '0',
   `size_z` int(5) NOT NULL DEFAULT '0',

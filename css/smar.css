@@ -306,6 +306,9 @@ input[type="submit"].raised, button.raised, input[type="reset"].raised {
 input[type="submit"].raised:hover, button.raised:hover, input[type="reset"].raised:hover {
 	background-color: #107861;
 }
+input[disabled] {
+	cursor: not-allowed;
+}
 
 
 .dark-ui label, .dark-ui .label,

@@ -272,6 +272,38 @@ function setAutocompleteHandler(target, table, resultTarget, resultFunction) {
 }
 
 
+// handler to save unit mappings
+function setMappingsSaveHandler(link, type, itemID) {
+
+	$(link).on('click', function(event) {
+
+		event.preventDefault();
+		var resultSet = mappings,
+			formData = 'data=' + JSON.stringify(resultSet) + '&type=' + type + '&id=' + itemID + '&token=' + window.loginJWTToken,
+			$loadOverlay = $('#smar-loading');
+
+		$loadOverlay.fadeIn(100, function() {
+
+			postUrl = window.path + 'api/mappings/update/';
+
+			$.ajax({
+				method: 'POST',
+				url: postUrl,
+				data: formData
+			}).done(function (data) {
+				$loadOverlay.fadeOut(100, function() {
+					// TODO evaluate result
+				});
+			}).fail(function(e) {
+				$loadOverlay.fadeOut(100, function() {
+					console.error(e);
+				});
+			});
+		});
+	});
+}
+
+// handler for saving changes on shelf designer canvas
 function setDesignerSaveHandler(link, canvas, container) {
 
 	$(link).on('click', function(event) {
@@ -316,7 +348,7 @@ function setDesignerSaveHandler(link, canvas, container) {
 }
 
 
-// handler for shelf designer
+// handler for shelf designer: drag & drop, resize
 function setDesignerHandler(canvasID, containerSelector) {
 	
 	var canvasC = document.getElementById(canvasID);
