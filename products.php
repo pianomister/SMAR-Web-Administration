@@ -82,17 +82,18 @@ switch($subpage) {
 			if($resultn->num_rows > 0) {
 				$name = $resultn->fetch_array(MYSQLI_ASSOC);
 				$name = $name['name'];
-				
+
 				// get mappings
-				$resultg = $SMAR_DB->dbquery("SELECT g.".$SMAR_DB->real_escape_string($type1)."_id, n.name, g.barcode FROM
+				$resultg = $SMAR_DB->dbquery("SELECT g.product_unit_id, g.".$SMAR_DB->real_escape_string($type2)."_id, n.name, g.barcode FROM
 																		".SMAR_MYSQL_PREFIX."_product_unit g, ".SMAR_MYSQL_PREFIX."_".$SMAR_DB->real_escape_string($type2)." n
 																		WHERE g.".$type1."_id = '".$id."'
-																					AND n.".$type2."_id = g.".$type2."_id");
+																					AND n.".$type2."_id = g.".$type2."_id
+																		ORDER BY g.product_unit_id");
 
 				$mappings = array();
 				if($resultg->num_rows > 0) {
 					while( $row = $resultg->fetch_array(MYSQLI_ASSOC) ) {
-						$mappings[] = array('id' => $row[$type2.'_id'], 'name' => $row['name'], 'barcode' => $row['barcode']);
+						$mappings[] = array('id' => $row[$type2.'_id'], 'product_unit_id' => $row['product_unit_id'], 'name' => $row['name'], 'barcode' => $row['barcode']);
 					}
 				}
 			} else {
@@ -102,13 +103,14 @@ switch($subpage) {
 			// print messages
 			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 			?>
-			<h3><?php echo $name.' ('.$id.')'; ?></h3>
+			<h3><?php echo $name.' (ID: '.$id.')'; ?></h3>
 			<div class="form-box swap-order">
 				<input id="form-mappings-search" type="text" name="form-mappings-search" placeholder="Type to search for name / article nr." />
 				<label for="form-mappings-search">Search and click to add</label>
 			</div>
 
 			<h3>Mappings</h3>
+			<p><a href="#" id="link-mappings-save"><i class="bg-icon mdi mdi-content-save"></i> Save changes</a></p>
 			<table>
 			<thead>
 			<tr>
@@ -123,9 +125,19 @@ switch($subpage) {
 
 			<script>
 			// list of mappings for change tracking
-			mappings = [<?php foreach($mappings as $m) echo "{'id': ".$m[$type2.'_id'].", 'name': '".$m['name']."', 'barcode': '".$m['barcode']."', 'action': 'none'}"; ?>];
-			$list = $('#list-mappings');
-			$formSearch = $('#form-mappings-search');
+			var mappings = [<?php foreach($mappings as $m) echo "{'id': ".$m['id'].", 'product_unit_id': ".$m['id'].", 'name': '".$m['name']."', 'barcode': '".$m['barcode']."', 'action': 'none'},"; ?>];
+			
+			var lookup = {};
+			function updateLookup() {
+				lookup = {};
+				for (var i = 0; i < mappings.length; i++) {
+						lookup[mappings[i].id] = i;
+				}
+			}
+			updateLookup();
+				
+			var $list = $('#list-mappings'),
+			$formSearch = $('#form-mappings-search'),
 			deleteClass = 'color-red';
 
 			// create HTML list item
@@ -134,15 +146,20 @@ switch($subpage) {
 				switch(action) {
 					case 'delete':
 						
-						$delete = $list.find('[data-id="' + item.id + '"]');
+						var $delete = $list.find('[data-id="' + item.id + '"]');
 						$delete.addClass(deleteClass);
 						$delete.find('.link-deletemapping').hide();
 						$delete.find('.link-restoremapping').show();
 						
+						// update list
+						var action = mappings[ lookup[item.id] ].action;
+						if(action === 'add')
+							mappings[ lookup[item.id] ].action = 'none';
+						else
+							mappings[ lookup[item.id] ].action = 'delete';
+						
 						break;
 					case 'add':
-						
-						$('#list-mappings-placeholder').remove();
 						
 						// check if item already in list (marked as delete?)
 						$check = $list.find('[data-id="' + item.id + '"]');
@@ -156,16 +173,25 @@ switch($subpage) {
 								$check.find('.link-restoremapping').hide();
 							}
 							
+							// update list
+							var action = mappings[ lookup[item.id] ].action;
+							if(action === 'none')
+								mappings[ lookup[item.id] ].action = 'add';
+							else
+								mappings[ lookup[item.id] ].action = 'change';
+							
 						} else {
+							
+							$('#list-mappings-placeholder').remove();
 							
 							// prepend item to list
 							html = '<tr data-id="' + item.id + '">' + 
 											'<td>' + item.id + '</td>' +
 											'<td>' + item.name + '</td>' +
-											'<td>' + item.barcode + '</td>' +
+											'<td><input type="text" name="form-mappings-barcode" data-barcodeid="' + parseInt(item.id) + '" placeholder="Barcode" value="' + parseInt(item.barcode) + '" /></td>' +
 											'<td>' +
-												'<a href="#" title="Delete" class="link-deletemapping" data-deleteid="' + item.id + '"><i class="mdi mdi-delete"></i></a>' +
-												'<a href="#" title="Restore" class="link-restoremapping" data-restoreid="' + item.id + '" style="display: none"><i class="mdi mdi-refresh bg-white color-green"></i></a>' +
+												'<a href="#" title="Delete" class="link-deletemapping" data-deleteid="' + parseInt(item.id) + '"><i class="mdi mdi-delete"></i></a>' +
+												'<a href="#" title="Restore" class="link-restoremapping" data-restoreid="' + parseInt(item.id) + '" style="display: none"><i class="mdi mdi-refresh bg-white color-green"></i></a>' +
 											'</td>' +
 										'</tr>';
 							$list.prepend(html);
@@ -178,17 +204,15 @@ switch($subpage) {
 
 			// callback function for autocomplete selection
 			addMapping = function(item) {
-				item.barcode = 'TODO';
+				item.barcode = '0';
 				mappings.push({id: item.id, name: item.name, barcode: item.barcode, action: 'add'});
+				updateLookup();
 				listItem(item, 'add');
 				$formSearch.val('');
 			}
 
 			// mappings search handler
 			setAutocompleteHandler($formSearch, '<?php echo $type2; ?>', false, addMapping);
-			//$formSearch.on('blur', function(e) {
-			//	$formSearch.val('');
-			//});
 
 			// create HTML list
 			if(mappings.length > 0) {
@@ -214,6 +238,16 @@ switch($subpage) {
 					id = $target.attr('data-restoreid');
 					listItem({id:id}, 'add');
 				});
+				$('input[name="form-mappings-barcode"]').on('change', function(e) {
+					$target = $(e.delegateTarget);
+					id = $target.attr('data-barcodeid');
+					
+					// update list
+					var action = mappings[ lookup[id] ].action;
+					if(action !== 'add')
+						mappings[ lookup[id] ].action = 'change';
+					
+				});
 			}
 			setDeleteLinkListener();
 			</script>
@@ -225,6 +259,7 @@ switch($subpage) {
 	
 		// print messages
 		if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+
 		break;
 	case 'units':
 		?>
