@@ -52,6 +52,29 @@ $app->contentType('application/json;charset=utf-8');
 	$res->setBody(json_encode($resultArray));
 })->name('check_connection');
 
+$app->get('/listDeviceUsers', function() use($app) {
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+
+	$result = $SMAR_DB->dbquery("SELECT username FROM ".SMAR_MYSQL_PREFIX."_user WHERE role_device = '1'");
+	if($result->num_rows != 0) {
+		
+			$resultArray = array();
+			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+				$resultArray[] = $row;
+			}
+		
+			$response = json_encode($resultArray);
+			$res = $app->response();
+			$res->setBody($response);
+	} else {
+		$res = $app->response();
+		$res->setBody('[{}]');
+	}
+})->name('list_device_users');
+
 /**
 Raffa probiert
 */
