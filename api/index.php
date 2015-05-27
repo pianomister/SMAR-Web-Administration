@@ -147,30 +147,41 @@ $app->get('/getUnits', function() use($app) {
  *
  */
  $app->post('/updateProductStock', function() use($app) {
+	if(isset($_POST['product_id']) && isset($_POST['amount'])) {
 	$product_id = $_POST['product_id'];
 	$amount = $_POST['amount'];
-	
-	// init database
-	if(!(isset($SMAR_DB))) {
-		$SMAR_DB = new SMAR_MysqlConnect();
+
+	$return = array();
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
+		}
+		
+		$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock 
+					SET amount_warehouse = amount_warehouse - ".$SMAR_DB->real_escape_string($amount).", 
+					 amount_shop = amount_shop + ".$SMAR_DB->real_escape_string($amount)." 
+					WHERE product_id = ".$SMAR_DB->real_escape_string($product_id)."");
+		
+		
+		
+		if(count($return) > 0) {
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(200);//TODO reset on 500
+				$res->setBody($response);
+			} else {
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(200);
+				$res->setBody($response);
+		}
 	}
-	
-	$result = "UPDATE ".SMAR_MYSQL_PREFIX."_stock 
-				SET amount_warehouse = amount_warehouse - ".$SMAR_DB->real_escape_string($amount).", 
-				SET amount_shop = amount_shop + ".$SMAR_DB->real_escape_string($amount)." 
-				WHERE product_id = '".$SMAR_DB->real_escape_string($product_id)."'";
-	
-	
-	if(count($return) > 0) {
-			$response = json_encode($return);
-			$res = $app->response();
-			$res->setStatus(200);//TODO reset on 500
-			$res->setBody($response);
-		} else {
-			$response = json_encode($return);
-			$res = $app->response();
-			$res->setStatus(200);
-			$res->setBody($response);
+	else {
+		$return['reason'] = 'missing parameters';
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(500);
+		$res->setBody($response);
 	}
  })->name('updateStock');
 
