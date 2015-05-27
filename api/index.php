@@ -93,7 +93,7 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
 		$SMAR_DB = new SMAR_MysqlConnect();
 	}
 	
-	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s WHERE p.product_id= '".$SMAR_DB->real_escape_string($product_code)."' AND s.product_id ='".$SMAR_DB->real_escape_string($product_code)."'");
+	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' AND s.product_id =p.product_id");
 	if($result->num_rows != 0) {
 		while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 			$resultArray[] = $row;
@@ -108,7 +108,55 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
 	}
 })->name('get_productInformation');
 
-
+/*
+ * update_product_stock
+*/
+$app->post('/product', function() use($app) {
+	$barcode = $_POST["barcode"];
+	$product_id = $P_POST["product_id"];
+	$unit = $_POST["unit"];
+	$amount = $_POST["amount"];
+	
+	
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	//get unit size
+	$unit = $SMAR_DB->dbquery("SELECT capacity FROM ".SMAR_MYSQL_PREFIX."_unit WHERE name = ".$SMAR_DB->real_escape_string($unit)."");
+	if($unit->num_rows != 0) {
+		while($row = $unit->fetch_array()) {
+			$unit = $row['capacity'];
+		}
+		//calculate how much the worker shifts
+		$total_amount = $unit * $amount;
+		
+		//get the current values in shop and stock
+		$result = $SMAR_DB->dbquery("SELECT amount_warehouse, amount_shop FROM ".SMAR_MYSQL_PREFIX."_stock WHERE product_id ='".$SMAR_DB->real_escape_string($product_id)."'");
+		if($result->num_rows != 0) {
+			$row = $result->fetch_array();
+			$current_amount_warehouse = $row['amount_warehouse'];
+			$current_amount_shop = $row['amount_shop'];
+		}
+		
+		// change the values
+		$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock SET amount_warehouse = '".intval($current_amount_warehouse)-intval($total_amount)."', amount_shop = '".intval($current_amount_shop)+intval($total_amount)."'");
+		
+		$return['updated'] = "ok";
+		$response = json_encode($return)
+		$res = $app->response();
+		$res->setStatus(200);
+		$res->setBody($response);
+	}
+	else {
+		$return['reason'] = "No unit";
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(403);
+		$res->setBody($response);
+	}
+})->name('updateStock');
 
 /**
  * authenticate with JWT
