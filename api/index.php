@@ -11,7 +11,7 @@ else
 function checkLogin($jwtToken) {
 	$decoded = JWT::decode($jwtToken, SMAR_JWT_SSK, array('HS256'));
 	if($decoded['device'] == true) {
-		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE hwaddress = '".$SMAR_DB->real_escape_string($decoded['hwaddress'])."' AND activated = 1");
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE UPPER(hwaddress) = UPPER('".$SMAR_DB->real_escape_string($decoded['hwaddress'])."') AND activated = 1");
 		if($result->num_rows != 0) {
 			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($decoded['user'])."'");
 			if($result->num_rows != 0) {
@@ -201,7 +201,7 @@ $app->post('/authentication', function () use ($app) {
 		$SMAR_DB = new SMAR_MysqlConnect();
 	}
 	
-	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE hwaddress = '".$SMAR_DB->real_escape_string($hwaddress)."' AND activated = 1");
+	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE UPPER(hwaddress) = UPPER('".$SMAR_DB->real_escape_string($hwaddress)."') AND activated = 1");
 	if($result->num_rows != 0) {
 		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($user)."' AND password_device = '".$SMAR_DB->real_escape_string($password)."'");
 		if($result->num_rows != 0) {
