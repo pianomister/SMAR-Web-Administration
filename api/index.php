@@ -146,7 +146,7 @@ $app->get('/getUnits', function() use($app) {
 /* updateStock of Product 
  *
  */
- $app->post('/updateProductStock'), function() use($app) {
+ $app->post('/updateProductStock', function() use($app) {
 	$product_id = $_POST['product_id'];
 	$amount = $_POST['amount'];
 	
@@ -172,9 +172,7 @@ $app->get('/getUnits', function() use($app) {
 			$res->setStatus(200);
 			$res->setBody($response);
 	}
-	
-	
- }
+ })->name('updateStock');
 
 /**
  * authenticate with JWT
