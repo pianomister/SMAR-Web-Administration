@@ -170,6 +170,7 @@ $app->get('/getUnits', function() use($app) {
 				$res->setStatus(200);//TODO reset on 500
 				$res->setBody($response);
 			} else {
+				$return['success'] = 'success';
 				$response = json_encode($return);
 				$res = $app->response();
 				$res->setStatus(200);
@@ -264,7 +265,7 @@ $app->get('/svg/(:timestamp)', function ($timestamp = 0) use($app) {
 			$res->setBody($response);
 	} else {
 		$res = $app->response();
-		$res->setBody('[{}]');
+		$res->setBody('[]');
 	}
 })->name('shelf_grpahics_newer_than_timestamp');
 
