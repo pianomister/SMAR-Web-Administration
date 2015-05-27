@@ -3,6 +3,11 @@ require '../_functions/Slim/Slim.php';
 require_once '../_functions/_functions.php';
 require_once '../_functions/_jwt/JWT.php';
 
+if(isset($_REQUEST['jwt']))
+	$jwt = $_REQUEST['jwt'];
+else
+	$jwt = "";
+
 function checkLogin($jwtToken) {
 	$decoded = JWT::decode($jwtToken, SMAR_JWT_SSK, array('HS256'));
 	if($decoded['device'] == true) {
@@ -164,6 +169,34 @@ $app->post('/authenticate', function () use ($app) {
 	}
 })->name('authentication');
 
+/**
+ * get svg graphics for a file (newer than timestamp)
+ */
+$app->get('/svg/(:timestamp)', function ($timestamp = 0) use($app) {
+
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	$timestamp = date("Y-m-d H:i:s", $timestamp);
+	
+	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_shelf_graphic WHERE lastupdate >= '".$SMAR_DB->real_escape_string($timestamp)."'");
+	if($result->num_rows != 0) {
+		
+			$resultArray = array();
+			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+				$resultArray[] = $row;
+			}
+		
+			$response = json_encode($resultArray);
+			$res = $app->response();
+			$res->setBody($response);
+	} else {
+		$res = $app->response();
+		$res->setBody('[{}]');
+	}
+})->name('shelf_grpahics_newer_than_timestamp');
 
 
 /**
