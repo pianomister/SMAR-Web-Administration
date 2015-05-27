@@ -472,6 +472,9 @@ nav#nav-main ul li a span, .subtitle {
 .nav-icon-user {
 	background: url("../img/icon-user.svg") center no-repeat;
 }
+.nav-icon-device {
+	background: url("../img/icon-device.svg") center no-repeat;
+}
 
 
 nav#nav-page ul {

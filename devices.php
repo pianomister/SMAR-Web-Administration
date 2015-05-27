@@ -7,13 +7,12 @@
 * Stephan Giesau                    *
 * Sebastian Kowalski                *
 *                                   *
-* start.php                         *
+*                                   *
 *                                   *
 ************************************/
 
 // extract file name
-$self = explode('/', $_SERVER['SCRIPT_NAME']);
-$self = $self[count($self)-1];
+$self = 'devices.php';
 $subpage = isset($_GET['subpage']) ? $_GET['subpage'] : '';
 
 // check for type of call (direct/AJAX)
@@ -28,15 +27,38 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 
 require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
+
+
+// include subnav if requested
+if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
+	
+	?>
+	<nav id="nav-page">
+		<ul>
+			<li><a href="<?php echo $self; ?>" <?php echo ($subpage == '') ? 'class="smar-active"' : ''; ?>>Device manager</a></li>
+			<li><a href="<?php echo $self.'?subpage=adddevice'; ?>" <?php echo ($subpage == 'adddevice') ? 'class="smar-active"' : ''; ?>>Add device</a></li>
+		</ul>
+	</nav>
+	<?php
+}
 ?>
 <div id="smar-content-inner">
-	<h1>Welcome</h1>
 	<?php
 	// print messages
 	if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+
+	// page content
+	switch($subpage) {
+		
+		case 'adddevice':
+			?>
+			<h1>Add device</h1>
+			<?php
+			break;
+		default:
+			?>
+			<h1>Device manager</h1>
+			<?php
+	}
 	?>
-	<p>Choose an action to start.</p>
-	<p><a href="logout.php">Logout</a></p>
-	<br><br>
-	<div>Some icons made by <a href="http://www.flaticon.com/authors/situ-herrera" title="Situ Herrera">Situ Herrera</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> are licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a></div>
 </div>
