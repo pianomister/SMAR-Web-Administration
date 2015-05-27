@@ -98,7 +98,11 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
 		$SMAR_DB = new SMAR_MysqlConnect();
 	}
 	
-	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s WHERE p.product_id= '".$SMAR_DB->real_escape_string($product_code)."' AND s.product_id ='".$SMAR_DB->real_escape_string($product_code)."'");
+	$result = $SMAR_DB->dbquery("SELECT * 
+			FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu 
+			WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
+				  AND s.product_id = p.product_id 
+				  AND pu.product_id = p.product_id");
 	if($result->num_rows != 0) {
 		while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 			$resultArray[] = $row;
@@ -113,6 +117,31 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
 	}
 })->name('get_productInformation');
 
+/** 
+ * get all units
+*/
+$app->get('/getUnits', function() use($app) {
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	$result = $SMAR_DB->dbquery("SELECT name, capacity FROM ".SMAR_MYSQL_PREFIX."_unit");
+	if($result->num_rows > 0 ) 
+	{
+		$resultArray = array();
+		while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+			$resultArray[] = $row;
+		}
+		$response = json_encode($resultArray);
+		$res = $app->response();
+		$res->setBody($response);
+	}
+	else {
+		$res = $app->response();
+		$res->setBody('[{}]');
+	}
+})->name('allUnits');
 
 
 /**
