@@ -143,6 +143,38 @@ $app->get('/getUnits', function() use($app) {
 	}
 })->name('allUnits');
 
+/* updateStock of Product 
+ *
+ */
+ $app->post('/updateProductStock'), function() use($app) {
+	$product_id = $_POST['product_id'];
+	$amount = $_POST['amount'];
+	
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	$result = "UPDATE ".SMAR_MYSQL_PREFIX."_stock 
+				SET amount_warehouse = amount_warehouse - ".$SMAR_DB->real_escape_string($amount).", 
+				SET amount_shop = amount_shop + ".$SMAR_DB->real_escape_string($amount)." 
+				WHERE product_id = '".$SMAR_DB->real_escape_string($product_id)."'";
+	
+	
+	if(count($return) > 0) {
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(200);//TODO reset on 500
+			$res->setBody($response);
+		} else {
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(200);
+			$res->setBody($response);
+	}
+	
+	
+ }
 
 /**
  * authenticate with JWT
