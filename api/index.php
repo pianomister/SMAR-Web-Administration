@@ -139,7 +139,7 @@ $app->get('/getUnits', function() use($app) {
 	}
 	else {
 		$res = $app->response();
-		$res->setBody('[{}]');
+		$res->setBody('[]');
 	}
 })->name('allUnits');
 
