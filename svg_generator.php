@@ -13,7 +13,8 @@ $tplSVG = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 		text {fill: #333;font-family:Roboto;font-size: 8px;}
 		rect {fill:#ccc; stroke:#777; stroke-width: 2px;}
 		.section {fill:#ddd; stroke:#555; stroke-width: 1px; opacity:.8;}
-		.selected {fill:#16a082;}
+		.selected {fill:#16a082;stroke:#107861;}
+		.textselected {fill:#fff}
 		]]>
 		</style>
 	</defs>
@@ -22,13 +23,13 @@ $tplSVG = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 	{{sections}}
 </svg>
 ';
-$tplSection = '<rect id="section{{sectionID}}" x="{{sectionPosX}}" y="{{sectionPosY}}" width="{{sectionX}}" height="{{sectionY}}" class="section" />
-							 <text x="{{sectionTextX}}" y="{{sectionTextY}}">{{sectionID}}: {{sectionName}}</text>';
+$tplSection = '<rect id="section{{sectionID}}" class="section" x="{{sectionPosX}}" y="{{sectionPosY}}" width="{{sectionX}}" height="{{sectionY}}" />
+							 <text id="section{{sectionID}}-text" x="{{sectionTextX}}" y="{{sectionTextY}}">{{sectionID}}: {{sectionName}}</text>';
 
 // check if id for shelf is given
 if(isset($_GET['id'])) {
 	$id = intval($_GET['id']);
-	
+
 	// init database
 	if(!(isset($SMAR_DB))) {
 		$SMAR_DB = new SMAR_MysqlConnect();
@@ -82,7 +83,7 @@ if(isset($_GET['id'])) {
 		
 		$tplSVG = str_replace('{{sections}}', $sections, $tplSVG);
 		
-		echo $tplSVG;
+		echo str_replace(["\r","\n","\r\n"], "", $tplSVG);
 	}
 }
 
