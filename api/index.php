@@ -53,7 +53,7 @@ $app->contentType('application/json;charset=utf-8');
  /**
  * only a short check
  */
- $app->get('/checkConnection', function() use($app) {
+ $app->get('/connection/check', function() use($app) {
 	$resultArray['ready'] = SMAR_REST_API_READY;
 	$res = $app->response();
 	$res->setBody(json_encode($resultArray));
@@ -64,7 +64,7 @@ $app->contentType('application/json;charset=utf-8');
 /**
  * returns a list of users that have authorization to use devices
  */
-$app->get('/listDeviceUsers', function() use($app) {
+$app->get('/users/device', function() use($app) {
 	// init database
 	if(!(isset($SMAR_DB))) {
 		$SMAR_DB = new SMAR_MysqlConnect();
@@ -83,7 +83,7 @@ $app->get('/listDeviceUsers', function() use($app) {
 			$res->setBody($response);
 	} else {
 		$res = $app->response();
-		$res->setBody('[{}]');
+		$res->setBody('[]');
 	}
 })->name('list_device_users');
 
@@ -189,7 +189,7 @@ $app->get('/getUnits', function() use($app) {
 /**
  * authenticate with JWT
  */
-$app->post('/authenticate', function () use ($app) {
+$app->post('/authentication', function () use ($app) {
 	
 	$hwaddress = $_POST['hwaddress'];
 	$user = $_POST['user'];
