@@ -1,4 +1,7 @@
 <?php
+require_once('SignatureInvalidException.php');
+require_once('BeforeValidException.php');
+require_once('ExpiredException.php');
 
 /**
  * JSON Web Token implementation, based on this spec:

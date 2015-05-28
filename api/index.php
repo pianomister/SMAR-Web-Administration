@@ -10,7 +10,11 @@ else
 
 function checkLogin($jwtToken) {
 	try {
-		$decoded = JWT::decode($jwtToken, SMAR_JWT_SSK, array('HS256'));
+		$decoded = (array) JWT::decode($jwtToken, SMAR_JWT_SSK, array('HS256'));
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
+		}
 		if($decoded['device'] == true) {
 			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE UPPER(hwaddress) = UPPER('".$SMAR_DB->real_escape_string($decoded['hwaddress'])."') AND activated = 1");
 			if($result->num_rows != 0) {
