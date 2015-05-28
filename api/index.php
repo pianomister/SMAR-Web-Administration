@@ -218,7 +218,7 @@ $app->get('/getUnits', function() use($app) {
 		}
 	}
 	else {
-		$return['reason'] = "variables not set";
+		$return['result'] = "variables not set";
 		$response = json_encode($return);
 		$res = $app->response();
 		$res->setStatus(403);
