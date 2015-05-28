@@ -9,27 +9,32 @@ else
 	$jwt = "";
 
 function checkLogin($jwtToken) {
-	$decoded = JWT::decode($jwtToken, SMAR_JWT_SSK, array('HS256'));
-	if($decoded['device'] == true) {
-		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE UPPER(hwaddress) = UPPER('".$SMAR_DB->real_escape_string($decoded['hwaddress'])."') AND activated = 1");
-		if($result->num_rows != 0) {
-			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($decoded['user'])."'");
+	try {
+		$decoded = JWT::decode($jwtToken, SMAR_JWT_SSK, array('HS256'));
+		if($decoded['device'] == true) {
+			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE UPPER(hwaddress) = UPPER('".$SMAR_DB->real_escape_string($decoded['hwaddress'])."') AND activated = 1");
+			if($result->num_rows != 0) {
+				$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($decoded['user'])."'");
+				if($result->num_rows != 0) {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		} else {
+			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE user_id = '".$SMAR_DB->real_escape_string($decoded['user_id'])."' AND username = '".$SMAR_DB->real_escape_string($decoded['username'])."' AND role_web = '".$SMAR_DB->real_escape_string($decoded['user_role'])."'");
 			if($result->num_rows != 0) {
 				return true;
 			} else {
 				return false;
 			}
-		} else {
-			return false;
 		}
-	} else {
-		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE user_id = '".$SMAR_DB->real_escape_string($decoded['user_id'])."' AND username = '".$SMAR_DB->real_escape_string($decoded['username'])."' AND role_web = '".$SMAR_DB->real_escape_string($decoded['user_role'])."'");
-		if($result->num_rows != 0) {
-			return true;
-		} else {
-			return false;
-		}
+	} catch(Exception $e) {
+		return false;
 	}
+	
 }
 
 \Slim\Slim::registerAutoloader();
@@ -93,27 +98,36 @@ $app->get('/users/device', function() use($app) {
  * get product with given ID
  */
 $app->get('/getProduct/:product_code', function($product_code) use($app) {
-	// init database
-	if(!(isset($SMAR_DB))) {
-		$SMAR_DB = new SMAR_MysqlConnect();
-	}
-	
-	$result = $SMAR_DB->dbquery("SELECT * 
-			FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu 
-			WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
-				  AND s.product_id = p.product_id 
-				  AND pu.product_id = p.product_id");
-	if($result->num_rows != 0) {
-		while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-			$resultArray[] = $row;
+	global $jwt;
+	if(checkLogin($jwt)) {
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
 		}
-	
-		$response = json_encode($resultArray);
-		$res = $app->response();
-		$res->setBody($response); 
+		
+		$result = $SMAR_DB->dbquery("SELECT * 
+				FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu 
+				WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
+					  AND s.product_id = p.product_id 
+					  AND pu.product_id = p.product_id");
+		if($result->num_rows != 0) {
+			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+				$resultArray[] = $row;
+			}
+		
+			$response = json_encode($resultArray);
+			$res = $app->response();
+			$res->setBody($response); 
+		} else {
+			$res = $app->response();
+			$res->setBody('[{}]');
+		}
 	} else {
+		$return['jwt'] = "fail";
+		$response = json_encode($return);
 		$res = $app->response();
-		$res->setBody('[{}]');
+		$res->setStatus(403);
+		$res->setBody($response);
 	}
 })->name('get_productInformation');
 
@@ -121,25 +135,34 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
  * get all units
 */
 $app->get('/getUnits', function() use($app) {
-	// init database
-	if(!(isset($SMAR_DB))) {
-		$SMAR_DB = new SMAR_MysqlConnect();
-	}
-	
-	$result = $SMAR_DB->dbquery("SELECT name, capacity FROM ".SMAR_MYSQL_PREFIX."_unit");
-	if($result->num_rows > 0 ) 
-	{
-		$resultArray = array();
-		while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-			$resultArray[] = $row;
+	global $jwt;
+	if(checkLogin($jwt)) {
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
 		}
-		$response = json_encode($resultArray);
+		
+		$result = $SMAR_DB->dbquery("SELECT name, capacity FROM ".SMAR_MYSQL_PREFIX."_unit");
+		if($result->num_rows > 0 ) 
+		{
+			$resultArray = array();
+			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+				$resultArray[] = $row;
+			}
+			$response = json_encode($resultArray);
+			$res = $app->response();
+			$res->setBody($response);
+		}
+		else {
+			$res = $app->response();
+			$res->setBody('[]');
+		}
+	} else {
+		$return['jwt'] = "fail";
+		$response = json_encode($return);
 		$res = $app->response();
+		$res->setStatus(403);
 		$res->setBody($response);
-	}
-	else {
-		$res = $app->response();
-		$res->setBody('[]');
 	}
 })->name('allUnits');
 
@@ -147,42 +170,51 @@ $app->get('/getUnits', function() use($app) {
  *
  */
  $app->post('/updateProductStock', function() use($app) {
-	if(isset($_POST['product_id']) && isset($_POST['new_amount_shop']) && isset($_POST['new_amount_warehouse'])) {
-	$product_id = $_POST['product_id'];
-	$amount_shop = $_POST['new_amount_shop'];
-	$amount_warehouse = $_POST['new_amount_warehouse'];
+	 global $jwt;
+	if(checkLogin($jwt)) {
+		if(isset($_POST['product_id']) && isset($_POST['new_amount_shop']) && isset($_POST['new_amount_warehouse'])) {
+		$product_id = $_POST['product_id'];
+		$amount_shop = $_POST['new_amount_shop'];
+		$amount_warehouse = $_POST['new_amount_warehouse'];
 
-	$return = array();
-		// init database
-		if(!(isset($SMAR_DB))) {
-			$SMAR_DB = new SMAR_MysqlConnect();
+		$return = array();
+			// init database
+			if(!(isset($SMAR_DB))) {
+				$SMAR_DB = new SMAR_MysqlConnect();
+			}
+			
+			$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock 
+						SET amount_warehouse = ".$SMAR_DB->real_escape_string($amount_warehouse).", 
+						 amount_shop = ".$SMAR_DB->real_escape_string($amount_shop)." 
+						WHERE product_id = ".$SMAR_DB->real_escape_string($product_id)."");
+			
+			
+			
+			if(count($return) > 0) {
+					$response = json_encode($return);
+					$res = $app->response();
+					$res->setStatus(200);//TODO reset on 500
+					$res->setBody($response);
+				} else {
+					$return['success'] = 'success';
+					$response = json_encode($return);
+					$res = $app->response();
+					$res->setStatus(200);
+					$res->setBody($response);
+			}
 		}
-		
-		$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock 
-					SET amount_warehouse = ".$SMAR_DB->real_escape_string($amount_warehouse).", 
-					 amount_shop = ".$SMAR_DB->real_escape_string($amount_shop)." 
-					WHERE product_id = ".$SMAR_DB->real_escape_string($product_id)."");
-		
-		
-		
-		if(count($return) > 0) {
-				$response = json_encode($return);
-				$res = $app->response();
-				$res->setStatus(200);//TODO reset on 500
-				$res->setBody($response);
-			} else {
-				$return['success'] = 'success';
-				$response = json_encode($return);
-				$res = $app->response();
-				$res->setStatus(200);
-				$res->setBody($response);
+		else {
+			$return['reason'] = 'missing parameters';
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(500);
+			$res->setBody($response);
 		}
-	}
-	else {
-		$return['reason'] = 'missing parameters';
+	} else {
+		$return['jwt'] = "fail";
 		$response = json_encode($return);
 		$res = $app->response();
-		$res->setStatus(500);
+		$res->setStatus(403);
 		$res->setBody($response);
 	}
  })->name('updateStock');
@@ -191,40 +223,48 @@ $app->get('/getUnits', function() use($app) {
   * Update after Receiving the WarehouseStock
  */
  $app->post('/Product', function() use($app) {
+	 global $jwt;
+	if(checkLogin($jwt)) {
 	
-	if(isset($_POST['product_id']) && isset($_POST['amount'])) {
-		// init database
-		if(!(isset($SMAR_DB))) {
-			$SMAR_DB = new SMAR_MysqlConnect();
+		if(isset($_POST['product_id']) && isset($_POST['amount'])) {
+			// init database
+			if(!(isset($SMAR_DB))) {
+				$SMAR_DB = new SMAR_MysqlConnect();
+			}
+			$return = array();
+			
+			$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock 
+										SET amount_warehouse = ".$SMAR_DB->real_escape_string($_POST['amount'])." 
+										WHERE product_id = ".$SMAR_DB->real_escape_string($_POST['product_id']));
+										
+			if(count($result) > 0) {
+				$return['result'] = "success";
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(200);
+				$res->setBody($response);
+			} else {
+				$return['result'] = "fail";
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(403);
+				$res->setBody($response);
+			}
 		}
-		$return = array();
-		
-		$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock 
-									SET amount_warehouse = ".$SMAR_DB->real_escape_string($_POST['amount'])." 
-									WHERE product_id = ".$SMAR_DB->real_escape_string($_POST['product_id']));
-									
-		if(count($result) > 0) {
-			$return['result'] = "success";
-			$response = json_encode($return);
-			$res = $app->response();
-			$res->setStatus(200);
-			$res->setBody($response);
-		} else {
-			$return['result'] = "fail";
+		else {
+			$return['result'] = "variables not set";
 			$response = json_encode($return);
 			$res = $app->response();
 			$res->setStatus(403);
 			$res->setBody($response);
 		}
-	}
-	else {
-		$return['result'] = "variables not set";
+	} else {
+		$return['jwt'] = "fail";
 		$response = json_encode($return);
 		$res = $app->response();
 		$res->setStatus(403);
 		$res->setBody($response);
 	}
- 
  })->name('Product');
  
  
@@ -232,38 +272,46 @@ $app->get('/getUnits', function() use($app) {
  * get Receiving List
  */
  $app->get('/Receiving/:barcode', function($barcode) use($app) {
-	// init database
-	if(!(isset($SMAR_DB))) {
-		$SMAR_DB = new SMAR_MysqlConnect();
-	}
-	
-	$result = $SMAR_DB->dbquery("SELECT 
-								o.name as receiving_name,
-								o.date as receiving_date, 
-								p.name as product_name, 
-								oi.amount as amount, 
-								u.name as unit 
-								FROM ".SMAR_MYSQL_PREFIX."_order o, ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_order_item oi, ".SMAR_MYSQL_PREFIX."_unit u 
-								WHERE o.barcode = '".$SMAR_DB->real_escape_string($barcode)."' 
-								AND oi.product_id = p.product_id 
-								AND oi.unit_id = u.unit_id");
-	if($result->num_rows != 0) {
-		while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-			$resultArray[] = $row;
+	 global $jwt;
+	if(checkLogin($jwt)) {
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
 		}
-	
-		$response = json_encode($resultArray);
-		$res = $app->response();
-		$res->setBody($response);
-	}
-	else {
-		$return['reason'] = "No Receiving for that barcode";
+		
+		$result = $SMAR_DB->dbquery("SELECT 
+									o.name as receiving_name,
+									o.date as receiving_date, 
+									p.name as product_name, 
+									oi.amount as amount, 
+									u.name as unit 
+									FROM ".SMAR_MYSQL_PREFIX."_order o, ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_order_item oi, ".SMAR_MYSQL_PREFIX."_unit u 
+									WHERE o.barcode = '".$SMAR_DB->real_escape_string($barcode)."' 
+									AND oi.product_id = p.product_id 
+									AND oi.unit_id = u.unit_id");
+		if($result->num_rows != 0) {
+			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+				$resultArray[] = $row;
+			}
+		
+			$response = json_encode($resultArray);
+			$res = $app->response();
+			$res->setBody($response);
+		}
+		else {
+			$return['reason'] = "No Receiving for that barcode";
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(500);
+			$res->setBody($response);
+		}
+	} else {
+		$return['jwt'] = "fail";
 		$response = json_encode($return);
 		$res = $app->response();
-		$res->setStatus(500);
+		$res->setStatus(403);
 		$res->setBody($response);
 	}
-	
  })->name('ReceivingList');
  
 /**
@@ -324,28 +372,36 @@ $app->post('/authentication', function () use ($app) {
  * get svg graphics for a file (newer than timestamp)
  */
 $app->get('/svg/(:timestamp)', function ($timestamp = 0) use($app) {
-
-	// init database
-	if(!(isset($SMAR_DB))) {
-		$SMAR_DB = new SMAR_MysqlConnect();
-	}
-	
-	$timestamp = date("Y-m-d H:i:s", $timestamp);
-	
-	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_shelf_graphic WHERE lastupdate >= '".$SMAR_DB->real_escape_string($timestamp)."'");
-	if($result->num_rows != 0) {
+	global $jwt;
+	if(checkLogin($jwt)) {
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
+		}
 		
-			$resultArray = array();
-			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-				$resultArray[] = $row;
-			}
+		$timestamp = date("Y-m-d H:i:s", $timestamp);
 		
-			$response = json_encode($resultArray);
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_shelf_graphic WHERE lastupdate >= '".$SMAR_DB->real_escape_string($timestamp)."'");
+		if($result->num_rows != 0) {
+			
+				$resultArray = array();
+				while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+					$resultArray[] = $row;
+				}
+			
+				$response = json_encode($resultArray);
+				$res = $app->response();
+				$res->setBody($response);
+		} else {
 			$res = $app->response();
-			$res->setBody($response);
+			$res->setBody('[]');
+		}
 	} else {
+		$return['jwt'] = "fail";
+		$response = json_encode($return);
 		$res = $app->response();
-		$res->setBody('[]');
+		$res->setStatus(403);
+		$res->setBody($response);
 	}
 })->name('shelf_grpahics_newer_than_timestamp');
 
@@ -354,28 +410,36 @@ $app->get('/svg/(:timestamp)', function ($timestamp = 0) use($app) {
  * get sections for a shelf (found by id)
  */
 $app->get('/sections/:shelfid', function ($shelfid) use($app) {
-
-	// init database
-	if(!(isset($SMAR_DB))) {
-		$SMAR_DB = new SMAR_MysqlConnect();
-	}
-	
-	$shelfid = intval($shelfid);
-
-	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_section WHERE shelf_id = '".$SMAR_DB->real_escape_string($shelfid)."'");
-	if($result->num_rows != 0) {
+	global $jwt;
+	if(checkLogin($jwt)) {
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
+		}
 		
-			$resultArray = array();
-			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-				$resultArray[] = $row;
-			}
-		
-			$response = json_encode($resultArray);
+		$shelfid = intval($shelfid);
+
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_section WHERE shelf_id = '".$SMAR_DB->real_escape_string($shelfid)."'");
+		if($result->num_rows != 0) {
+			
+				$resultArray = array();
+				while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+					$resultArray[] = $row;
+				}
+			
+				$response = json_encode($resultArray);
+				$res = $app->response();
+				$res->setBody($response);
+		} else {
 			$res = $app->response();
-			$res->setBody($response);
+			$res->setBody('[{}]');
+		}
 	} else {
+		$return['jwt'] = "fail";
+		$response = json_encode($return);
 		$res = $app->response();
-		$res->setBody('[{}]');
+		$res->setStatus(403);
+		$res->setBody($response);
 	}
 })->name('sections_by_shelf_id');
 
@@ -386,36 +450,44 @@ $app->get('/sections/:shelfid', function ($shelfid) use($app) {
  * returns first result for a barcode
  */
 $app->get('/barcode/:barcode', function ($barcode) use($app) {
-
-	// init database
-	if(!(isset($SMAR_DB))) {
-		$SMAR_DB = new SMAR_MysqlConnect();
-	}
-	
-	$barcode = intval($barcode);
-
-	$tables = array('product','product_unit','shelf');
-	for($i = 0; $i < count($tables);$i++) {
-		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_".$tables[$i]."
-																	WHERE barcode = '".$SMAR_DB->real_escape_string($barcode)."'
-																	LIMIT 1");
-		if($result->num_rows != 0)
-			break;
-	}
-	
-	if($result->num_rows != 0) {
+	global $jwt;
+	if(checkLogin($jwt)) {
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
+		}
 		
-			$resultArray = array();
-			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-				$resultArray[] = $row;
-			}
+		$barcode = intval($barcode);
+
+		$tables = array('product','product_unit','shelf');
+		for($i = 0; $i < count($tables);$i++) {
+			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_".$tables[$i]."
+																		WHERE barcode = '".$SMAR_DB->real_escape_string($barcode)."'
+																		LIMIT 1");
+			if($result->num_rows != 0)
+				break;
+		}
 		
-			$response = json_encode($resultArray);
+		if($result->num_rows != 0) {
+			
+				$resultArray = array();
+				while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+					$resultArray[] = $row;
+				}
+			
+				$response = json_encode($resultArray);
+				$res = $app->response();
+				$res->setBody($response);
+		} else {
 			$res = $app->response();
-			$res->setBody($response);
+			$res->setBody('[{}]');
+		}
 	} else {
+		$return['jwt'] = "fail";
+		$response = json_encode($return);
 		$res = $app->response();
-		$res->setBody('[{}]');
+		$res->setStatus(403);
+		$res->setBody($response);
 	}
 })->name('object_by_barcode');
 
@@ -426,44 +498,52 @@ $app->get('/barcode/:barcode', function ($barcode) use($app) {
  * returns list of results matching the search term
  */
 $app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit = 5) use ($app) {
-
-	$table_whitelist = array('product', 'unit', 'shelf', 'section');
-	$table = strtolower($table);
-	$limit = intval($limit);
-	
-	if(in_array($table, $table_whitelist)) {
-
-		// init database
-		if(!(isset($SMAR_DB))) {
-			$SMAR_DB = new SMAR_MysqlConnect();
-		}
+	global $jwt;
+	if(checkLogin(jwt)) {
+		$table_whitelist = array('product', 'unit', 'shelf', 'section');
+		$table = strtolower($table);
+		$limit = intval($limit);
 		
-		$constraints = " OR ".$table."_id LIKE '%".$SMAR_DB->real_escape_string($search)."%'";
-		if($table == 'product')
-			$constraints .= " OR article_nr LIKE '%".$SMAR_DB->real_escape_string($search)."%'";
+		if(in_array($table, $table_whitelist)) {
 
-		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_".$table." WHERE name LIKE '%".$SMAR_DB->real_escape_string($search)."%' ".$constraints." LIMIT ".$SMAR_DB->real_escape_string($limit));
-		if($result->num_rows != 0) {
+			// init database
+			if(!(isset($SMAR_DB))) {
+				$SMAR_DB = new SMAR_MysqlConnect();
+			}
+			
+			$constraints = " OR ".$table."_id LIKE '%".$SMAR_DB->real_escape_string($search)."%'";
+			if($table == 'product')
+				$constraints .= " OR article_nr LIKE '%".$SMAR_DB->real_escape_string($search)."%'";
 
-				$resultArray = array();
-				while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-					$resultArray[] = $row;
-				}
-			
-				$response = json_encode($resultArray);
-			
+			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_".$table." WHERE name LIKE '%".$SMAR_DB->real_escape_string($search)."%' ".$constraints." LIMIT ".$SMAR_DB->real_escape_string($limit));
+			if($result->num_rows != 0) {
+
+					$resultArray = array();
+					while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+						$resultArray[] = $row;
+					}
+				
+					$response = json_encode($resultArray);
+				
+					$res = $app->response();
+					$res->setBody($response);
+
+			} else {
 				$res = $app->response();
-				$res->setBody($response);
-
+				$res->setBody('[{}]');
+			}
+		
 		} else {
 			$res = $app->response();
+			$res->setStatus(404);
 			$res->setBody('[{}]');
 		}
-	
 	} else {
+		$return['jwt'] = "fail";
+		$response = json_encode($return);
 		$res = $app->response();
-		$res->setStatus(404);
-		$res->setBody('[{}]');
+		$res->setStatus(403);
+		$res->setBody($response);
 	}
 })->name('search_in_names');
 
@@ -474,108 +554,115 @@ $app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit =
  * saves positions for shelves from designer canvas
  */
 $app->post('/mappings/update/', function () use ($app) {
+	global $jwt;
+	if(checkLogin($jwt)) {
+		if(isset($_POST['data']) &&
+			 isset($_POST['type']) &&
+			 isset($_POST['id'])) {
 
-	if(isset($_POST['data']) &&
-		 isset($_POST['type']) &&
-		 isset($_POST['id'])) {
+			// get parameters from POST request
+			$mappings = json_decode($_POST['data']);
+			$itemid = intval($_POST['id']);
+			$return = array();
 
-		// get parameters from POST request
-		$mappings = json_decode($_POST['data']);
-		$itemid = intval($_POST['id']);
-		$return = array();
+			$types = array('unit', 'product');
+			$type1 = array_search($_POST['type'], $types);
+			$type2 = $types[($type1+1)%2];
+			$type1 = $types[$type1];
 
-		$types = array('unit', 'product');
-		$type1 = array_search($_POST['type'], $types);
-		$type2 = $types[($type1+1)%2];
-		$type1 = $types[$type1];
-
-		// init database
-		if(!(isset($SMAR_DB))) {
-			$SMAR_DB = new SMAR_MysqlConnect();
-		}
-
-		foreach($mappings as $mapping) {
-
-			$mapping->id = intval($mapping->id);
-			$mapping->barcode = strip_tags($mapping->barcode);
-			if(isset($mapping->product_unit_id))
-				$mapping->product_unit_id = intval($mapping->product_unit_id);
-
-			$result = NULL;
-			
-			switch($mapping->action) {
-				case 'add':
-
-					$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product_unit
-													(".$SMAR_DB->real_escape_string($type1)."_id, ".$SMAR_DB->real_escape_string($type2)."_id, barcode, created) VALUES
-													('".$SMAR_DB->real_escape_string($itemid)."', '".$SMAR_DB->real_escape_string($mapping->id)."',
-														'".$SMAR_DB->real_escape_string($mapping->barcode)."', NOW())");
-
-					if(!$result)
-						$return[] = $mapping;
-
-					break;
-				case 'change':
-
-					if(isset($mapping->product_unit_id)) {
-						
-						$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_product_unit SET
-													barcode = '".$SMAR_DB->real_escape_string($mapping->barcode)."'									
-													WHERE product_unit_id = '".$SMAR_DB->real_escape_string($mapping->product_unit_id)."'");
-						
-						$return[] = "UPDATE ".SMAR_MYSQL_PREFIX."_product_unit SET
-													barcode = '".$SMAR_DB->real_escape_string($mapping->barcode)."'									
-													WHERE product_unit_id = '".$SMAR_DB->real_escape_string($mapping->product_unit_id)."'";
-						
-						if(!$result)
-							$return[] = $mapping;
-					} else {
-						$return[] = $mapping;
-					}
-				
-					break;
-				case 'delete':
-				
-					if(isset($mapping->product_unit_id)) {
-						
-						$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_product_unit						
-													WHERE product_unit_id = '".$SMAR_DB->real_escape_string($mapping->product_unit_id)."'");
-						
-						if(!$result)
-							$return[] = $mapping;
-					} else {
-						$return[] = $mapping;
-					}
-					
-					break;
-				case 'none':
-					break;
-				default:
-					$return['reason'] = 'mapping definition without valid action type';
-					$return[] = $mapping;
-					break;
+			// init database
+			if(!(isset($SMAR_DB))) {
+				$SMAR_DB = new SMAR_MysqlConnect();
 			}
-		}
 
-		if(count($return) > 0) {
-			$response = json_encode($return);
-			$res = $app->response();
-			$res->setStatus(200);//TODO reset on 500
-			$res->setBody($response);
+			foreach($mappings as $mapping) {
+
+				$mapping->id = intval($mapping->id);
+				$mapping->barcode = strip_tags($mapping->barcode);
+				if(isset($mapping->product_unit_id))
+					$mapping->product_unit_id = intval($mapping->product_unit_id);
+
+				$result = NULL;
+				
+				switch($mapping->action) {
+					case 'add':
+
+						$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_product_unit
+														(".$SMAR_DB->real_escape_string($type1)."_id, ".$SMAR_DB->real_escape_string($type2)."_id, barcode, created) VALUES
+														('".$SMAR_DB->real_escape_string($itemid)."', '".$SMAR_DB->real_escape_string($mapping->id)."',
+															'".$SMAR_DB->real_escape_string($mapping->barcode)."', NOW())");
+
+						if(!$result)
+							$return[] = $mapping;
+
+						break;
+					case 'change':
+
+						if(isset($mapping->product_unit_id)) {
+							
+							$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_product_unit SET
+														barcode = '".$SMAR_DB->real_escape_string($mapping->barcode)."'									
+														WHERE product_unit_id = '".$SMAR_DB->real_escape_string($mapping->product_unit_id)."'");
+							
+							$return[] = "UPDATE ".SMAR_MYSQL_PREFIX."_product_unit SET
+														barcode = '".$SMAR_DB->real_escape_string($mapping->barcode)."'									
+														WHERE product_unit_id = '".$SMAR_DB->real_escape_string($mapping->product_unit_id)."'";
+							
+							if(!$result)
+								$return[] = $mapping;
+						} else {
+							$return[] = $mapping;
+						}
+					
+						break;
+					case 'delete':
+					
+						if(isset($mapping->product_unit_id)) {
+							
+							$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_product_unit						
+														WHERE product_unit_id = '".$SMAR_DB->real_escape_string($mapping->product_unit_id)."'");
+							
+							if(!$result)
+								$return[] = $mapping;
+						} else {
+							$return[] = $mapping;
+						}
+						
+						break;
+					case 'none':
+						break;
+					default:
+						$return['reason'] = 'mapping definition without valid action type';
+						$return[] = $mapping;
+						break;
+				}
+			}
+
+			if(count($return) > 0) {
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(200);//TODO reset on 500
+				$res->setBody($response);
+			} else {
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(200);
+				$res->setBody($response);
+			}
 		} else {
+			$return['reason'] = 'missing parameters';
 			$response = json_encode($return);
 			$res = $app->response();
-			$res->setStatus(200);
+			$res->setStatus(500);
 			$res->setBody($response);
 		}
 	} else {
-		$return['reason'] = 'missing parameters';
+		$return['jwt'] = "fail";
 		$response = json_encode($return);
 		$res = $app->response();
-		$res->setStatus(500);
+		$res->setStatus(403);
 		$res->setBody($response);
-	}
-	
+	}	
 })->name('update_mappings');
 
 
@@ -585,57 +672,64 @@ $app->post('/mappings/update/', function () use ($app) {
  * saves positions for shelves from designer canvas
  */
 $app->post('/designer/update/:shelfid', function ($shelfid) use ($app) {
-	
-	// get parameters from PUT request
-	//parse_str(file_get_contents("php://input"), $_MY_PUT);//TODO
-	//$sections = json_decode($_MY_PUT['data']);
-	$sections = json_decode($_POST['data']);
-	$shelfid = intval($shelfid);
-	$return = array();
-	
-	// init database
-	if(!(isset($SMAR_DB))) {
-		$SMAR_DB = new SMAR_MysqlConnect();
-	}
-	
-	foreach($sections as $section) {
-
-		$section->section_id = intval($section->section_id);
-		$section->size_x = intval($section->size_x);
-		$section->size_y = intval($section->size_y);
-		$section->position_x = intval($section->position_x);
-		$section->position_y = intval($section->position_y);
+	global $jwt;
+	if(checkLogin($jwt)) {
+		// get parameters from PUT request
+		//parse_str(file_get_contents("php://input"), $_MY_PUT);//TODO
+		//$sections = json_decode($_MY_PUT['data']);
+		$sections = json_decode($_POST['data']);
+		$shelfid = intval($shelfid);
+		$return = array();
 		
-		$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_section SET
-								size_x = '".$SMAR_DB->real_escape_string($section->size_x)."',
-								size_y = '".$SMAR_DB->real_escape_string($section->size_y)."',
-								position_x = '".$SMAR_DB->real_escape_string($section->position_x)."',
-								position_y = '".$SMAR_DB->real_escape_string($section->position_y)."'
-							WHERE section_id = '".$SMAR_DB->real_escape_string($section->section_id)."'
-							AND shelf_id = '".$SMAR_DB->real_escape_string($shelfid)."'");
-		
-		if(!$result) {
-			$return[] = $section;
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
 		}
-	}
-	
-	if(count($return) > 0) {
-		$response = json_encode($return);
-		$res = $app->response();
-		$res->setStatus(500);
-		$res->setBody($response);
+		
+		foreach($sections as $section) {
+
+			$section->section_id = intval($section->section_id);
+			$section->size_x = intval($section->size_x);
+			$section->size_y = intval($section->size_y);
+			$section->position_x = intval($section->position_x);
+			$section->position_y = intval($section->position_y);
+			
+			$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_section SET
+									size_x = '".$SMAR_DB->real_escape_string($section->size_x)."',
+									size_y = '".$SMAR_DB->real_escape_string($section->size_y)."',
+									position_x = '".$SMAR_DB->real_escape_string($section->position_x)."',
+									position_y = '".$SMAR_DB->real_escape_string($section->position_y)."'
+								WHERE section_id = '".$SMAR_DB->real_escape_string($section->section_id)."'
+								AND shelf_id = '".$SMAR_DB->real_escape_string($shelfid)."'");
+			
+			if(!$result) {
+				$return[] = $section;
+			}
+		}
+		
+		if(count($return) > 0) {
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(500);
+			$res->setBody($response);
+		} else {
+			// update shelf SVG in database
+			$update = smar_update_shelf_svg($shelfid);
+			
+			$return['updateSVG'] = $update;
+			
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(200);
+			$res->setBody($response);
+		}
 	} else {
-		// update shelf SVG in database
-		$update = smar_update_shelf_svg($shelfid);
-		
-		$return['updateSVG'] = $update;
-		
+		$return['jwt'] = "fail";
 		$response = json_encode($return);
 		$res = $app->response();
-		$res->setStatus(200);
+		$res->setStatus(403);
 		$res->setBody($response);
-	}
-	
+	}	
 })->name('update_shelf_designer');
 
 	
