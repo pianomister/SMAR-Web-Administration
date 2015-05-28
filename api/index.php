@@ -188,6 +188,47 @@ $app->get('/getUnits', function() use($app) {
  })->name('updateStock');
 
  /*
+  * Update after Receiving the WarehouseStock
+ */
+ $app->post('/Product', function() use($app) {
+	
+	if(isset($_POST['product_id']) && isset($_POST['amount'])) {
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
+		}
+		$return = array();
+		
+		$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock 
+									SET amount_warehouse = ".$SMAR_DB->real_escape_string($_POST['amount'])." 
+									WHERE product_id = ".$SMAR_DB->real_escape_string($_POST['product_id']));
+									
+		if(count($result) > 0) {
+			$return['result'] = "success";
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(200);
+			$res->setBody($response);
+		} else {
+			$return['result'] = "fail";
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(403);
+			$res->setBody($response);
+		}
+	}
+	else {
+		$return['reason'] = "variables not set";
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(403);
+		$res->setBody($response);
+	}
+ 
+ })->name('Product');
+ 
+ 
+ /*
  * get Receiving List
  */
  $app->get('/Receiving/:barcode', function($barcode) use($app) {
