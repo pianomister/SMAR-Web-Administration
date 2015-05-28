@@ -30,7 +30,7 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
 
-if($_SESSION['loginRole'] < 8) {
+if($_SESSION['loginRole'] < 60) {
 	$SMAR_MESSAGES['error'][] = 'Insufficient permissions for user management';
 	smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
 } else {
@@ -142,8 +142,8 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 				<div class="form-box swap-order">
 					<select id="add-user-role_web" name="add-user-role_web" size="1">
 					<?php 
-						$userRolesWebText = array("No Rights", "Read only", "Products & Units", "Products, Units, Shelves, Sections", "Edit all", "Manager", "Administrator");
-						$userRolesWebValue = array(0,1,2,3,4,8,9);
+						$userRolesWebText = array("No Rights", "Read only", "Products & Units", "+ Orders", "+ Products, Units, Shelves, Sections", "+ Device management", "+ User management", "System Administrator");
+						$userRolesWebValue = array(0,10,20,30,40,50,60,70);
 						for($l = 0; $l < count($userRolesWebText); $l++) {
 							echo("<option value=\"".$userRolesWebValue[$l]."\"");
 							if(isset($addFailed) && !empty($_POST['add-user-role_web'])) 
@@ -237,8 +237,8 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			if(isset($_POST['send_edituser'])) {
 
 				if(isset($_GET['editID']) && !empty($_GET['editID'])) {
-					if($_GET['editID'] == 1 && intval($_POST['edit-user-role_web']) != 9) {
-						$_POST['edit-user-role_web'] = 9;
+					if($_GET['editID'] == 1 && intval($_POST['edit-user-role_web']) != 70) {
+						$_POST['edit-user-role_web'] = 70;
 						$SMAR_MESSAGES['warning'][] = 'Editing rights of user with id "'.$_GET['editID'].'" (System Administrator) forbidden.<br />Rights reseted.';
 					}
 				}
@@ -334,10 +334,10 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 						<select id="edit-user-role_web" name="edit-user-role_web" size="1">
 						<?php 
 							if($row['user_id'] == 1) {
-								?><option value="9" selected>Administrator</option><?php
+								?><option value="70" selected>Administrator</option><?php
 							} else {
-								$userRolesWebText = array("No Rights", "Read only", "Products & Units", "Products, Units, Shelves, Sections", "Edit all", "Manager", "Administrator");
-								$userRolesWebValue = array(0,1,2,3,4,8,9);
+								$userRolesWebText = array("No Rights", "Read only", "Products & Units", "+ Orders", "+ Products, Units, Shelves, Sections", "+ Device management", "+ User management", "System Administrator");
+								$userRolesWebValue = array(0,10,20,30,40,50,60,70);
 								for($l = 0; $l < count($userRolesWebText); $l++) {
 									echo("<option value=\"".$userRolesWebValue[$l]."\"");
 										if(intval(strip_tags($row['role_web'])) == $userRolesWebValue[$l])

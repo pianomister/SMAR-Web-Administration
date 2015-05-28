@@ -111,23 +111,26 @@ function smar_parse_role_web($role_web) {
 		case '0':
 			return "No web rights";
 			break;
-		case '1':
+		case '10':
 			return "Read only";
 			break;
-		case '2':
+		case '20':
 			return "Products & Units";
 			break;
-		case '3':
-			return "Products, Units, Shelves, Sections";
+		case '30':
+			return "Products, Units, Orders";
 			break;
-		case '4':
-			return "Edit all";
+		case '40':
+			return "Products, Units, Shelves, Sections, Orders";
 			break;
-		case '8':
-			return "Manager";
+		case '50':
+			return "Products, Units, Shelves, Sections, Orders, Device Management";
 			break;
-		case '9':
-			return "Administrator";
+		case '60':
+			return "Products, Units, Shelves, Sections, Orders, Device Management, User Management";
+			break;
+		case '70':
+			return "System Administrator";
 			break;
 		default:
 			return "Unknown - Code: ".$role_web;

@@ -4,7 +4,7 @@ require_once('_functions/_phpqrcode/qrlib.php');
 require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
 
-if($_SESSION['loginRole'] < 8) {
+if($_SESSION['loginRole'] < 60) {
 	$SMAR_MESSAGES['error'][] = 'Insufficient permissions for user management';
 	$error = TRUE;
 } else {

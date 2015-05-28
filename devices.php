@@ -28,6 +28,10 @@ if(!isset($_GET['smar_include']) || $_GET['smar_include'] != 'true') {
 require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
 
+if($_SESSION['loginRole'] < 50) {
+	$SMAR_MESSAGES['error'][] = 'Insufficient permissions for device management';
+	smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+} else {
 
 // include subnav if requested
 if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
@@ -308,3 +312,6 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	}
 	?>
 </div>
+<?php
+}
+?>
