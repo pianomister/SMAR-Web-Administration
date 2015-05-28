@@ -175,10 +175,74 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 			</script>
 			<?php
 			break;
+		case 'delete':
+			if(isset($_GET['id']) && !empty($_GET['id'])) {
+
+				$formID = intval($_GET['id']);
+				
+				if($formID == 1) {
+					$SMAR_MESSAGES['error'][] = 'Action denied.<br />User with ID "'.$formID.'" (System Administrator) must not be deleted!';
+					/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+				} else {
+				
+					// when confirmation was sent, delete
+					if(isset($_GET['confirm']) && $_GET['confirm'] === 'yes') {
+						
+						// init database
+						if(!(isset($SMAR_DB))) {
+							$SMAR_DB = new SMAR_MysqlConnect();
+						}
+						
+						// delete device
+						$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_user WHERE user_id = '".$SMAR_DB->real_escape_string($formID)."'");
+
+						if($result === TRUE) {
+							$SMAR_MESSAGES['success'][] = 'User with ID "'.$formID.'" was successfully deleted.';
+							$SMAR_MESSAGES['warning'][] = 'Please reload page to see changes in table.';
+						} else {
+							$SMAR_MESSAGES['error'][] = 'Deleting user with ID "'.$formID.'" failed.';
+						}
+						
+					} else {
+						$SMAR_MESSAGES['warning'][] = 'You are going to delete an user. When deleting an user, the user won\'t be able to connect to SMAR app or SMAR web administration.<br> Do you really want to delete the user with ID "'.$formID.'"?';
+					}
+					
+					?>
+					<div id="unitDeleteContainer">
+					<h1>Delete user (ID: <?php echo $formID; ?>)</h1>
+					<?php
+					/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+					if(!isset($_GET['confirm'])) {
+						?>
+						<form id="form-user-delete" method="get" data-target="#unitDeleteContainer" action="index.php?page=<?php echo urlencode($self.'?subpage=delete'); ?>">
+							<input type="hidden" value="yes" name="confirm" />
+							<input type="hidden" value="<?php echo $formID; ?>" name="id" />
+							<input type="submit" value="Yes, delete user" name="send_delete" class="raised" />
+						</form>
+						<!--AJAX Request-->
+						<script>
+						setFormHandler('#form-user-delete');
+						</script>
+						<?php
+					}
+					echo '</div>';
+				}
+			} else {
+				$SMAR_MESSAGES['error'][] = 'No user ID was provided in URL parameters.';
+				/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			}
+			break;
 		case 'edit':
 			// form was sent
 			if(isset($_POST['send_edituser'])) {
 
+				if(isset($_GET['editID']) && !empty($_GET['editID'])) {
+					if($_GET['editID'] == 1 && intval($_POST['edit-user-role_web']) != 9) {
+						$_POST['edit-user-role_web'] = 9;
+						$SMAR_MESSAGES['warning'][] = 'Editing rights of user with id "'.$_GET['editID'].'" (System Administrator) forbidden.<br />Rights reseted.';
+					}
+				}
+			
 				if(isset($_POST['edit-user-pnr']) && !empty($_POST['edit-user-pnr']) &&
 					 isset($_POST['edit-user-name']) && !empty($_POST['edit-user-name']) &&
 					 isset($_POST['edit-user-username']) && !empty($_POST['edit-user-username']) &&
@@ -244,7 +308,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 				// get shelf data
 				$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE user_id = '".$SMAR_DB->real_escape_string($_GET['editID'])."'");
 				if(!($row = $result->fetch_array())) {
-					$SMAR_MESSAGES['error'][] = 'User with ID '.$userid.' not known.';
+					$SMAR_MESSAGES['error'][] = 'User with ID '.$_GET['editID'].' not known.';
 					unset($_GET['editID']);
 				}
 			}
@@ -269,13 +333,17 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					<div class="form-box swap-order">
 						<select id="edit-user-role_web" name="edit-user-role_web" size="1">
 						<?php 
-							$userRolesWebText = array("No Rights", "Read only", "Products & Units", "Products, Units, Shelves, Sections", "Edit all", "Manager", "Administrator");
-							$userRolesWebValue = array(0,1,2,3,4,8,9);
-							for($l = 0; $l < count($userRolesWebText); $l++) {
-								echo("<option value=\"".$userRolesWebValue[$l]."\"");
-									if(intval(strip_tags($row['role_web'])) == $userRolesWebValue[$l])
-										echo(" selected");
-								echo(">".$userRolesWebText[$l]."</option>");
+							if($row['user_id'] == 1) {
+								?><option value="9" selected>Administrator</option><?php
+							} else {
+								$userRolesWebText = array("No Rights", "Read only", "Products & Units", "Products, Units, Shelves, Sections", "Edit all", "Manager", "Administrator");
+								$userRolesWebValue = array(0,1,2,3,4,8,9);
+								for($l = 0; $l < count($userRolesWebText); $l++) {
+									echo("<option value=\"".$userRolesWebValue[$l]."\"");
+										if(intval(strip_tags($row['role_web'])) == $userRolesWebValue[$l])
+											echo(" selected");
+									echo(">".$userRolesWebText[$l]."</option>");
+								}
 							}
 						?>
 						</select>
@@ -325,13 +393,26 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					echo "<td>".$row['created']."</td>";
 					?>
 					<td>
-						<a href="<?php echo($self); ?>?subpage=changepw&editID=<?php echo($row['user_id']); ?>" class="ajax" title="Change password"><i class="mdi mdi-key-variant"></i></a> <a href="<?php echo($self); ?>?subpage=edit&editID=<?php echo($row['user_id']); ?>" class="ajax" title="Edit"><i class="mdi mdi-pencil"></i></a> <a href="#" title="Delete"><i class="mdi mdi-delete"></i></a>
+						<a href="<?php echo($self); ?>?subpage=changepw&editID=<?php echo($row['user_id']); ?>" class="ajax" title="Change password"><i class="mdi mdi-key-variant"></i></a> <a href="<?php echo($self); ?>?subpage=edit&editID=<?php echo($row['user_id']); ?>" class="ajax" title="Edit"><i class="mdi mdi-pencil"></i></a> <a href="<?php echo($self); ?>?subpage=delete&id=<?php echo($row['user_id']); ?>" title="Delete" class="link-deleteuser"><i class="mdi mdi-delete"></i></a>
 					</td></tr>
 					<?php
 				}
 				?>
 				</tbody>
 			</table>
+			<script>
+			$('.link-deleteuser').on('click', function(e) {
+
+				e.preventDefault();
+				$target = $(e.delegateTarget);
+				$.colorbox({
+					href: $target.attr('href')+'&smar_include=true',
+					closeButton: false,
+					width: '80%',
+					maxWidth: '700px'
+				});
+			});
+			</script>
 			<?php
 			}
 			break;
