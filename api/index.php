@@ -147,9 +147,10 @@ $app->get('/getUnits', function() use($app) {
  *
  */
  $app->post('/updateProductStock', function() use($app) {
-	if(isset($_POST['product_id']) && isset($_POST['amount'])) {
+	if(isset($_POST['product_id']) && isset($_POST['new_amount_shop']) && isset($_POST['new_amount_warehouse'])) {
 	$product_id = $_POST['product_id'];
-	$amount = $_POST['amount'];
+	$amount_shop = $_POST['new_amount_shop'];
+	$amount_warehouse = $_POST['new_amount_warehouse'];
 
 	$return = array();
 		// init database
@@ -158,8 +159,8 @@ $app->get('/getUnits', function() use($app) {
 		}
 		
 		$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock 
-					SET amount_warehouse = amount_warehouse - ".$SMAR_DB->real_escape_string($amount).", 
-					 amount_shop = amount_shop + ".$SMAR_DB->real_escape_string($amount)." 
+					SET amount_warehouse = ".$SMAR_DB->real_escape_string($amount_warehouse).", 
+					 amount_shop = ".$SMAR_DB->real_escape_string($amount_shop)." 
 					WHERE product_id = ".$SMAR_DB->real_escape_string($product_id)."");
 		
 		
@@ -186,6 +187,44 @@ $app->get('/getUnits', function() use($app) {
 	}
  })->name('updateStock');
 
+ /*
+ * get Receiving List
+ */
+ $app->get('/Receiving/:barcode', function($barcode) use($app) {
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	$result = $SMAR_DB->dbquery("SELECT 
+								o.name as receiving_name,
+								o.date as receiving_date, 
+								p.name as product_name, 
+								oi.amount as amount, 
+								u.name as unit 
+								FROM ".SMAR_MYSQL_PREFIX."_order o, ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_order_item oi, ".SMAR_MYSQL_PREFIX."_unit u 
+								WHERE o.barcode = '".$SMAR_DB->real_escape_string($barcode)."' 
+								AND oi.product_id = p.product_id 
+								AND oi.unit_id = u.unit_id");
+	if($result->num_rows != 0) {
+		while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+			$resultArray[] = $row;
+		}
+	
+		$response = json_encode($resultArray);
+		$res = $app->response();
+		$res->setBody($response);
+	}
+	else {
+		$return['reason'] = "No Receiving for that barcode";
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(500);
+		$res->setBody($response);
+	}
+	
+ })->name('ReceivingList');
+ 
 /**
  * authenticate with JWT
  */
