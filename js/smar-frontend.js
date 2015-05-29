@@ -226,7 +226,7 @@ function setAutocompleteHandler(target, table, resultTarget, resultFunction) {
 		showNoSuggestionNotice: true,
 		lookup: function (search, done) {
 			
-			searchUrl = 'api/search/' + table + '/' + encodeURI(search) + '?token=' + window.loginJWTToken;
+			searchUrl = 'api/search/' + table + '/' + encodeURI(search) + '?jwt=' + window.loginJWTToken;
 			
 			if(window.autocomplete) {
 				window.autocomplete.abort();
@@ -279,7 +279,7 @@ function setMappingsSaveHandler(link, type, itemID) {
 
 		event.preventDefault();
 		var resultSet = mappings,
-			formData = 'data=' + JSON.stringify(resultSet) + '&type=' + type + '&id=' + itemID + '&token=' + window.loginJWTToken,
+			formData = 'data=' + JSON.stringify(resultSet) + '&type=' + type + '&id=' + itemID + '&jwt=' + window.loginJWTToken,
 			$loadOverlay = $('#smar-loading');
 
 		$loadOverlay.fadeIn(100, function() {
@@ -325,7 +325,7 @@ function setDesignerSaveHandler(link, canvas, container) {
 			});
 		});
 
-		var formData = 'data=' + JSON.stringify(resultSet) + '&token=' + window.loginJWTToken,
+		var formData = 'data=' + JSON.stringify(resultSet) + '&jwt=' + window.loginJWTToken,
 			$loadOverlay = $('#smar-loading');
 
 		$loadOverlay.fadeIn(100, function() {

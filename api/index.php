@@ -15,7 +15,7 @@ function checkLogin($jwtToken) {
 		if(!(isset($SMAR_DB))) {
 			$SMAR_DB = new SMAR_MysqlConnect();
 		}
-		if($decoded['device'] == true) {
+		if($decoded['device'] == 'true') {
 			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE UPPER(hwaddress) = UPPER('".$SMAR_DB->real_escape_string($decoded['hwaddress'])."') AND activated = 1");
 			if($result->num_rows != 0) {
 				$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($decoded['user'])."'");
@@ -503,7 +503,7 @@ $app->get('/barcode/:barcode', function ($barcode) use($app) {
  */
 $app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit = 5) use ($app) {
 	global $jwt;
-	if(checkLogin(jwt)) {
+	if(checkLogin($jwt)) {
 		$table_whitelist = array('product', 'unit', 'shelf', 'section');
 		$table = strtolower($table);
 		$limit = intval($limit);
