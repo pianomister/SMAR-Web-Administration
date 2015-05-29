@@ -30,13 +30,14 @@ USE `smar`;
 
 CREATE TABLE IF NOT EXISTS `smar_device` (
   `device_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `device_name` varchar(50) DEFAULT NULL,
-  `hwaddress` varchar(20) DEFAULT NULL,
+  `device_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `hwaddress` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `activated` tinyint(1) unsigned NOT NULL DEFAULT '0',
-	`created` datetime NOT NULL,
+  `created` datetime NOT NULL,
   `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`device_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+  PRIMARY KEY (`device_id`),
+  UNIQUE KEY `hwaddress` (`hwaddress`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -94,6 +95,7 @@ CREATE TABLE IF NOT EXISTS `smar_order` (
   `order_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) DEFAULT NULL,
   `date` datetime NOT NULL,
+  `barcode` bigint(15) unsigned DEFAULT NULL,
   `created` datetime NOT NULL,
   `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`order_id`)
@@ -309,23 +311,6 @@ CREATE TABLE IF NOT EXISTS `smar_user` (
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `name` (`username`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `smar_device`
---
-
-CREATE TABLE IF NOT EXISTS `smar_device` (
-  `device_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `device_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `hwaddress` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `activated` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `created` datetime NOT NULL,
-  `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`device_id`),
-  UNIQUE KEY `hwaddress` (`hwaddress`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 --
 -- Daten für Tabelle `smar_user`
