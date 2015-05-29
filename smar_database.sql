@@ -25,6 +25,52 @@ USE `smar`;
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `smar_delivery`
+--
+
+CREATE TABLE IF NOT EXISTS `smar_delivery` (
+  `delivery_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`order_id` int(10) unsigned NOT NULL,
+  `date` datetime NOT NULL,
+  `created` datetime NOT NULL,
+  `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`delivery_id`),
+	KEY `order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `smar_order_item`
+--
+
+CREATE TABLE IF NOT EXISTS `smar_delivery_item` (
+  `delivery_item_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `delivery_id` int(10) unsigned NOT NULL,
+  `product_id` int(10) unsigned NOT NULL,
+  `unit_id` int(10) unsigned NOT NULL,
+  `amount` int(15) NOT NULL DEFAULT '0',
+  `created` datetime NOT NULL,
+  `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`delivery_item_id`),
+  KEY `unit_id` (`unit_id`),
+  KEY `product_id` (`product_id`),
+  KEY `delivery_id` (`delivery_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- RELATIONEN DER TABELLE `smar_delivery_item`:
+--   `delivery_id`
+--       `smar_delivery` -> `delivery_id`
+--   `unit_id`
+--       `smar_unit` -> `unit_id`
+--   `product_id`
+--       `smar_product` -> `product_id`
+--
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `smar_device`
 --
 
@@ -362,6 +408,14 @@ INSERT INTO `smar_section` (`section_id`, `shelf_id`, `product_id`, `name`, `cap
 --
 -- Constraints der exportierten Tabellen
 --
+
+--
+-- Constraints der Tabelle `smar_delivery_item`
+--
+ALTER TABLE `smar_delivery_item`
+  ADD CONSTRAINT `smar_delivery_item_ibfk_3` FOREIGN KEY (`delivery_id`) REFERENCES `smar_delivery` (`delivery_id`),
+  ADD CONSTRAINT `smar_delivery_item_ibfk_1` FOREIGN KEY (`unit_id`) REFERENCES `smar_unit` (`unit_id`),
+  ADD CONSTRAINT `smar_delivery_item_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `smar_product` (`product_id`);
 
 --
 -- Constraints der Tabelle `smar_map_shelf`
