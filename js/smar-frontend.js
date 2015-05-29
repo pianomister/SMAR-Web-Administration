@@ -88,7 +88,6 @@ window.onpopstate = function (event) {
 	
 	if (event.state && event.state.page) {
 		loadPage(event.state.page, true, false, true);
-		console.log(event.state.navId);
 		if (event.state.navId)
 			setMainNav(event.state.navId);
 	} else {

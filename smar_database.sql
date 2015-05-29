@@ -25,6 +25,22 @@ USE `smar`;
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `smar_device`
+--
+
+CREATE TABLE IF NOT EXISTS `smar_device` (
+  `device_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `device_name` varchar(50) DEFAULT NULL,
+  `hwaddress` varchar(20) DEFAULT NULL,
+  `activated` tinyint(1) unsigned NOT NULL DEFAULT '0',
+	`created` datetime NOT NULL,
+  `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`device_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `smar_map`
 --
 

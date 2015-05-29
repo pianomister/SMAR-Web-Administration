@@ -250,8 +250,8 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 						<label for="edit-device-hwaddress">Hardware Address (MAC Address)</label>
 					</div>
 					<div class="form-box swap-order">
-						<input id="edit-device-activated" type="checkbox" name="edit-device-activated"<?php if($row['activated']) echo("checked"); ?>/>
-						<label for="edit-device-activated">Role @ Device</label>
+						<input id="edit-device-activated" type="checkbox" name="edit-device-activated" <?php if($row['activated']) echo("checked"); ?>/>
+						<label for="edit-device-activated">Activate device</label>
 					</div>
 					<input type="submit" value="Update device" name="send_editdevice" class="raised" />
 				</form>
