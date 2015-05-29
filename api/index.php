@@ -3,10 +3,13 @@ require '../_functions/Slim/Slim.php';
 require_once '../_functions/_functions.php';
 require_once '../_functions/_jwt/JWT.php';
 
+
 if(isset($_REQUEST['jwt']))
 	$jwt = $_REQUEST['jwt'];
 else
 	$jwt = "";
+
+
 
 function checkLogin($jwtToken) {
 	try {
@@ -41,6 +44,7 @@ function checkLogin($jwtToken) {
 }
 
 
+
 function getJWTdata($jwtToken) {
 	try {
 		$decoded = (array) JWT::decode($jwtToken, SMAR_JWT_SSK, array('HS256'));
@@ -49,6 +53,7 @@ function getJWTdata($jwtToken) {
 		return false;
 	}
 }
+
 
 
 \Slim\Slim::registerAutoloader();
@@ -77,6 +82,62 @@ $app->contentType('application/json;charset=utf-8');
 	$res = $app->response();
 	$res->setBody(json_encode($resultArray));
 })->name('check_connection');
+
+
+
+/**
+ * authenticate with JWT
+ */
+$app->post('/authentication', function () use ($app) {
+	
+	$hwaddress = $_POST['hwaddress'];
+	$user = $_POST['user'];
+	$password = $_POST['password'];
+	$return = array();
+	
+	// init database
+	if(!(isset($SMAR_DB))) {
+		$SMAR_DB = new SMAR_MysqlConnect();
+	}
+	
+	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE UPPER(hwaddress) = UPPER('".$SMAR_DB->real_escape_string($hwaddress)."') AND activated = 1");
+	if($result->num_rows != 0) {
+		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($user)."' AND password_device = '".$SMAR_DB->real_escape_string($password)."'");
+		if($result->num_rows != 0) {
+			$row = $result->fetch_array();
+			if($row['role_device'] == 1) {
+				$token = array(
+					"hwaddress" => $hwaddress,
+					"user" => $user,
+					"device" => "true"
+				);
+				$return['jwt'] = JWT::encode($token, SMAR_JWT_SSK);
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(200);
+				$res->setBody($response);
+			} else {
+				$return['reason'] = "permission";
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(401);
+				$res->setBody($response);
+			}
+		} else {
+			$return['reason'] = "password";
+			$response = json_encode($return);
+			$res = $app->response();
+			$res->setStatus(403);
+			$res->setBody($response);
+		}
+	} else {
+		$return['reason'] = "device";
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(403);
+		$res->setBody($response);
+	}
+})->name('authentication');
 
 
 
@@ -144,7 +205,31 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
 		$res->setStatus(403);
 		$res->setBody($response);
 	}
-})->name('get_productInformation');
+})->name('product_by_barcode');
+
+
+
+/**
+ * create delivery entry in database
+ */
+$app->post('/delivery/create', function () use ($app) {
+	
+	//TODO: send a list of scanned entries + order_id via POST, and
+	// - create new delivery in smar_delivery (with order_id)
+	// - create delivery items according to received list in smar_delivery_item
+})->name('create_delivery');
+
+
+
+/**
+ * get product, shelf and section information from product barcode
+ */
+$app->get('/product/position', function () use ($app) {
+	
+	//TODO: also recognize products from product-unit barcodes (from smar_product_unit)
+})->name('create_delivery');
+
+
 
 /** 
  * get all units
@@ -179,12 +264,12 @@ $app->get('/getUnits', function() use($app) {
 		$res->setStatus(403);
 		$res->setBody($response);
 	}
-})->name('allUnits');
+})->name('units');
 
 
 
-/* updateStock of Product 
- *
+/** 
+ * updateStock of Product 
  */
  $app->post('/updateProductStock', function() use($app) {
 	 global $jwt;
@@ -204,8 +289,6 @@ $app->get('/getUnits', function() use($app) {
 						SET amount_warehouse = ".$SMAR_DB->real_escape_string($amount_warehouse).", 
 						 amount_shop = ".$SMAR_DB->real_escape_string($amount_shop)." 
 						WHERE product_id = ".$SMAR_DB->real_escape_string($product_id)."");
-			
-			
 			
 			if(count($return) > 0) {
 					$response = json_encode($return);
@@ -234,7 +317,7 @@ $app->get('/getUnits', function() use($app) {
 		$res->setStatus(403);
 		$res->setBody($response);
 	}
- })->name('updateStock');
+ })->name('update_stock');
 
 
 
@@ -284,9 +367,10 @@ $app->get('/getUnits', function() use($app) {
 		$res->setStatus(403);
 		$res->setBody($response);
 	}
- })->name('Product');
+ })->name('update_stock_warehouse');
  
  
+
  /*
  * get Receiving List
  */
@@ -318,75 +402,21 @@ $app->get('/getUnits', function() use($app) {
 			$res->setBody($response);
 		}
 		else {
-			$return['reason'] = "No Receiving for that barcode";
+			$return['reason'] = "No Order for that barcode";
 			$response = json_encode($return);
 			$res = $app->response();
 			$res->setStatus(500);
 			$res->setBody($response);
 		}
 	} else {
-		$return['jwt'] = "fail";
+		$return['jwt'] = 'fail';
 		$response = json_encode($return);
 		$res = $app->response();
 		$res->setStatus(403);
 		$res->setBody($response);
 	}
- })->name('ReceivingList');
+ })->name('order_by_barcode');
  
-
-/**
- * authenticate with JWT
- */
-$app->post('/authentication', function () use ($app) {
-	
-	$hwaddress = $_POST['hwaddress'];
-	$user = $_POST['user'];
-	$password = $_POST['password'];
-	$return = array();
-	
-	// init database
-	if(!(isset($SMAR_DB))) {
-		$SMAR_DB = new SMAR_MysqlConnect();
-	}
-	
-	$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_device WHERE UPPER(hwaddress) = UPPER('".$SMAR_DB->real_escape_string($hwaddress)."') AND activated = 1");
-	if($result->num_rows != 0) {
-		$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_user WHERE username = '".$SMAR_DB->real_escape_string($user)."' AND password_device = '".$SMAR_DB->real_escape_string($password)."'");
-		if($result->num_rows != 0) {
-			$row = $result->fetch_array();
-			if($row['role_device'] == 1) {
-				$token = array(
-					"hwaddress" => $hwaddress,
-					"user" => $user,
-					"device" => "true"
-				);
-				$return['jwt'] = JWT::encode($token, SMAR_JWT_SSK);
-				$response = json_encode($return);
-				$res = $app->response();
-				$res->setStatus(200);
-				$res->setBody($response);
-			} else {
-				$return['reason'] = "permission";
-				$response = json_encode($return);
-				$res = $app->response();
-				$res->setStatus(401);
-				$res->setBody($response);
-			}
-		} else {
-			$return['reason'] = "password";
-			$response = json_encode($return);
-			$res = $app->response();
-			$res->setStatus(403);
-			$res->setBody($response);
-		}
-	} else {
-		$return['reason'] = "device";
-		$response = json_encode($return);
-		$res = $app->response();
-		$res->setStatus(403);
-		$res->setBody($response);
-	}
-})->name('authentication');
 
 
 /**
@@ -425,6 +455,7 @@ $app->get('/svg/(:timestamp)', function ($timestamp = 0) use($app) {
 		$res->setBody($response);
 	}
 })->name('shelf_graphics_newer_than_timestamp');
+
 
 
 /**
@@ -480,7 +511,7 @@ $app->get('/barcode/:barcode', function ($barcode) use($app) {
 		
 		$barcode = intval($barcode);
 
-		$tables = array('product','product_unit','shelf');
+		$tables = array('product','product_unit','shelf','order');
 		for($i = 0; $i < count($tables);$i++) {
 			$result = $SMAR_DB->dbquery("SELECT * FROM ".SMAR_MYSQL_PREFIX."_".$tables[$i]."
 																		WHERE barcode = '".$SMAR_DB->real_escape_string($barcode)."'
