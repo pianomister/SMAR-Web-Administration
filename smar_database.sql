@@ -38,6 +38,12 @@ CREATE TABLE IF NOT EXISTS `smar_delivery` (
 	KEY `order_id` (`order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+--
+-- RELATIONEN DER TABELLE `smar_delivery`:
+--   `order_id`
+--       `smar_order` -> `order_id`
+--
+
 -- --------------------------------------------------------
 
 --
@@ -408,6 +414,12 @@ INSERT INTO `smar_section` (`section_id`, `shelf_id`, `product_id`, `name`, `cap
 --
 -- Constraints der exportierten Tabellen
 --
+
+--
+-- Constraints der Tabelle `smar_delivery`
+--
+ALTER TABLE `smar_delivery`
+  ADD CONSTRAINT `smar_delivery_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `smar_order` (`order_id`);
 
 --
 -- Constraints der Tabelle `smar_delivery_item`
