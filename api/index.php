@@ -224,10 +224,10 @@ $app->post('/delivery/create', function () use ($app) {
 /**
  * get product, shelf and section information from product barcode
  */
-$app->get('/product/position', function () use ($app) {
+$app->get('/product/position/:barcode', function ($barcode) use ($app) {
 	
 	//TODO: also recognize products from product-unit barcodes (from smar_product_unit)
-})->name('create_delivery');
+})->name('product_position_by_barcode');
 
 
 
