@@ -27,7 +27,7 @@ include('inc_header.php')
 				<li><a id="nav-main-3" href="orders.php"><i class="nav-icon nav-icon-list"></i><span>Orders</span></a></li>
 				<!--<li><a id="nav-main-4" href=""><i class="nav-icon nav-icon-map"></i><span>Market Map</span></a></li>-->
 				<li><a id="nav-main-5" href="users.php"><i class="nav-icon nav-icon-user"></i><span>User Management</span></a></li>
-				<li><a id="nav-main-6" href="devices.php"><i class="nav-icon nav-icon-device"></i><span>Devices</span></a></li>
+				<?php if($_SESSION['loginRole'] >= 50) { ?><li><a id="nav-main-6" href="devices.php"><i class="nav-icon nav-icon-device"></i><span>Devices</span></a></li><?php } ?>
 			</ul>
 		</nav>
 		<section id="smar-content">
