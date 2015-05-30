@@ -74,51 +74,20 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 				$row = $result->fetch_array(MYSQLI_ASSOC);
 				
 				if($row['count'] > 0) {
-					$SMAR_MESSAGES['error'][] = 'The order with ID "'.$formID.'" must not be deleted, because it is contained in orders. Deletion would cause inconsistencies in the orders system.';
+					$SMAR_MESSAGES['error'][] = 'The order with ID "'.$formID.'" must not be deleted, because it already has order items. Deletion would cause inconsistencies in the orders system.';
 				} else {
-				
-					// delete unit mappings for order
-					$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_order_unit WHERE order_id = '".$SMAR_DB->real_escape_string($formID)."'");
+					// delete order
+					$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_order WHERE order_id = '".$SMAR_DB->real_escape_string($formID)."'");
 
 					if($result === TRUE) {
-						$SMAR_MESSAGES['success'][] = 'The unit mappings for order with ID "'.$formID.'" were successfully deleted.';
-						
-						// delete stock for order
-						$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_stock WHERE order_id = '".$SMAR_DB->real_escape_string($formID)."'");
-
-						if($result === TRUE) {
-							$SMAR_MESSAGES['success'][] = 'The stock for order with ID "'.$formID.'" was successfully deleted.';
-
-							// delete section for order
-							$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_section WHERE order_id = '".$SMAR_DB->real_escape_string($formID)."'");
-
-							if($result === TRUE) {
-								$SMAR_MESSAGES['success'][] = 'The sections for order with ID "'.$formID.'" were successfully deleted.';
-								
-								// delete order
-								$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_order WHERE order_id = '".$SMAR_DB->real_escape_string($formID)."'");
-
-								if($result === TRUE) {
-									$SMAR_MESSAGES['success'][] = 'The order with ID "'.$formID.'" was successfully deleted.';
-								} else {
-									$SMAR_MESSAGES['error'][] = 'Deleting the order with ID "'.$formID.'" failed.';
-								}
-								
-							} else {
-								$SMAR_MESSAGES['error'][] = 'Deleting the sections for order with ID "'.$formID.'" failed.';
-							}
-							
-						} else {
-							$SMAR_MESSAGES['error'][] = 'Deleting the stock for order with ID "'.$formID.'" failed.';
-						}
-						
+						$SMAR_MESSAGES['success'][] = 'The order with ID "'.$formID.'" was successfully deleted.';
 					} else {
-						$SMAR_MESSAGES['error'][] = 'Deleting the unit mappings for order with ID "'.$formID.'" failed.';
+						$SMAR_MESSAGES['error'][] = 'Deleting the order with ID "'.$formID.'" failed.';
 					}
 				}
 				
 			} else {
-				$SMAR_MESSAGES['warning'][] = 'You are going to delete a order. When deleting a order, all related entities like unit mappings, related sections and the order stock will also be deleted.<br> Do you really want to delete the order with ID "'.$formID.'"?';
+				$SMAR_MESSAGES['warning'][] = 'You are going to delete an order. When deleting an order, it must not have any related order items.<br> Do you really want to delete the order with ID "'.$formID.'"?';
 			}
 			
 			?>
