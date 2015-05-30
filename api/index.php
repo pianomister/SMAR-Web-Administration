@@ -182,10 +182,11 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
 		}
 		
 		$result = $SMAR_DB->dbquery("SELECT * 
-				FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu 
+				FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu, ".SMAR_MYSQL_PREFIX."_section sec 
 				WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
 					  AND s.product_id = p.product_id 
-					  AND pu.product_id = p.product_id");
+					  AND pu.product_id = p.product_id
+					  AND p.product_id = sec.product_id");
 		if($result->num_rows != 0) {
 			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 				$resultArray[] = $row;
@@ -383,9 +384,11 @@ $app->get('/getUnits', function() use($app) {
 		}
 		
 		$result = $SMAR_DB->dbquery("SELECT 
+									o.order_id as order_id,
 									o.name as receiving_name,
 									o.date as receiving_date, 
 									p.name as product_name, 
+									p.product_id as product_id,
 									oi.amount as amount, 
 									u.name as unit 
 									FROM ".SMAR_MYSQL_PREFIX."_order o, ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_order_item oi, ".SMAR_MYSQL_PREFIX."_unit u 
