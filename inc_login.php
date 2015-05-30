@@ -44,7 +44,7 @@
 				$_SESSION['loginSurname']	= $row['surname'];
 				$_SESSION['loginLastname']	= $row['lastname'];
 				$_SESSION['loginPnr']		= $row['pnr'];
-				$_SESSION['loginRole']		= $row['role_web'];
+				$_SESSION['loginRole']		= intval($row['role_web']);
 				$_SESSION['loginTime']		= time();
 				$_SESSION['loginLastActivity']		= time();
 				$token = array(

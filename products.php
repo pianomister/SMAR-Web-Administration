@@ -41,10 +41,10 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	<nav id="nav-page">
 		<ul>
 			<li><a href="<?php echo $self; ?>" <?php echo ($subpage == '') ? 'class="smar-active"' : ''; ?>>Products</a></li>
-			<?php if($_SESSION['loginRole'] >= 2) { ?><li><a href="<?php echo $self.'?subpage=addproduct'; ?>" <?php echo ($subpage == 'addproduct') ? 'class="smar-active"' : ''; ?>>Add product</a></li><?php } ?>
+			<?php if($_SESSION['loginRole'] >= 20) { ?><li><a href="<?php echo $self.'?subpage=addproduct'; ?>" <?php echo ($subpage == 'addproduct') ? 'class="smar-active"' : ''; ?>>Add product</a></li><?php } ?>
 			<li><a href="<?php echo $self.'?subpage=units'; ?>" <?php echo ($subpage == 'units') ? 'class="smar-active"' : ''; ?>>Units</a></li>
-			<?php if($_SESSION['loginRole'] >= 2) { ?><li><a href="<?php echo $self.'?subpage=addunit'; ?>" <?php echo ($subpage == 'addunit') ? 'class="smar-active"' : ''; ?>>Add unit</a></li><?php } ?>
-			<?php if($_SESSION['loginRole'] >= 2 && $subpage == 'mapping') { ?><li><a href="<?php echo $self.'?subpage=mapping'; ?>" class="smar-active">Mappings</a></li><?php } ?>
+			<?php if($_SESSION['loginRole'] >= 20) { ?><li><a href="<?php echo $self.'?subpage=addunit'; ?>" <?php echo ($subpage == 'addunit') ? 'class="smar-active"' : ''; ?>>Add unit</a></li><?php } ?>
+			<?php if($_SESSION['loginRole'] >= 20 && $subpage == 'mapping') { ?><li><a href="<?php echo $self.'?subpage=mapping'; ?>" class="smar-active">Mappings</a></li><?php } ?>
 		</ul>
 	</nav>
 	<div id="smar-content-inner">
@@ -102,15 +102,26 @@ switch($subpage) {
 
 			// print messages
 			if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			
+			if($_SESSION['loginRole'] >= 20) {
+				?>
+				<h3><?php echo $name.' (ID: '.$id.')'; ?></h3>
+				<div class="form-box swap-order">
+					<input id="form-mappings-search" type="text" name="form-mappings-search" placeholder="Type to search for name / article nr." />
+					<label for="form-mappings-search">Search and click to add</label>
+				</div>
+				<?php
+			}
 			?>
-			<h3><?php echo $name.' (ID: '.$id.')'; ?></h3>
-			<div class="form-box swap-order">
-				<input id="form-mappings-search" type="text" name="form-mappings-search" placeholder="Type to search for name / article nr." />
-				<label for="form-mappings-search">Search and click to add</label>
-			</div>
 
 			<h3>Mappings</h3>
-			<p><a href="#" id="link-mappings-save"><i class="bg-icon mdi mdi-content-save"></i> Save changes</a></p>
+			<?php
+			if($_SESSION['loginRole'] >= 20) {
+				?>
+				<p><a href="#" id="link-mappings-save"><i class="bg-icon mdi mdi-content-save"></i> Save changes</a></p>
+				<?php
+			}
+			?>
 			<table>
 			<thead>
 			<tr>
@@ -190,8 +201,14 @@ switch($subpage) {
 											'<td>' + item.name + '</td>' +
 											'<td><input type="text" name="form-mappings-barcode" data-barcodeid="' + parseInt(item.id) + '" placeholder="Barcode" value="' + parseInt(item.barcode) + '" /></td>' +
 											'<td>' +
+											<?php
+											if($_SESSION['loginRole'] >= 20) {
+												?>
 												'<a href="#" title="Delete" class="link-deletemapping" data-deleteid="' + parseInt(item.id) + '"><i class="mdi mdi-delete"></i></a>' +
 												'<a href="#" title="Restore" class="link-restoremapping" data-restoreid="' + parseInt(item.id) + '" style="display: none"><i class="mdi mdi-refresh bg-white color-green"></i></a>' +
+												<?php
+											}
+											?>
 											'</td>' +
 										'</tr>';
 							$list.prepend(html);
@@ -332,7 +349,7 @@ switch($subpage) {
 							<td>'.$row['capacity'].'</td>
 							<td>
 								<a href="'.$self.'?subpage=mapping&type=unit&id='.$row['unit_id'].'" title="Show connected products" class="ajax"><i class="mdi mdi-cart"></i></a> ';
-						if($_SESSION['loginRole'] >= 2) {
+						if($_SESSION['loginRole'] >= 20) {
 							echo '<a href="'.$self.'?subpage=editunit&id='.$row['unit_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
 										<a href="'.$self.'?subpage=deleteunit&id='.$row['unit_id'].'" title="Delete" class="link-deleteunit"><i class="mdi mdi-delete"></i></a>'; 
 						}
@@ -363,72 +380,77 @@ switch($subpage) {
 		break;
 	case 'deleteunit':
 	
-		if(isset($_GET['id']) && !empty($_GET['id'])) {
+		if($_SESSION['loginRole'] >= 20) {
+			if(isset($_GET['id']) && !empty($_GET['id'])) {
 
-			$formID = intval($_GET['id']);
-			
-			// when confirmation was sent, delete
-			if(isset($_GET['confirm']) && $_GET['confirm'] === 'yes') {
-				
-				// init database
-				if(!(isset($SMAR_DB))) {
-					$SMAR_DB = new SMAR_MysqlConnect();
-				}
-				
-				// unit cannot be deleted if it is part of orders
-				$result = $SMAR_DB->dbquery("SELECT COUNT(*) as count FROM ".SMAR_MYSQL_PREFIX."_order_item WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."'");
-				$row = $result->fetch_array(MYSQLI_ASSOC);
-				
-				if($row['count'] > 0) {
-					$SMAR_MESSAGES['error'][] = 'The unit with ID "'.$formID.'" must not be deleted, because it is contained in orders. Deletion would cause inconsistencies in the orders system.';
-				} else {
-				
-					// delete unit mappings
-					$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_product_unit WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."'");
+				$formID = intval($_GET['id']);
 
-					if($result === TRUE) {
-						$SMAR_MESSAGES['success'][] = 'The unit mappings for unit with ID "'.$formID.'" were successfully deleted.';
-		
-						// delete unit
-						$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_unit WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."'");
+				// when confirmation was sent, delete
+				if(isset($_GET['confirm']) && $_GET['confirm'] === 'yes') {
+
+					// init database
+					if(!(isset($SMAR_DB))) {
+						$SMAR_DB = new SMAR_MysqlConnect();
+					}
+
+					// unit cannot be deleted if it is part of orders
+					$result = $SMAR_DB->dbquery("SELECT COUNT(*) as count FROM ".SMAR_MYSQL_PREFIX."_order_item WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."'");
+					$row = $result->fetch_array(MYSQLI_ASSOC);
+
+					if($row['count'] > 0) {
+						$SMAR_MESSAGES['error'][] = 'The unit with ID "'.$formID.'" must not be deleted, because it is contained in orders. Deletion would cause inconsistencies in the orders system.';
+					} else {
+
+						// delete unit mappings
+						$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_product_unit WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."'");
 
 						if($result === TRUE) {
-							$SMAR_MESSAGES['success'][] = 'The unit with ID "'.$formID.'" was successfully deleted.';
+							$SMAR_MESSAGES['success'][] = 'The unit mappings for unit with ID "'.$formID.'" were successfully deleted.';
+
+							// delete unit
+							$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_unit WHERE unit_id = '".$SMAR_DB->real_escape_string($formID)."'");
+
+							if($result === TRUE) {
+								$SMAR_MESSAGES['success'][] = 'The unit with ID "'.$formID.'" was successfully deleted.';
+							} else {
+								$SMAR_MESSAGES['error'][] = 'Deleting the unit with ID "'.$formID.'" failed.';
+							}
+
 						} else {
-							$SMAR_MESSAGES['error'][] = 'Deleting the unit with ID "'.$formID.'" failed.';
+							$SMAR_MESSAGES['error'][] = 'Deleting the unit mappings for product with ID "'.$formID.'" failed.';
 						}
-						
-					} else {
-						$SMAR_MESSAGES['error'][] = 'Deleting the unit mappings for product with ID "'.$formID.'" failed.';
 					}
+
+				} else {
+					$SMAR_MESSAGES['warning'][] = 'You are going to delete a unit. When deleting a unit, all related mappings with products will also be deleted.<br> Do you really want to delete the unit with ID "'.$formID.'"?';
 				}
-				
-			} else {
-				$SMAR_MESSAGES['warning'][] = 'You are going to delete a unit. When deleting a unit, all related mappings with products will also be deleted.<br> Do you really want to delete the unit with ID "'.$formID.'"?';
-			}
-			
-			?>
-			<div id="unitDeleteContainer">
-			<h1>Delete product (ID: <?php echo $formID; ?>)</h1>
-			<?php
-			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
-			if(!isset($_GET['confirm'])) {
+
 				?>
-				<form id="form-unit-delete" method="get" data-target="#unitDeleteContainer" action="index.php?page=<?php echo urlencode($self.'?subpage=deleteunit'); ?>">
-					<input type="hidden" value="yes" name="confirm" />
-					<input type="hidden" value="<?php echo $formID; ?>" name="id" />
-					<input type="submit" value="Yes, delete unit and related mappings" name="send_delete" class="raised" />
-				</form>
-				<!--AJAX Request-->
-				<script>
-				setFormHandler('#form-unit-delete');
-				</script>
+				<div id="unitDeleteContainer">
+				<h1>Delete product (ID: <?php echo $formID; ?>)</h1>
 				<?php
+				/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+				if(!isset($_GET['confirm'])) {
+					?>
+					<form id="form-unit-delete" method="get" data-target="#unitDeleteContainer" action="index.php?page=<?php echo urlencode($self.'?subpage=deleteunit'); ?>">
+						<input type="hidden" value="yes" name="confirm" />
+						<input type="hidden" value="<?php echo $formID; ?>" name="id" />
+						<input type="submit" value="Yes, delete unit and related mappings" name="send_delete" class="raised" />
+					</form>
+					<!--AJAX Request-->
+					<script>
+					setFormHandler('#form-unit-delete');
+					</script>
+					<?php
+				}
+				echo '</div>';
+
+			} else {
+				$SMAR_MESSAGES['error'][] = 'No item ID was provided in URL parameters.';
+				/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 			}
-			echo '</div>';
-			
 		} else {
-			$SMAR_MESSAGES['error'][] = 'No item ID was provided in URL parameters.';
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for this action.';
 			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
 		}
 		break;
@@ -436,6 +458,12 @@ switch($subpage) {
 
 		// set action type
 		$page_action = 'edit';
+	
+		if($_SESSION['loginRole'] < 20) {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for this action.';
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			break;
+		}
 
 		if(isset($_REQUEST['id']) && !empty($_REQUEST['id'])) {
 
@@ -505,7 +533,7 @@ switch($subpage) {
 		<h1>Edit unit</h1>
 		<?php
 	case 'addunit':
-	if($_SESSION['loginRole'] >= 2) {
+	if($_SESSION['loginRole'] >= 20) {
 
 		// set action type
 		if(!isset($page_action))
@@ -586,11 +614,17 @@ switch($subpage) {
 		</script>
 		<?php
 		} else {
-			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for products management';
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for product management.';
 			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
 		}
 		break;
 	case 'deleteproduct':
+	
+		if($_SESSION['loginRole'] < 20) {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for this action.';
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			break;
+		}
 	
 		if(isset($_GET['id']) && !empty($_GET['id'])) {
 
@@ -683,6 +717,12 @@ switch($subpage) {
 		break;
 	case 'editproduct':
 
+		if($_SESSION['loginRole'] < 20) {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for this action.';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+			break;
+		}
+	
 		// set action type
 		$page_action = 'edit';
 
@@ -806,7 +846,7 @@ switch($subpage) {
 		<h1>Edit product</h1>
 		<?php
 	case 'addproduct':
-		if($_SESSION['loginRole'] >= 2) {
+		if($_SESSION['loginRole'] >= 20) {
 			// set action type
 			if(!isset($page_action))
 				$page_action = 'add';
@@ -961,7 +1001,7 @@ switch($subpage) {
 				<?php
 			}
 		} else {
-			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for products management';
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for product management.';
 			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
 		}
 		break;
@@ -1029,7 +1069,7 @@ switch($subpage) {
 							<td>
 								<a href="'.$self.'?subpage=mapping&type=product&id='.$row['product_id'].'" title="Show connected units" class="ajax"><i class="mdi mdi-pound"></i></a> ';
 						
-						if($_SESSION['loginRole'] >= 2) {
+						if($_SESSION['loginRole'] >= 20) {
 							echo '<a href="'.$self.'?subpage=editproduct&id='.$row['product_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
 										<a href="'.$self.'?subpage=deleteproduct&id='.$row['product_id'].'" title="Delete" class="link-deleteproduct"><i class="mdi mdi-delete"></i></a>';
 						}

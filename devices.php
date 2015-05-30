@@ -29,7 +29,7 @@ require_once('_functions/_functions.php');
 require_once('inc_session_check.php');
 
 if($_SESSION['loginRole'] < 50) {
-	$SMAR_MESSAGES['error'][] = 'Insufficient permissions for device management';
+	$SMAR_MESSAGES['error'][] = 'Insufficient permissions for device management.';
 	smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
 } else {
 

@@ -42,7 +42,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	<nav id="nav-page">
 		<ul>
 			<li><a href="<?php echo $self; ?>" <?php echo ($subpage == '') ? 'class="smar-active"' : ''; ?>>Shelves</a></li>
-			<?php if($_SESSION['loginRole'] >= 2) { ?><li><a href="<?php echo $self.'?subpage=addshelf'; ?>" <?php echo ($subpage == 'addshelf') ? 'class="smar-active"' : ''; ?>>Add shelf</a></li><?php } ?>
+			<?php if($_SESSION['loginRole'] >= 40) { ?><li><a href="<?php echo $self.'?subpage=addshelf'; ?>" <?php echo ($subpage == 'addshelf') ? 'class="smar-active"' : ''; ?>>Add shelf</a></li><?php } ?>
 		</ul>
 	</nav>
 	<div id="smar-content-inner">
@@ -57,6 +57,12 @@ switch($subpage) {
 
 	case 'deletesection':
 
+		if($_SESSION['loginRole'] < 40) {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelf management.';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+			break;
+		}
+	
 		if(isset($_GET['id']) && !empty($_GET['id'])) {
 
 			$formID = intval($_GET['id']);
@@ -109,6 +115,12 @@ switch($subpage) {
 		break;
 	case 'editsection':
 
+		if($_SESSION['loginRole'] < 40) {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelf management.';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+			break;
+		}
+	
 		// set action type
 		$page_action = 'edit';
 
@@ -214,7 +226,7 @@ switch($subpage) {
 		<div id="formSectionContainer"><h1>Edit section</h1>
 		<?php
 	case 'addsection':
-		if($_SESSION['loginRole'] >= 2) {
+		if($_SESSION['loginRole'] >= 40) {
 		// set action type
 		if(!isset($page_action))
 			$page_action = 'add';
@@ -352,12 +364,12 @@ switch($subpage) {
 			<?php
 		}
 		} else {
-			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelves management';
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelf management.';
 			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
 		}
 		break;
 	case 'designer':
-		if($_SESSION['loginRole'] >= 2) {
+		
 		if(isset($_GET['id']) && !empty($_GET['id'])) {
 
 			$formID = intval($_GET['id']);
@@ -373,10 +385,12 @@ switch($subpage) {
 
 				echo '<h1>Shelf Designer</h1>
 							<h2>'.$row['name'].' (ID: '.$row['shelf_id'].')</h2>
-							<p>
-								<a href="'.$self.'?subpage=addsection&amp;id='.$formID.'" id="link-addsection"><i class="bg-icon mdi mdi-plus"></i> Add new section</a> &nbsp;&nbsp;
-								<a href="#" id="link-designer-save"><i class="bg-icon mdi mdi-content-save"></i> Save changes</a> &nbsp;&nbsp;
-								<a href="'.$self.'?subpage=designer&amp;id='.$formID.'" id="link-refresh" class="ajax"><i class="bg-icon mdi mdi-refresh"></i> Refresh view</a>
+							<p>';
+							if($_SESSION['loginRole'] >= 40) {
+								echo '<a href="'.$self.'?subpage=addsection&amp;id='.$formID.'" id="link-addsection"><i class="bg-icon mdi mdi-plus"></i> Add new section</a> &nbsp;&nbsp;
+								      <a href="#" id="link-designer-save"><i class="bg-icon mdi mdi-content-save"></i> Save changes</a> &nbsp;&nbsp;';
+							}
+								echo '<a href="'.$self.'?subpage=designer&amp;id='.$formID.'" id="link-refresh" class="ajax"><i class="bg-icon mdi mdi-refresh"></i> Refresh view</a>
 							</p>
 							<div id="designer-canvas" data-shelfid="'.$formID.'" style="width: '.$row['size_x'].'px; height: '.$row['size_y'].'px;">';
 
@@ -408,7 +422,7 @@ switch($subpage) {
 										<td>'.$row['capacity'].'</td>
 										<td>'.$row['product'].'</td>
 										<td>';
-						if($_SESSION['loginRole'] >= 3) {
+						if($_SESSION['loginRole'] >= 40) {
 							$sectionsTable .= '<a href="'.$self.'?subpage=editsection&id='.$row['section_id'].'" title="Edit" class="link-editsection"><i class="mdi mdi-pencil"></i></a>';
 							$sectionsTable .= ' <a href="'.$self.'?subpage=deletesection&id='.$row['section_id'].'" title="Delete" class="link-deletesection"><i class="mdi mdi-delete"></i></a>';
 						}
@@ -461,12 +475,15 @@ switch($subpage) {
 
 		// print messages
 		if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
-		} else {
-			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelves management';
-			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
-		}
+
 		break;
 	case 'deleteshelf':
+	
+		if($_SESSION['loginRole'] < 40) {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelf management.';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+			break;
+		}
 	
 		if(isset($_GET['id']) && !empty($_GET['id'])) {
 
@@ -540,6 +557,12 @@ switch($subpage) {
 		break;
 	case 'editshelf':
 
+		if($_SESSION['loginRole'] < 40) {
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelf management.';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+			break;
+		}
+	
 		// set action type
 		$page_action = 'edit';
 
@@ -627,7 +650,7 @@ switch($subpage) {
 		<h1>Edit shelf</h1>
 		<?php
 	case 'addshelf':
-		if($_SESSION['loginRole'] >= 2) {
+		if($_SESSION['loginRole'] >= 40) {
 		// set action type
 		if(!isset($page_action))
 			$page_action = 'add';
@@ -729,7 +752,7 @@ switch($subpage) {
 		</script>
 		<?php
 		} else {
-			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelves management';
+			$SMAR_MESSAGES['error'][] = 'Insufficient permissions for shelf management.';
 			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
 		}
 		break;
@@ -796,7 +819,7 @@ switch($subpage) {
 							<td>
 								<a href="'.$self.'?subpage=designer&id='.$row['shelf_id'].'" title="Shelf Designer" class="ajax"><i class="mdi mdi-math-compass"></i></a> ';
 
-						if($_SESSION['loginRole'] >= 3) {
+						if($_SESSION['loginRole'] >= 40) {
 						echo '<a href="'.$self.'?subpage=editshelf&id='.$row['shelf_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
 									<a href="'.$self.'?subpage=deleteshelf&id='.$row['shelf_id'].'" title="Delete" class="link-deleteshelf"><i class="mdi mdi-delete"></i></a>';
 						}								
