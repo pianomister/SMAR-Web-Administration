@@ -55,6 +55,114 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	// page content
 	switch($subpage) {
 	
+		case 'deliveryitems':
+			?>
+			<h1>Delivery items</h1>
+			<?php
+			$SMAR_MESSAGES['warning'][] = 'This feature is not available.';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+			break;
+		case 'orderitems':
+			?>
+			<h1>Order items</h1>
+			<?php
+			$SMAR_MESSAGES['warning'][] = 'This feature is not available.';
+			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+			break;
+		case 'deliveries':
+			?>
+			<div class="flex">
+				<h1>Deliveries</h1>
+				<div>
+					<?php
+					// init database
+					if(!(isset($SMAR_DB))) {
+						$SMAR_DB = new SMAR_MysqlConnect();
+					}
+
+					$filter = ' WHERE d.order_id = o.order_id';
+					$formFilter = '';
+					if(isset($_GET['filter']) && !empty($_GET['filter'])) {
+						$formFilter = $_GET['filter'];
+						$filter .= " AND o.name LIKE '%".$SMAR_DB->real_escape_string($formFilter)."%'";
+					}
+					?>
+					<form id="form-filter" method="get" action="index.php?page=<?php echo urlencode($self); ?>">
+						<input type="hidden" name="page" value="<?php echo urlencode($self); ?>">
+						<input type="hidden" name="subpage" value="<?php echo urlencode($subpage); ?>">
+						<input id="filter-deliveries" type="text" name="filter" placeholder="Filter by name" value="<?php if(isset($formFilter) && !empty($formFilter)) echo smar_form_input($formFilter); ?>" class="input-medium">
+					</form>
+					<?php
+
+					// pagination
+					$items_per_page = 20;	
+					$current_page = 0;
+					if(isset($_GET['limit']) && !empty($_GET['limit']))
+						$current_page = intval($_GET['limit']);
+					$limit = $items_per_page * $current_page;
+
+					$result = $SMAR_DB->dbquery("SELECT count(*) as items FROM ".SMAR_MYSQL_PREFIX."_delivery");
+					$num_items = $result->fetch_array(MYSQLI_ASSOC)['items'];
+
+					echo smar_pagination($self.'?page=deliveries.php&filter='.$formFilter, $num_items, $items_per_page, $current_page);
+					?>
+				</div>
+			</div>
+			<table>
+				<thead>
+				<tr>
+					<th>ID</th>
+					<th>Date</th>
+					<th>Related Order</th>
+					<th>Actions</th>
+				</tr>
+				</thead>
+				<tbody>
+					<?php
+					// get delivery
+					$result = $SMAR_DB->dbquery("SELECT d.delivery_id, d.order_id, o.name, d.date
+																				FROM ".SMAR_MYSQL_PREFIX."_delivery d, ".SMAR_MYSQL_PREFIX."_order o
+																				".$filter." ORDER BY delivery_id LIMIT ".$SMAR_DB->real_escape_string($limit).",".$SMAR_DB->real_escape_string($items_per_page));
+					if($result->num_rows > 0) {
+						while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+							echo '<tr>
+								<td>'.$row['delivery_id'].'</td>
+								<td>'.$row['date'].'</td>
+								<td>'.$row['name'].' (ID: '.$row['order_id'].')</td>
+								<td>
+								<a href="'.$self.'?subpage=orderitems&id='.$row['order_id'].'" title="Edit items" class="ajax"><i class="mdi mdi-cube-outline"></i></a> ';
+
+								/*if($_SESSION['loginRole'] >= 30) {
+									echo '<a href="'.$self.'?subpage=editdelivery&id='.$row['delivery_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
+												<a href="'.$self.'?subpage=deletedelivery&id='.$row['delivery_id'].'" title="Delete" class="link-deletedelivery"><i class="mdi mdi-delete"></i></a>';
+								}*/
+							echo '</td></tr>';
+						}
+					} else {
+						echo '<tr><td colspan="5">No deliveries found</td></tr>';
+					}
+					?>
+				</tbody>
+			</table>
+			<!--AJAX Request-->
+			<script>
+			setFormHandler('#form-filter');
+
+			$('.link-deletedelivery').on('click', function(e) {
+
+				e.preventDefault();
+				$target = $(e.delegateTarget);
+				$.colorbox({
+					href: $target.attr('href')+'&smar_include=true',
+					closeButton: false,
+					width: '80%',
+					maxWidth: '700px'
+				});
+			});
+			</script>
+			<?php
+
+			break;
 		case 'deleteorder':
 	
 		if(isset($_GET['id']) && !empty($_GET['id'])) {
@@ -69,12 +177,14 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					$SMAR_DB = new SMAR_MysqlConnect();
 				}
 				
-				// order cannot be deleted if it is part of orders
+				// order cannot be deleted if it is part of deliveries or order items
 				$result = $SMAR_DB->dbquery("SELECT COUNT(*) as count FROM ".SMAR_MYSQL_PREFIX."_order_item WHERE order_id = '".$SMAR_DB->real_escape_string($formID)."'");
 				$row = $result->fetch_array(MYSQLI_ASSOC);
+				$result2 = $SMAR_DB->dbquery("SELECT COUNT(*) as count FROM ".SMAR_MYSQL_PREFIX."_delivery WHERE order_id = '".$SMAR_DB->real_escape_string($formID)."'");
+				$row2 = $result2->fetch_array(MYSQLI_ASSOC);
 				
-				if($row['count'] > 0) {
-					$SMAR_MESSAGES['error'][] = 'The order with ID "'.$formID.'" must not be deleted, because it already has order items. Deletion would cause inconsistencies in the orders system.';
+				if($row['count'] > 0 || $row2['count'] > 0) {
+					$SMAR_MESSAGES['error'][] = 'The order with ID "'.$formID.'" must not be deleted, because it already has order items or related deliveries. Deletion would cause inconsistencies in the orders system.';
 				} else {
 					// delete order
 					$result = $SMAR_DB->dbquery("DELETE FROM ".SMAR_MYSQL_PREFIX."_order WHERE order_id = '".$SMAR_DB->real_escape_string($formID)."'");
@@ -87,7 +197,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 				}
 				
 			} else {
-				$SMAR_MESSAGES['warning'][] = 'You are going to delete an order. When deleting an order, it must not have any related order items.<br> Do you really want to delete the order with ID "'.$formID.'"?';
+				$SMAR_MESSAGES['warning'][] = 'You are going to delete an order. When deleting an order, it must not have any related order items or deliveries.<br> Do you really want to delete the order with ID "'.$formID.'"?';
 			}
 			
 			?>
@@ -354,7 +464,8 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 							<td>'.$row['order_id'].'</td>
 							<td>'.$row['date'].'</td>
 							<td>'.$row['name'].'</td>
-							<td>';
+							<td>
+								<a href="'.$self.'?subpage=orderitems&id='.$row['order_id'].'" title="Edit items" class="ajax"><i class="mdi mdi-cube-outline"></i></a> ';
 							
 							if($_SESSION['loginRole'] >= 30) {
 								echo '<a href="'.$self.'?subpage=editorder&id='.$row['order_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>

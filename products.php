@@ -1067,7 +1067,7 @@ switch($subpage) {
 							<td>'.$row['price'].'</td>
 							<td>'.$row['amount_shop'].' ('.$row['amount_warehouse'].')</td>
 							<td>
-								<a href="'.$self.'?subpage=mapping&type=product&id='.$row['product_id'].'" title="Show connected units" class="ajax"><i class="mdi mdi-pound"></i></a> ';
+								<a href="'.$self.'?subpage=mapping&type=product&id='.$row['product_id'].'" title="Show connected units" class="ajax"><i class="mdi mdi-cube-outline"></i></a> ';
 						
 						if($_SESSION['loginRole'] >= 20) {
 							echo '<a href="'.$self.'?subpage=editproduct&id='.$row['product_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
