@@ -279,6 +279,8 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 					$SMAR_DB = new SMAR_MysqlConnect();
 				}
 				$result = $SMAR_DB->dbquery("SELECT * FROM smar_device");
+				if($result->num_rows === 0)
+					echo '<tr><td colspan="5">No devices found</td></tr>';
 				while($row = $result->fetch_array()) {
 					echo "<tr><td>".$row['device_id']."</td>";
 					echo "<td>".$row['device_name']."</td>";

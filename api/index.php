@@ -559,7 +559,7 @@ $app->get('/search/:table/:search(/:limit)', function ($table, $search, $limit =
 		$jwt_data = getJWTdata($jwt);
 		if($jwt_data && intval($jwt_data['user_role']) >= 10) {
 			
-			$table_whitelist = array('product', 'unit', 'shelf', 'section');
+			$table_whitelist = array('product', 'unit', 'shelf', 'section', 'order');
 			$table = strtolower($table);
 			$limit = intval($limit);
 

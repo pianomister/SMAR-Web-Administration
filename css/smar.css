@@ -685,7 +685,7 @@ table a:hover > .mdi, a:hover .bg-icon, a.text-icon:hover {
 	}
 }
 
-@media screen and (max-width: 50rem), screen and (max-height: 40rem) {
+@media screen and (max-width: 50rem), screen and (max-height: 49rem) {
 	#smar-wrapper {
 		-webkit-flex-flow: column;
 		flex-flow: column;
@@ -720,7 +720,7 @@ table a:hover > .mdi, a:hover .bg-icon, a.text-icon:hover {
 	}
 }
 
-@media screen and (min-width: 50rem) and (max-height: 40rem) {
+@media screen and (min-width: 50rem) and (max-height: 49rem) {
 	nav#nav-main {
 		height: 6rem;
 		min-height: 6rem;

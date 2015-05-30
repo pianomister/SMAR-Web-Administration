@@ -751,7 +751,7 @@ switch($subpage) {
 					$formSizeX = intval(strip_tags($_POST['form-product-sizex']));
 					$formSizeY = intval(strip_tags($_POST['form-product-sizey']));
 					$formSizeZ = intval(strip_tags($_POST['form-product-sizez']));
-					$formBarcode = intval(strip_tags($_POST['form-product-barcode']));
+					$formBarcode = strip_tags($_POST['form-product-barcode']);
 					$formImage = empty($_POST['form-product-image']) ? strip_tags($_POST['form-product-image']) : 'NULL';
 					$formStockWarehouse = empty($_POST['form-product-stock-warehouse']) ? '0' : intval(strip_tags($_POST['form-product-stock-warehouse']));
 					$formStockShop = empty($_POST['form-product-stock-shop']) ? '0' : intval(strip_tags($_POST['form-product-stock-shop']));
@@ -872,7 +872,7 @@ switch($subpage) {
 					$formSizeX = intval(strip_tags($_POST['form-product-sizex']));
 					$formSizeY = intval(strip_tags($_POST['form-product-sizey']));
 					$formSizeZ = intval(strip_tags($_POST['form-product-sizez']));
-					$formBarcode = intval(strip_tags($_POST['form-product-barcode']));
+					$formBarcode = strip_tags($_POST['form-product-barcode']);
 					$formImage = empty($_POST['form-product-image']) ? 'NULL' : strip_tags($_POST['form-product-image']);
 					$formStockWarehouse = empty($_POST['form-product-stock-warehouse']) ? '0' : intval(strip_tags($_POST['form-product-stock-warehouse']));
 					$formStockShop = empty($_POST['form-product-stock-shop']) ? '0' : intval(strip_tags($_POST['form-product-stock-shop']));

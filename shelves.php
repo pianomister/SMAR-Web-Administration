@@ -581,7 +581,7 @@ switch($subpage) {
 					) {
 
 					$formName = strip_tags($_POST['form-shelf-name']);
-					$formBarcode = intval(strip_tags($_POST['form-shelf-barcode']));	
+					$formBarcode = strip_tags($_POST['form-shelf-barcode']);	
 					$formX = intval(strip_tags($_POST['form-shelf-x']));
 					$formY = intval(strip_tags($_POST['form-shelf-y']));
 					$formZ = intval(strip_tags($_POST['form-shelf-z']));
@@ -666,7 +666,7 @@ switch($subpage) {
 					) {
 
 					$formName = strip_tags($_POST['form-shelf-name']);
-					$formBarcode = intval(strip_tags($_POST['form-shelf-barcode']));	
+					$formBarcode = strip_tags($_POST['form-shelf-barcode']);	
 					$formX = intval(strip_tags($_POST['form-shelf-x']));
 					$formY = intval(strip_tags($_POST['form-shelf-y']));
 					$formZ = intval(strip_tags($_POST['form-shelf-z']));
