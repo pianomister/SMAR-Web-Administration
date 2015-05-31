@@ -301,12 +301,53 @@ $app->post('/delivery/create', function () use ($app) {
 /**
  * get product, shelf and section information from product barcode
  */
-$app->get('/product/position/:barcode', function ($barcode) use ($app) {
-	
+$app->get('/product/position/:barcode(/:type)', function($product_code, $type = "searching") use($app) {
+	global $jwt;
+	$jwt_data = false;
+	if(checkLogin($jwt)) {
+		// init database
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
+		}
+		
+		if($type == "receiving") {
+			$result = $SMAR_DB->dbquery("SELECT * 
+					FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu 
+					WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
+						  AND s.product_id = p.product_id 
+						  AND pu.product_id = p.product_id");
+		} else {
+			$result = $SMAR_DB->dbquery("SELECT * 
+					FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu, ".SMAR_MYSQL_PREFIX."_section sec 
+					WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
+						  AND s.product_id = p.product_id 
+						  AND pu.product_id = p.product_id
+						  AND p.product_id = sec.product_id");
+		}
+		
+		if($result->num_rows != 0) {
+			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+				$resultArray[] = $row;
+			}
+		
+			$response = json_encode($resultArray);
+			$res = $app->response();
+			$res->setStatus(200);
+			$res->setBody($response); 
+		} else {
+			$res = $app->response();
+			$res->setStatus(404);
+			$res->setBody('[{}]');
+		}
+	} else {
+		$return['jwt'] = "fail";
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(403);
+		$res->setBody($response);
+	}
 	//TODO: also recognize products from product-unit barcodes (from smar_product_unit)
 })->name('product_position_by_barcode');
-
-
 
 /** 
  * get all units
