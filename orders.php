@@ -56,18 +56,102 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 	switch($subpage) {
 	
 		case 'deliveryitems':
-			?>
-			<h1>Delivery items</h1>
-			<?php
-			$SMAR_MESSAGES['warning'][] = 'This feature is not available.';
-			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+		
+			if(isset($_GET['id']) && !empty($_GET['id'])) {
+				$id = intval($_GET['id']);
+				?>
+				<h1>Delivery items (ID: <?php echo $id; ?>)</h1>
+				<table>
+					<thead>
+					<tr>
+						<th>ID</th>
+						<th>Product</th>
+						<th>Unit</th>
+						<th>Amount</th>
+					</tr>
+					</thead>
+					<tbody>
+						<?php
+						// get delivery items
+						$result = $SMAR_DB->dbquery("SELECT delivery_item_id, oi.product_id, p.name as product_name, oi.unit_id, u.capacity, u.name as unit_name, oi.amount FROM
+																					".SMAR_MYSQL_PREFIX."_delivery_item oi,
+																					".SMAR_MYSQL_PREFIX."_product p,
+																					".SMAR_MYSQL_PREFIX."_unit u
+																					WHERE
+																						delivery_id = '".$SMAR_DB->real_escape_string($id)."' AND
+																						p.product_id = oi.product_id AND
+																						u.unit_id = oi.unit_id
+																					ORDER BY delivery_item_id");
+						if($result->num_rows > 0) {
+							while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+								echo '<tr>
+									<td>'.$row['delivery_item_id'].'</td>
+									<td>'.$row['product_name'].' (ID: '.$row['product_id'].')</td>
+									<td>'.$row['unit_name'].' (ID: '.$row['unit_id'].')</td>
+									<td>'.($row['amount'] * $row['capacity']).' ('.$row['amount'].' x '.$row['capacity'].')</td></tr>';
+							}
+						} else {
+							echo '<tr><td colspan="5">No delivery items found</td></tr>';
+						}
+						?>
+					</tbody>
+				</table>
+				<?php
+			} else {
+				$SMAR_MESSAGES['error'][] = 'No item ID was provided in URL parameters.';
+				/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			}
 			break;
 		case 'orderitems':
-			?>
-			<h1>Order items</h1>
-			<?php
-			$SMAR_MESSAGES['warning'][] = 'This feature is not available.';
-			smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES);
+
+			/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+		
+			if(isset($_GET['id']) && !empty($_GET['id'])) {
+				$id = intval($_GET['id']);
+				?>
+				<h1>Order items (ID: <?php echo $id; ?>)</h1>
+				<table>
+					<thead>
+					<tr>
+						<th>ID</th>
+						<th>Product</th>
+						<th>Unit</th>
+						<th>Amount</th>
+					</tr>
+					</thead>
+					<tbody>
+						<?php
+						// get order items
+						$result = $SMAR_DB->dbquery("SELECT order_item_id, oi.product_id, p.name as product_name, oi.unit_id, u.capacity, u.name as unit_name, oi.amount FROM
+																					".SMAR_MYSQL_PREFIX."_order_item oi,
+																					".SMAR_MYSQL_PREFIX."_product p,
+																					".SMAR_MYSQL_PREFIX."_unit u
+																					WHERE
+																						order_id = '".$SMAR_DB->real_escape_string($id)."' AND
+																						p.product_id = oi.product_id AND
+																						u.unit_id = oi.unit_id
+																					ORDER BY order_item_id");
+						if($result->num_rows > 0) {
+							while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+								echo '<tr>
+									<td>'.$row['order_item_id'].'</td>
+									<td>'.$row['product_name'].' (ID: '.$row['product_id'].')</td>
+									<td>'.$row['unit_name'].' (ID: '.$row['unit_id'].')</td>
+									<td>'.($row['amount'] * $row['capacity']).' ('.$row['amount'].' x '.$row['capacity'].')</td></tr>';
+							}
+						} else {
+							echo '<tr><td colspan="5">No order items found</td></tr>';
+						}
+						?>
+					</tbody>
+				</table>
+				<?php
+			} else {
+				$SMAR_MESSAGES['error'][] = 'No item ID was provided in URL parameters.';
+				/* print messages */ if(isset($SMAR_MESSAGES)) { smar_print_messages($SMAR_MESSAGES); unset($SMAR_MESSAGES); }
+			}
 			break;
 		case 'deliveries':
 			?>
@@ -130,7 +214,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 								<td>'.$row['date'].'</td>
 								<td>'.$row['name'].' (ID: '.$row['order_id'].')</td>
 								<td>
-								<a href="'.$self.'?subpage=orderitems&id='.$row['order_id'].'" title="Edit items" class="ajax"><i class="mdi mdi-cube-outline"></i></a> ';
+								<a href="'.$self.'?subpage=deliveryitems&id='.$row['delivery_id'].'" title="Show items" class="ajax"><i class="mdi mdi-cube-outline"></i></a> ';
 
 								/*if($_SESSION['loginRole'] >= 30) {
 									echo '<a href="'.$self.'?subpage=editdelivery&id='.$row['delivery_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
@@ -465,7 +549,7 @@ if(isset($_GET['smar_nav']) && $_GET['smar_nav'] == 'true') {
 							<td>'.$row['date'].'</td>
 							<td>'.$row['name'].'</td>
 							<td>
-								<a href="'.$self.'?subpage=orderitems&id='.$row['order_id'].'" title="Edit items" class="ajax"><i class="mdi mdi-cube-outline"></i></a> ';
+								<a href="'.$self.'?subpage=orderitems&id='.$row['order_id'].'" title="Show items" class="ajax"><i class="mdi mdi-cube-outline"></i></a> ';
 							
 							if($_SESSION['loginRole'] >= 30) {
 								echo '<a href="'.$self.'?subpage=editorder&id='.$row['order_id'].'" title="Edit" class="ajax"><i class="mdi mdi-pencil"></i></a>
