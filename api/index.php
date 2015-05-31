@@ -172,43 +172,67 @@ $app->get('/users/device', function() use($app) {
 /**
  * get product with given ID
  */
-$app->get('/getProduct/:product_code(/:type)', function($product_code, $type = "searching") use($app) {
+$app->get('/product/:barcode', function($barcode) use($app) {
 	global $jwt;
-	$jwt_data = false;
-	if(checkLogin($jwt)) {
+	if(checkLogin($jwt) || true) {
+		$productExist = true;
+		
 		// init database
 		if(!(isset($SMAR_DB))) {
 			$SMAR_DB = new SMAR_MysqlConnect();
 		}
 		
-		if($type == "receiving") {
-			$result = $SMAR_DB->dbquery("SELECT * 
-					FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu 
-					WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
-						  AND s.product_id = p.product_id 
-						  AND pu.product_id = p.product_id");
+		$result_produnit = $SMAR_DB->dbquery("SELECT barcode, product_id, unit_id FROM ".SMAR_MYSQL_PREFIX."_product_unit WHERE barcode = '".$barcode."'");
+		if($result_produnit->num_rows > 0) {
+			$row_produnit = $result_produnit->fetch_array(MYSQLI_ASSOC);
+			$product_id = $row_produnit['product_id'];
+			$unit_id = $row_produnit['unit_id'];
+			$barcodeDB = $row_produnit['barcode'];
+			
+			$row_unit = $SMAR_DB->dbquery("SELECT unit_id, name, capacity FROM ".SMAR_MYSQL_PREFIX."_unit WHERE unit_id = '".$unit_id."'")->fetch_array(MYSQLI_ASSOC);
+			$unitArray = $row_unit;
+			
+			$row_product = $SMAR_DB->dbquery("SELECT product_id, name FROM ".SMAR_MYSQL_PREFIX."_product WHERE product_id = '".$product_id."'")->fetch_array(MYSQLI_ASSOC);
 		} else {
-			$result = $SMAR_DB->dbquery("SELECT * 
-					FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu, ".SMAR_MYSQL_PREFIX."_section sec 
-					WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
-						  AND s.product_id = p.product_id 
-						  AND pu.product_id = p.product_id
-						  AND p.product_id = sec.product_id");
+			$result_product = $SMAR_DB->dbquery("SELECT barcode, product_id, name FROM ".SMAR_MYSQL_PREFIX."_product WHERE barcode = '".$barcode."'");
+			if($result_product->num_rows == 0) {
+				$productExist = false;
+			} else {
+				$unitArray = "0";
+				$row_product = $result_product->fetch_array(MYSQLI_ASSOC);
+				$product_id = $row_product['product_id'];
+				$barcodeDB = $row_product['barcode'];
+			}
 		}
 		
-		if($result->num_rows != 0) {
-			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-				$resultArray[] = $row;
+		if($productExist) {
+			if($barcode == $barcodeDB) {
+				$return[0] = $row_product;
+				$row_stock = $SMAR_DB->dbquery("SELECT amount_warehouse, amount_shop FROM ".SMAR_MYSQL_PREFIX."_stock WHERE product_id = '".$product_id."'")->fetch_array(MYSQLI_ASSOC);
+				$return[0]['stock'] = $row_stock;
+				$return[0]['unit'] = $unitArray;
+				
+				$result_shelf = $SMAR_DB->dbquery("SELECT section_id, shelf_id, capacity FROM ".SMAR_MYSQL_PREFIX."_section WHERE product_id = '".$product_id."'");
+				if($result_shelf->num_rows > 0) {
+					$row_shelf = $result_shelf->fetch_array(MYSQLI_ASSOC);
+					$return[0]['shelf'] = $row_shelf;
+				} else {
+					$return[0]['shelf'] = "0";
+				}
+				
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(200);
+				$res->setBody($response);
+			} else {
+				$res = $app->response();
+				$res->setStatus(404);
+				$res->setBody("[]");
 			}
-		
-			$response = json_encode($resultArray);
-			$res = $app->response();
-			$res->setStatus(200);
-			$res->setBody($response); 
 		} else {
 			$res = $app->response();
 			$res->setStatus(404);
-			$res->setBody('[{}]');
+			$res->setBody("[]");
 		}
 	} else {
 		$return['jwt'] = "fail";
@@ -218,8 +242,6 @@ $app->get('/getProduct/:product_code(/:type)', function($product_code, $type = "
 		$res->setBody($response);
 	}
 })->name('product_by_barcode');
-
-
 
 /**
  * create delivery entry in database
@@ -392,39 +414,38 @@ $app->get('/units', function() use($app) {
  $app->post('/stock/update', function() use($app) {
 	global $jwt;
 	if(checkLogin($jwt)) {
-		if(isset($_POST['product_id']) && isset($_POST['new_amount_shop']) && isset($_POST['new_amount_warehouse'])) {
-		$product_id = $_POST['product_id'];
-		$amount_shop = $_POST['new_amount_shop'];
-		$amount_warehouse = $_POST['new_amount_warehouse'];
+		if(isset($_POST['product_id']) && isset($_POST['insertAmount']) && isset($_POST['unit_capacity'])) {
+			$product_id = $_POST['product_id'];
+			$insertAmount = intval($_POST['insertAmount']);
+			$unit_capacity = intval($_POST['unit_capacity']);
+			$insertAmount = $insertAmount * $unit_capacity;
 
-		$return = array();
+			$return = array();
+			
 			// init database
 			if(!(isset($SMAR_DB))) {
 				$SMAR_DB = new SMAR_MysqlConnect();
 			}
 			
 			$result = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock 
-						SET amount_warehouse = ".$SMAR_DB->real_escape_string($amount_warehouse).", 
-						 amount_shop = ".$SMAR_DB->real_escape_string($amount_shop)." 
-						WHERE product_id = ".$SMAR_DB->real_escape_string($product_id)."");
+						SET amount_warehouse = amount_warehouse - ".$insertAmount.", 
+							amount_shop = amount_shop + ".$insertAmount." 
+						WHERE product_id = '".$SMAR_DB->real_escape_string($product_id)."'");
 			
-			if(count($result) > 0) {
-					$return['success'] = 'success';
-					$response = json_encode($return);
-					$res = $app->response();
-					$res->setStatus(200);//TODO reset on 500
-					$res->setBody($response);
-				} else {
-					$return['success'] = 'success';
-					$response = json_encode($return);
-					$res = $app->response();
-					$res->setStatus(200);
-					$res->setBody($response);
+			if($result) {
+				$return['success'] = 'success';
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(200);
+				$res->setBody($response);
+			} else {
+				$response = "query";
+				$res = $app->response();
+				$res->setStatus(500);
+				$res->setBody($response);
 			}
-		}
-		else {
-			$return['reason'] = 'missing parameters';
-			$response = json_encode($return);
+		} else {
+			$response = "parameters";
 			$res = $app->response();
 			$res->setStatus(500);
 			$res->setBody($response);
