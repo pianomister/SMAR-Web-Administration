@@ -5,6 +5,7 @@
 
 var pageTitle = 'SMAR Web Administration';
 window.path = '/SMAR-Web-Administration/';
+window.api_path = window.path + 'api/index.php/';
 
 function loadPage(url, loadFull, navMainId, skipHistory) {
 	
@@ -225,7 +226,7 @@ function setAutocompleteHandler(target, table, resultTarget, resultFunction) {
 		showNoSuggestionNotice: true,
 		lookup: function (search, done) {
 			
-			searchUrl = 'api/search/' + table + '/' + encodeURI(search) + '?jwt=' + window.loginJWTToken;
+			searchUrl = window.api_path+ 'search/' + table + '/' + encodeURI(search) + '?jwt=' + window.loginJWTToken;
 			
 			if(window.autocomplete) {
 				window.autocomplete.abort();
@@ -283,7 +284,7 @@ function setMappingsSaveHandler(link, type, itemID) {
 
 		$loadOverlay.fadeIn(100, function() {
 
-			postUrl = window.path + 'api/mappings/update/';
+			postUrl = window.api_path + 'mappings/update/';
 
 			$.ajax({
 				method: 'POST',
@@ -329,7 +330,7 @@ function setDesignerSaveHandler(link, canvas, container) {
 
 		$loadOverlay.fadeIn(100, function() {
 
-			postUrl = window.path + 'api/designer/update/' + $(canvas).attr('data-shelfid');
+			postUrl = window.api_path + 'designer/update/' + $(canvas).attr('data-shelfid');
 
 			$.ajax({
 				method: 'POST',
