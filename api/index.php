@@ -458,7 +458,7 @@ $app->get('/units', function() use($app) {
 										SET amount_warehouse = ".$SMAR_DB->real_escape_string($_POST['amount'])." 
 										WHERE product_id = ".$SMAR_DB->real_escape_string($_POST['product_id']));
 										
-			if(count($result) > 0) {
+			if($result === TRUE) {
 				$return['result'] = "success";
 				$response = json_encode($return);
 				$res = $app->response();
