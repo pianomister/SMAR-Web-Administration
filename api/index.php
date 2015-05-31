@@ -172,7 +172,7 @@ $app->get('/users/device', function() use($app) {
 /**
  * get product with given ID
  */
-$app->get('/getProduct/:product_code/:type', function($product_code, $type = "searching") use($app) {
+$app->get('/getProduct/:product_code/(:type)', function($product_code, $type = "searching") use($app) {
 	global $jwt;
 	$jwt_data = false;
 	if(checkLogin($jwt)) {
