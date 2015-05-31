@@ -360,7 +360,7 @@ $app->get('/units', function() use($app) {
 			$SMAR_DB = new SMAR_MysqlConnect();
 		}
 		
-		$result = $SMAR_DB->dbquery("SELECT unit_id, name FROM ".SMAR_MYSQL_PREFIX."_unit");
+		$result = $SMAR_DB->dbquery("SELECT unit_id, name, capacity FROM ".SMAR_MYSQL_PREFIX."_unit");
 		if($result->num_rows > 0 ) 
 		{
 			$resultArray = array();
