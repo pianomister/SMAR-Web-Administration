@@ -311,7 +311,7 @@ $app->get('/product/position/:barcode', function ($barcode) use ($app) {
 /** 
  * get all units
 */
-$app->get('/getUnits', function() use($app) {
+$app->get('/units', function() use($app) {
 	global $jwt;
 	if(checkLogin($jwt)) {
 		// init database
@@ -348,7 +348,7 @@ $app->get('/getUnits', function() use($app) {
 /** 
  * updateStock of Product 
  */
- $app->post('/updateProductStock', function() use($app) {
+ $app->post('/stock/update', function() use($app) {
 	global $jwt;
 	if(checkLogin($jwt)) {
 		if(isset($_POST['product_id']) && isset($_POST['new_amount_shop']) && isset($_POST['new_amount_warehouse'])) {
@@ -402,7 +402,7 @@ $app->get('/getUnits', function() use($app) {
  /*
   * Update after Receiving the WarehouseStock
  */
- $app->post('/Product', function() use($app) {
+ $app->post('/stock/warehouse/update', function() use($app) {
 	global $jwt;
 	if(checkLogin($jwt)) {
 	
@@ -452,7 +452,7 @@ $app->get('/getUnits', function() use($app) {
  /*
  * get Receiving List
  */
- $app->get('/Receiving/:barcode', function($barcode) use($app) {
+ $app->get('/order/:barcode', function($barcode) use($app) {
 	global $jwt;
 	if(checkLogin($jwt)) {
 		// init database
