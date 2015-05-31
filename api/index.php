@@ -194,9 +194,11 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
 		
 			$response = json_encode($resultArray);
 			$res = $app->response();
+			$res->setStatus(200);
 			$res->setBody($response); 
 		} else {
 			$res = $app->response();
+			$res->setStatus(404);
 			$res->setBody('[{}]');
 		}
 	} else {
@@ -214,10 +216,65 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
  * create delivery entry in database
  */
 $app->post('/delivery/create', function () use ($app) {
-	
-	//TODO: send a list of scanned entries + order_id via POST, and
-	// - create new delivery in smar_delivery (with order_id)
-	// - create delivery items according to received list in smar_delivery_item
+	global $jwt;
+	if(checkLogin($jwt)) {
+		if(!(isset($SMAR_DB))) {
+			$SMAR_DB = new SMAR_MysqlConnect();
+		}
+		$order_id = $_POST['order_id'];
+		$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_delivery 
+									(order_id, date, created) 
+									VALUES (".$SMAR_DB->real_escape_string($order_id).", '".date("Y-m-d H:i:s")."', '".date("Y-m-d H:i:s")."');");
+		$delivery_id = $SMAR_DB->insert_id;
+		if(isset($delivery_id)) 
+		{
+			//while($row = $result->fetch_array(MYSQLI_ASSOC)) {
+				//$delivery_id = $row['last_id'];
+			//}
+			//$json_array = array();
+			$json_array = json_decode($_POST['array']);
+			$return = array();	
+			foreach($json_array as $json_object ) {
+				$product_id = intval($json_object->product_id);
+				$unit_id = intval($json_object->unit_id);
+				$amount = intval($json_object->amount);
+				$created = date("Y-m-d H:i:s");
+				
+				$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_delivery_item 
+											(delivery_id, product_id, unit_id, amount, created) 
+											VALUES (".$delivery_id.", ".$product_id.", ".$unit_id.", ".$amount.", '".$created."')");
+											
+				if(!$result) {
+					$return[] = $section;
+				}	
+			}
+			
+			if(count($return) > 0) {
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(500);
+				$res->setBody($response);
+			} else {
+				$response = json_encode($return);
+				$res = $app->response();
+				$res->setStatus(200);
+				$res->setBody($response);
+			}
+		}
+		else {
+			$response['reason'] = "failed to insert in _delivery";
+			$res = $app->response();
+			$res->setStatus(500);
+			$res->setBody($response);
+		}
+	}
+	else {
+		$return['jwt'] = "fail";
+		$response = json_encode($return);
+		$res = $app->response();
+		$res->setStatus(403);
+		$res->setBody($response);
+	}
 })->name('create_delivery');
 
 
@@ -273,7 +330,7 @@ $app->get('/getUnits', function() use($app) {
  * updateStock of Product 
  */
  $app->post('/updateProductStock', function() use($app) {
-	 global $jwt;
+	global $jwt;
 	if(checkLogin($jwt)) {
 		if(isset($_POST['product_id']) && isset($_POST['new_amount_shop']) && isset($_POST['new_amount_warehouse'])) {
 		$product_id = $_POST['product_id'];
@@ -291,7 +348,7 @@ $app->get('/getUnits', function() use($app) {
 						 amount_shop = ".$SMAR_DB->real_escape_string($amount_shop)." 
 						WHERE product_id = ".$SMAR_DB->real_escape_string($product_id)."");
 			
-			if(count($return) > 0) {
+			if(count($result) > 0) {
 					$response = json_encode($return);
 					$res = $app->response();
 					$res->setStatus(200);//TODO reset on 500
