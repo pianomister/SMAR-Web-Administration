@@ -172,7 +172,7 @@ $app->get('/users/device', function() use($app) {
 /**
  * get product with given ID
  */
-$app->get('/getProduct/:product_code/(:type)', function($product_code, $type = "searching") use($app) {
+$app->get('/getProduct/:product_code(/:type)', function($product_code, $type = "searching") use($app) {
 	global $jwt;
 	$jwt_data = false;
 	if(checkLogin($jwt)) {
@@ -501,7 +501,7 @@ $app->get('/getUnits', function() use($app) {
 /**
  * get svg graphics for a file (newer than timestamp)
  */
-$app->get('/svg/(:timestamp)', function ($timestamp = 0) use($app) {
+$app->get('/svg(/:timestamp)', function ($timestamp = 0) use($app) {
 	global $jwt;
 	if(checkLogin($jwt)) {
 		// init database
