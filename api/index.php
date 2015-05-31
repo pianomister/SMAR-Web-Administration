@@ -408,17 +408,17 @@ $app->get('/units', function() use($app) {
 						 amount_shop = ".$SMAR_DB->real_escape_string($amount_shop)." 
 						WHERE product_id = ".$SMAR_DB->real_escape_string($product_id)."");
 			
-			if(count($result) > 0) {
+			if($result === TRUE) {
 					$return['success'] = 'success';
 					$response = json_encode($return);
 					$res = $app->response();
 					$res->setStatus(200);//TODO reset on 500
 					$res->setBody($response);
 				} else {
-					$return['success'] = 'success';
+					$return['success'] = 'error';
 					$response = json_encode($return);
 					$res = $app->response();
-					$res->setStatus(200);
+					$res->setStatus(500);
 					$res->setBody($response);
 			}
 		}

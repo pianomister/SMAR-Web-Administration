@@ -36,14 +36,7 @@ CREATE TABLE IF NOT EXISTS `smar_delivery` (
   `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`delivery_id`),
   KEY `order_id` (`order_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
-
---
--- Daten für Tabelle `smar_delivery`
---
-
-INSERT INTO `smar_delivery` (`delivery_id`, `order_id`, `date`, `created`, `lastupdate`) VALUES
-(1, 1, '2015-05-31 00:00:00', '2015-05-30 00:00:00', '2015-05-30 17:23:13');
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
