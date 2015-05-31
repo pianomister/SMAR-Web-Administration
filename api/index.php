@@ -368,6 +368,7 @@ $app->get('/getUnits', function() use($app) {
 						WHERE product_id = ".$SMAR_DB->real_escape_string($product_id)."");
 			
 			if(count($result) > 0) {
+					$return['success'] = 'success';
 					$response = json_encode($return);
 					$res = $app->response();
 					$res->setStatus(200);//TODO reset on 500
