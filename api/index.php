@@ -172,7 +172,7 @@ $app->get('/users/device', function() use($app) {
 /**
  * get product with given ID
  */
-$app->get('/getProduct/:product_code', function($product_code) use($app) {
+$app->get('/getProduct/:product_code/:type', function($product_code, $type = "searching") use($app) {
 	global $jwt;
 	$jwt_data = false;
 	if(checkLogin($jwt)) {
@@ -181,12 +181,21 @@ $app->get('/getProduct/:product_code', function($product_code) use($app) {
 			$SMAR_DB = new SMAR_MysqlConnect();
 		}
 		
-		$result = $SMAR_DB->dbquery("SELECT * 
-				FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu, ".SMAR_MYSQL_PREFIX."_section sec 
-				WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
-					  AND s.product_id = p.product_id 
-					  AND pu.product_id = p.product_id
-					  AND p.product_id = sec.product_id");
+		if($type == "receiving") {
+			$result = $SMAR_DB->dbquery("SELECT * 
+					FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu 
+					WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
+						  AND s.product_id = p.product_id 
+						  AND pu.product_id = p.product_id");
+		} else {
+			$result = $SMAR_DB->dbquery("SELECT * 
+					FROM ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_stock s, ".SMAR_MYSQL_PREFIX."_product_unit pu, ".SMAR_MYSQL_PREFIX."_section sec 
+					WHERE p.barcode= '".$SMAR_DB->real_escape_string($product_code)."' 
+						  AND s.product_id = p.product_id 
+						  AND pu.product_id = p.product_id
+						  AND p.product_id = sec.product_id");
+		}
+		
 		if($result->num_rows != 0) {
 			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 				$resultArray[] = $row;
@@ -243,10 +252,20 @@ $app->post('/delivery/create', function () use ($app) {
 				$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_delivery_item 
 											(delivery_id, product_id, unit_id, amount, created) 
 											VALUES (".$delivery_id.", ".$product_id.", ".$unit_id.", ".$amount.", '".$created."')");
-											
 				if(!$result) {
-					$return[] = $section;
-				}	
+					$return[] = $product_id;
+				} else {
+					$result_unit = $SMAR_DB->dbquery("SELECT capacity FROM ".SMAR_MYSQL_PREFIX."_unit WHERE unit_id = '".$unit_id."'");
+					if($result_unit) {
+						$row_unit = $result_unit->fetch_array();	
+						$amountSum = intval($row_unit['capacity']) * intval($amount);
+						$result_stock = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock SET amount_warehouse = amount_warehouse + ".$amountSum." WHERE product_id = '".$product_id."'");
+						if(!$result_stock)
+							$return[] = $product_id;
+					} else {
+						$return[] = $unit_id;
+					}
+				}
 			}
 			
 			if(count($return) > 0) {
@@ -300,7 +319,7 @@ $app->get('/getUnits', function() use($app) {
 			$SMAR_DB = new SMAR_MysqlConnect();
 		}
 		
-		$result = $SMAR_DB->dbquery("SELECT name, capacity FROM ".SMAR_MYSQL_PREFIX."_unit");
+		$result = $SMAR_DB->dbquery("SELECT unit_id, name FROM ".SMAR_MYSQL_PREFIX."_unit");
 		if($result->num_rows > 0 ) 
 		{
 			$resultArray = array();
