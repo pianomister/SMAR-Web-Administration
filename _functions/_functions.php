@@ -13,6 +13,9 @@
 
 // Diese Datei beinhaltet Funktionen, die Modulübergreifend benutzt werden
 
+// Timezone
+date_default_timezone_set('Europe/Berlin');
+
 // error_reporting(NULL);
 error_reporting(E_ALL); // ... wir sind ja am programmieren :-) TODO
 

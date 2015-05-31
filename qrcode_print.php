@@ -36,7 +36,7 @@ if($_SESSION['loginRole'] < 60) {
 					$SMAR_MESSAGES['error'][] = 'No output mode given.';
 				}
 			} else {
-				$SMAR_MESSAGES['error'][] = 'User with ID '.$userid.' not prepared for QR-Code.';
+				$SMAR_MESSAGES['error'][] = 'User with ID '.$userid.' not prepared for QR-Code.<br />Set rights and generate new QR-Code.';
 				$error = TRUE;
 			}
 		}
