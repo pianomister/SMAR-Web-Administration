@@ -1,11 +1,25 @@
+////////////////////////////////////
+// CONFIG                         //
+//                                //
+// Please set the window.path to  //
+// the path were you installed    //
+// SMAR Web Administration        //
+////////////////////////////////////
+
+window.path = '/SMAR-Web-Administration/';
+
+
+
+
 
 ////////////////////////////////////
 // NAVIGATION FUNCTIONALITY       //
 ////////////////////////////////////
 
 var pageTitle = 'SMAR Web Administration';
-window.path = '/SMAR-Web-Administration/';
 window.api_path = window.path + 'api/index.php/';
+
+
 
 function loadPage(url, loadFull, navMainId, skipHistory) {
 	
