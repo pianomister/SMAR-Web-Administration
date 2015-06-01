@@ -252,61 +252,65 @@ $app->post('/delivery/create', function () use ($app) {
 		if(!(isset($SMAR_DB))) {
 			$SMAR_DB = new SMAR_MysqlConnect();
 		}
-		$order_id = $_POST['order_id'];
-		$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_delivery 
-									(order_id, date, created) 
-									VALUES (".$SMAR_DB->real_escape_string($order_id).", '".date("Y-m-d H:i:s")."', '".date("Y-m-d H:i:s")."');");
-		$delivery_id = $SMAR_DB->insert_id;
-		if(isset($delivery_id)) 
-		{
-			//while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-				//$delivery_id = $row['last_id'];
-			//}
-			//$json_array = array();
-			$json_array = json_decode($_POST['array']);
-			$return = array();	
-			foreach($json_array as $json_object ) {
-				$product_id = intval($json_object->product_id);
-				$unit_id = intval($json_object->unit_id);
-				$amount = intval($json_object->amount);
-				$created = date("Y-m-d H:i:s");
-				
-				$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_delivery_item 
-											(delivery_id, product_id, unit_id, amount, created) 
-											VALUES (".$delivery_id.", ".$product_id.", ".$unit_id.", ".$amount.", '".$created."')");
-				if(!$result) {
-					$return[] = $product_id;
-				} else {
-					$result_unit = $SMAR_DB->dbquery("SELECT capacity FROM ".SMAR_MYSQL_PREFIX."_unit WHERE unit_id = '".$unit_id."'");
-					if($result_unit) {
-						$row_unit = $result_unit->fetch_array();	
-						$amountSum = intval($row_unit['capacity']) * intval($amount);
-						$result_stock = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock SET amount_warehouse = amount_warehouse + ".$amountSum." WHERE product_id = '".$product_id."'");
-						if(!$result_stock)
-							$return[] = $product_id;
+		
+		$jsonArray = json_decode($_POST['json_delivery'], true);
+		if($jsonArray === NULL) {
+			$response['reason'] = "parameters";
+			$res = $app->response();
+			$res->setStatus(404);
+			$res->setBody($response);
+		} else {
+			$order_id = $jsonArray['order_id'];
+			$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_delivery 
+										(order_id, date, created) 
+										VALUES (".$SMAR_DB->real_escape_string($order_id).", '".date("Y-m-d H:i:s")."', '".date("Y-m-d H:i:s")."');");
+			$delivery_id = $SMAR_DB->insert_id;
+			$delivery_items = $jsonArray['delivery_items'];
+			if(isset($delivery_id)) 
+			{
+				$return = array();	
+				foreach($delivery_items as $delivery_item) {
+					$product_id = $delivery_item['product_id'];
+					$amount = $delivery_item['amount'];
+					$unit_id = $delivery_item['unit_id'];
+					$created = date("Y-m-d H:i:s");
+					
+					$result = $SMAR_DB->dbquery("INSERT INTO ".SMAR_MYSQL_PREFIX."_delivery_item 
+												(delivery_id, product_id, unit_id, amount, created) 
+												VALUES (".$delivery_id.", ".$product_id.", ".$unit_id.", ".$amount.", '".$created."')");
+					if(!$result) {
+						$return[] = $product_id;
 					} else {
-						$return[] = $unit_id;
+						$result_unit = $SMAR_DB->dbquery("SELECT capacity FROM ".SMAR_MYSQL_PREFIX."_unit WHERE unit_id = '".$unit_id."'");
+						if($result_unit) {
+							$row_unit = $result_unit->fetch_array();	
+							$amountSum = intval($row_unit['capacity']) * intval($amount);
+							$result_stock = $SMAR_DB->dbquery("UPDATE ".SMAR_MYSQL_PREFIX."_stock SET amount_warehouse = amount_warehouse + ".$amountSum." WHERE product_id = '".$product_id."'");
+							if(!$result_stock)
+								$return[] = $product_id;
+						} else {
+							$return[] = $unit_id;
+						}
 					}
 				}
-			}
-			
-			if(count($return) > 0) {
-				$response = json_encode($return);
+				
+				if(count($return) > 0) {
+					$response = json_encode($return);
+					$res = $app->response();
+					$res->setStatus(500);
+					$res->setBody($response);
+				} else {
+					$response = json_encode($return);
+					$res = $app->response();
+					$res->setStatus(200);
+					$res->setBody($response);
+				}
+			} else {
+				$response['reason'] = "query";
 				$res = $app->response();
 				$res->setStatus(500);
 				$res->setBody($response);
-			} else {
-				$response = json_encode($return);
-				$res = $app->response();
-				$res->setStatus(200);
-				$res->setBody($response);
 			}
-		}
-		else {
-			$response['reason'] = "failed to insert in _delivery";
-			$res = $app->response();
-			$res->setStatus(500);
-			$res->setBody($response);
 		}
 	}
 	else {
