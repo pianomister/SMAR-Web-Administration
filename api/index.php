@@ -174,7 +174,7 @@ $app->get('/users/device', function() use($app) {
  */
 $app->get('/product/:barcode', function($barcode) use($app) {
 	global $jwt;
-	if(checkLogin($jwt) || true) {
+	if(checkLogin($jwt)) {
 		$productExist = true;
 		
 		// init database
@@ -522,32 +522,31 @@ $app->get('/units', function() use($app) {
 			$SMAR_DB = new SMAR_MysqlConnect();
 		}
 		
-		$result = $SMAR_DB->dbquery("SELECT 
-									o.order_id as order_id,
-									o.name as receiving_name,
-									o.date as receiving_date, 
-									p.name as product_name, 
-									p.product_id as product_id,
-									oi.amount as amount, 
-									u.name as unit 
-									FROM ".SMAR_MYSQL_PREFIX."_order o, ".SMAR_MYSQL_PREFIX."_product p, ".SMAR_MYSQL_PREFIX."_order_item oi, ".SMAR_MYSQL_PREFIX."_unit u 
-									WHERE o.barcode = '".$SMAR_DB->real_escape_string($barcode)."' 
-									AND oi.product_id = p.product_id 
-									AND oi.unit_id = u.unit_id");
-		if($result->num_rows != 0) {
-			while($row = $result->fetch_array(MYSQLI_ASSOC)) {
-				$resultArray[] = $row;
-			}
+		$result_order = $SMAR_DB->dbquery("SELECT order_id, barcode, name, date FROM ".SMAR_MYSQL_PREFIX."_order WHERE barcode = '".$SMAR_DB->real_escape_string($barcode)."'");
 		
+		if($result_order->num_rows > 0) {
+			$row_order = $result_order->fetch_array(MYSQLI_ASSOC);
+			$order_id = $row_order['order_id'];
+			$resultArray = $row_order;
+			
+			$orderItems = array();
+			$result_order_items = $SMAR_DB->dbquery("SELECT o.product_id as product_id, o.unit_id as unit_id, o.amount as amount, p.name as product_name, u.name as unit_name, u.capacity as unit_capacity 
+														FROM ".SMAR_MYSQL_PREFIX."_order_item o, ".SMAR_MYSQL_PREFIX."_unit u, ".SMAR_MYSQL_PREFIX."_product p 
+														WHERE o.order_id = '".$order_id."' AND p.product_id = o.product_id AND u.unit_id = o.unit_id");
+			while($row_order_items = $result_order_items->fetch_array(MYSQLI_ASSOC)) {
+				$orderItems[] = $row_order_items;
+			}
+			$resultArray['items'] = $orderItems;
+			
 			$response = json_encode($resultArray);
 			$res = $app->response();
+			$res->setStatus(200);
 			$res->setBody($response);
-		}
-		else {
-			$return['reason'] = "No Order for that barcode";
+		} else {
+			$return['reason'] = "no_order";
 			$response = json_encode($return);
 			$res = $app->response();
-			$res->setStatus(500);
+			$res->setStatus(404);
 			$res->setBody($response);
 		}
 	} else {
@@ -558,7 +557,6 @@ $app->get('/units', function() use($app) {
 		$res->setBody($response);
 	}
  })->name('order_by_barcode');
- 
 
 
 /**
